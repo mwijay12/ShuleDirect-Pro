@@ -1,0 +1,23 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "school-hero",
+      "description": "A modern school building in Tanzania",
+      "imageUrl": "https://picsum.photos/seed/school1/1200/800",
+      "imageHint": "modern school building"
+    },
+    {
+      "id": "student-portrait",
+      "description": "A smiling student in uniform",
+      "imageUrl": "https://picsum.photos/seed/student1/400/400",
+      "imageHint": "student portrait"
+    },
+    {
+      "id": "teacher-portrait",
+      "description": "A professional teacher in a classroom",
+      "imageUrl": "https://picsum.photos/seed/teacher1/400/400",
+      "imageHint": "teacher classroom"
+    }
+  ]
+}
