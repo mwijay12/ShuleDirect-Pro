@@ -109,6 +109,7 @@ export default function AcademicsPage() {
         </TabsList>
 
         <TabsContent value="results" className="space-y-4">
+          {/* Mobile Card View for Results */}
           <div className="md:hidden space-y-4">
             {results.map((student) => (
               <Card key={student.id} className="border-none shadow-sm overflow-hidden">
