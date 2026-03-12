@@ -69,14 +69,17 @@ export default function LandingPage() {
           </div>
           <div className="relative group">
             <div className="absolute -inset-4 bg-gradient-to-tr from-primary/20 to-accent/20 rounded-[3rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity" />
-            <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-white">
-              <Image 
-                src={heroImage?.imageUrl || ""} 
-                alt="School Hero" 
-                fill 
-                className="object-cover"
-                data-ai-hint="modern school"
-              />
+            <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-white bg-muted">
+              {heroImage?.imageUrl && (
+                <Image 
+                  src={heroImage.imageUrl} 
+                  alt="School Hero" 
+                  fill 
+                  className="object-cover"
+                  data-ai-hint="modern school"
+                  priority
+                />
+              )}
             </div>
             {/* Floating Achievement Card */}
             <div className="absolute -bottom-8 -left-8 bg-white p-6 rounded-3xl shadow-2xl border flex items-center gap-4 animate-float">
