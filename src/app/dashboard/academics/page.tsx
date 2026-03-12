@@ -1,6 +1,8 @@
+
 "use client"
 
 import * as React from "react"
+import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -14,7 +16,10 @@ import {
   Calculator,
   TrendingUp,
   LineChart,
-  GraduationCap
+  GraduationCap,
+  FileUp,
+  Loader2,
+  CheckCircle2
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { 
@@ -24,6 +29,7 @@ import {
 } from "@/components/ui/chart"
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip } from "recharts"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 const results = [
   { id: "S001", name: "Amani Mwamba", math: 82, eng: 74, kisw: 91, phy: 68, chem: 77, geo: 85, civ: 70, division: "I", points: 9 },
@@ -43,6 +49,25 @@ const subjectPerformanceData = [
 ]
 
 export default function AcademicsPage() {
+  const { toast } = useToast()
+  const [isUploading, setIsUploading] = useState(false)
+  const [role, setRole] = useState("")
+
+  useEffect(() => {
+    setRole(localStorage.getItem("shule_role") || "TEACHER")
+  }, [])
+
+  const handleExcelUpload = () => {
+    setIsUploading(true)
+    setTimeout(() => {
+      setIsUploading(false)
+      toast({
+        title: "Excel Import Successful",
+        description: "Successfully processed 42 student continuous assessment records.",
+      })
+    }, 2000)
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -51,26 +76,34 @@ export default function AcademicsPage() {
           <p className="text-muted-foreground">Comprehensive NECTA-aligned grading and performance analytics.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          <Button variant="outline" size="sm" className="flex-1 sm:flex-none rounded-full">
-            <Download className="mr-2 h-4 w-4" /> NECTA XML Export
-          </Button>
-          <Button size="sm" className="flex-1 sm:flex-none rounded-full colorful-gradient">
+          {role === "TEACHER" && (
+            <Button 
+              variant="outline" 
+              onClick={handleExcelUpload} 
+              disabled={isUploading}
+              className="flex-1 sm:flex-none rounded-full h-11 border-dashed border-primary text-primary hover:bg-primary/5"
+            >
+              {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileUp className="mr-2 h-4 w-4" />}
+              Import Excel
+            </Button>
+          )}
+          <Button size="sm" className="flex-1 sm:flex-none rounded-full h-11 colorful-gradient">
             <Plus className="mr-2 h-4 w-4" /> New Assessment
           </Button>
         </div>
       </div>
 
       <Tabs defaultValue="results" className="space-y-6">
-        <TabsList className="bg-muted/40 p-1 rounded-xl w-full sm:w-fit overflow-x-auto">
-          <TabsTrigger value="results" className="rounded-lg font-bold">Performance Matrix</TabsTrigger>
-          <TabsTrigger value="grading" className="rounded-lg font-bold">Grading Matrix</TabsTrigger>
-          <TabsTrigger value="subjects" className="rounded-lg font-bold">Subjects & Syllabus</TabsTrigger>
-          <TabsTrigger value="analytics" className="rounded-lg font-bold">Trends & AI Insights</TabsTrigger>
+        <TabsList className="bg-muted/40 p-1 rounded-xl w-full sm:w-fit overflow-x-auto h-auto">
+          <TabsTrigger value="results" className="rounded-lg font-bold py-2">Performance Matrix</TabsTrigger>
+          <TabsTrigger value="grading" className="rounded-lg font-bold py-2">NECTA Criteria</TabsTrigger>
+          <TabsTrigger value="entry" className="rounded-lg font-bold py-2">Teacher Grade Entry</TabsTrigger>
+          <TabsTrigger value="analytics" className="rounded-lg font-bold py-2">Trends & AI Insights</TabsTrigger>
         </TabsList>
 
         <TabsContent value="results" className="space-y-4">
           <Card className="border-none shadow-sm overflow-hidden">
-            <CardHeader className="pb-3 px-6 pt-6 bg-muted/20">
+            <CardHeader className="pb-3 px-6 pt-6 bg-muted/20 border-b">
               <div className="flex flex-col sm:flex-row justify-between gap-4">
                 <div className="space-y-1">
                   <CardTitle className="text-xl">Terminal Examination Results</CardTitle>
@@ -90,7 +123,7 @@ export default function AcademicsPage() {
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent border-none">
+                  <TableRow className="hover:bg-transparent border-none bg-muted/5">
                     <TableHead className="pl-6 w-[120px]">Student ID</TableHead>
                     <TableHead>Full Name</TableHead>
                     <TableHead className="text-center">Math</TableHead>
@@ -132,6 +165,54 @@ export default function AcademicsPage() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="entry" className="space-y-6">
+           <Card className="border-none shadow-sm">
+             <CardHeader>
+               <div className="flex items-center justify-between">
+                 <div>
+                   <CardTitle className="text-lg">Rapid Grade Entry</CardTitle>
+                   <CardDescription>Direct subject assessment for teachers.</CardDescription>
+                 </div>
+                 <div className="flex gap-2">
+                   <Button variant="ghost" size="sm" className="text-xs font-bold text-primary">Download Template</Button>
+                 </div>
+               </div>
+             </CardHeader>
+             <CardContent>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {results.slice(0, 3).map((student) => (
+                    <div key={student.id} className="p-5 rounded-[2rem] border-2 border-dashed border-muted flex flex-col gap-4 hover:border-primary/20 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-primary/5 flex items-center justify-center text-primary font-bold">{student.name.charAt(0)}</div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold">{student.name}</span>
+                          <span className="text-[10px] text-muted-foreground font-mono">{student.id}</span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Physics</label>
+                          <Input type="number" defaultValue={student.phy} className="h-10 rounded-xl" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Chemistry</label>
+                          <Input type="number" defaultValue={student.chem} className="h-10 rounded-xl" />
+                        </div>
+                      </div>
+                      <Button size="sm" variant="secondary" className="rounded-full text-xs font-bold h-9">
+                        Save Changes
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-8 p-6 rounded-3xl bg-primary/5 border border-dashed border-primary/20 text-center">
+                  <p className="text-sm font-medium text-primary mb-4">Showing first 3 students. Use "Load More" or Excel Import for the full class list.</p>
+                  <Button className="rounded-full font-bold px-8">Load More Students</Button>
+                </div>
+             </CardContent>
+           </Card>
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">

@@ -3,21 +3,27 @@
   "placeholderImages": [
     {
       "id": "school-hero",
-      "description": "A modern school building in Tanzania",
-      "imageUrl": "https://picsum.photos/seed/school1/1200/800",
-      "imageHint": "modern school building"
+      "description": "Modern African school campus at sunset",
+      "imageUrl": "https://picsum.photos/seed/school-hero-99/1200/800",
+      "imageHint": "modern school"
     },
     {
-      "id": "student-portrait",
-      "description": "A smiling student in uniform",
-      "imageUrl": "https://picsum.photos/seed/student1/400/400",
-      "imageHint": "student portrait"
+      "id": "student-learning",
+      "description": "Happy students using digital tablets in a classroom",
+      "imageUrl": "https://picsum.photos/seed/student-tablet-22/600/400",
+      "imageHint": "student tablet"
     },
     {
-      "id": "teacher-portrait",
-      "description": "A professional teacher in a classroom",
-      "imageUrl": "https://picsum.photos/seed/teacher1/400/400",
-      "imageHint": "teacher classroom"
+      "id": "teacher-dashboard",
+      "description": "Professional teacher reviewing academic analytics",
+      "imageUrl": "https://picsum.photos/seed/teacher-ui-11/600/400",
+      "imageHint": "teacher professional"
+    },
+    {
+      "id": "finance-secure",
+      "description": "Secure digital payment confirmation screen",
+      "imageUrl": "https://picsum.photos/seed/secure-pay-55/600/400",
+      "imageHint": "secure payment"
     }
   ]
 }
