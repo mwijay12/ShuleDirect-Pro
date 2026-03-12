@@ -9,13 +9,13 @@ import {
   Users, 
   GraduationCap, 
   Banknote, 
-  MessageSquare, 
   Sparkles, 
   Settings,
   ShieldCheck,
   FileSpreadsheet,
   Bus,
-  Bed
+  Bed,
+  MessageSquare
 } from "lucide-react"
 
 import {
@@ -26,7 +26,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
 } from "@/components/ui/sidebar"
 
 const navItems = [

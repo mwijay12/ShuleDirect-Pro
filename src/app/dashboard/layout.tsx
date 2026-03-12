@@ -5,9 +5,10 @@ import * as React from "react"
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { Toaster } from "@/components/ui/toaster"
-import { Bell, Search, Globe } from "lucide-react"
+import { Bell, Search, Globe, CloudCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
 
 export default function DashboardLayout({
   children,
@@ -29,6 +30,10 @@ export default function DashboardLayout({
                 className="pl-9 bg-muted/50 border-none"
               />
             </div>
+            <Badge variant="outline" className="hidden lg:flex items-center gap-1.5 border-green-200 bg-green-50 text-green-700">
+              <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+              Offline Ready (Delta Sync Active)
+            </Badge>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" className="text-muted-foreground">
