@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -20,7 +19,9 @@ import {
   LogOut,
   X,
   HelpCircle,
-  Star
+  Star,
+  Instagram,
+  Smartphone
 } from "lucide-react"
 
 import {
@@ -141,14 +142,17 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-6 border-t border-border/40 mt-auto space-y-6">
         {!isCollapsed && (
-          <div className="p-5 rounded-[2rem] bg-muted/30 border border-dashed border-primary/20 space-y-3 animate-in fade-in duration-1000">
+          <div className="p-6 rounded-[2rem] bg-muted/30 border border-dashed border-primary/20 space-y-4 animate-in fade-in duration-1000">
             <div className="flex items-center gap-2 text-primary font-black text-[9px] uppercase tracking-widest">
-              <Star className="h-3 w-3 fill-primary" /> Powered By
+              <Star className="h-3 w-3 fill-primary" /> Maker Credits
             </div>
-            <p className="text-[10px] font-black leading-tight">
-              ShulePro Maker Team <br/>
-              <span className="text-muted-foreground font-medium italic">Architect Excellence</span>
-            </p>
+            <div className="space-y-1">
+              <p className="text-[11px] font-black leading-tight text-foreground/80">Davie Mwijage</p>
+              <div className="flex flex-col gap-1 pt-1">
+                <span className="text-[8px] font-bold text-primary flex items-center gap-1"><Smartphone className="h-2.5 w-2.5" /> +255 620 641 695</span>
+                <span className="text-[8px] font-bold text-accent flex items-center gap-1"><Instagram className="h-2.5 w-2.5" /> @mwijay.davie</span>
+              </div>
+            </div>
           </div>
         )}
 

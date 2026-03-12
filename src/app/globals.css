@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,7 +23,7 @@
     --border: 214 32% 91%;
     --input: 214 32% 91%;
     --ring: 214 69% 39%;
-    --radius: 1.25rem; /* More playful, rounded corners */
+    --radius: 1.25rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 215 25% 10%;
@@ -57,7 +56,7 @@
 
 @keyframes float {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
+  50% { transform: translateY(-10px); }
   100% { transform: translateY(0px); }
 }
 
@@ -66,12 +65,31 @@
   50% { opacity: 0.7; }
 }
 
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slow-zoom {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+  animation: float 4s ease-in-out infinite;
 }
 
 .animate-pulse-soft {
-  animation: pulse-soft 2s ease-in-out infinite;
+  animation: pulse-soft 3s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+.animate-slow-zoom {
+  animation: slow-zoom 20s ease-in-out infinite;
 }
 
 .colorful-gradient {
@@ -82,7 +100,6 @@
   background: linear-gradient(135deg, #1a4d8c 0%, #7e4ebf 100%);
 }
 
-/* Custom Scrollbar for Pro feel */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
