@@ -143,12 +143,12 @@ export function AppSidebar() {
       <SidebarFooter className="p-6 border-t border-border/40 mt-auto space-y-6">
         {!isCollapsed && (
           <div className="p-6 rounded-[2rem] bg-muted/30 border border-dashed border-primary/20 space-y-4 animate-in fade-in duration-1000">
-            <div className="flex items-center gap-2 text-primary font-black text-[9px] uppercase tracking-widest">
-              <Star className="h-3 w-3 fill-primary" /> Maker Credits
+            <div className="flex items-center gap-3 text-primary font-black text-[9px] uppercase tracking-widest">
+              <Star className="h-4 w-4 fill-primary animate-pulse" /> Maker Credits
             </div>
-            <div className="space-y-1">
+            <div className="grid grid-cols-1 gap-2">
               <p className="text-[11px] font-black leading-tight text-foreground/80">Davie Mwijage</p>
-              <div className="flex flex-col gap-1 pt-1">
+              <div className="flex flex-col gap-1 pt-1 opacity-70">
                 <span className="text-[8px] font-bold text-primary flex items-center gap-1"><Smartphone className="h-2.5 w-2.5" /> +255 620 641 695</span>
                 <span className="text-[8px] font-bold text-accent flex items-center gap-1"><Instagram className="h-2.5 w-2.5" /> @mwijay.davie</span>
               </div>
