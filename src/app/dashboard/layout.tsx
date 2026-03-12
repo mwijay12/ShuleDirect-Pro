@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { Toaster } from "@/components/ui/toaster"
@@ -15,14 +15,17 @@ import {
   Banknote,
   Menu,
   ShieldCheck,
-  Loader2
+  Loader2,
+  Clock
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+
+const AUTO_LOGOUT_MS = 10 * 60 * 1000 // 10 Minutes
 
 export default function DashboardLayout({
   children,
@@ -30,11 +33,25 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [greeting, setGreeting] = useState("Welcome...")
   const [isInitialLoading, setIsInitialLoading] = useState(true)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const handleLogout = React.useCallback(() => {
+    localStorage.clear()
+    router.push("/login")
+  }, [router])
+
+  const resetTimer = React.useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    timeoutRef.current = setTimeout(() => {
+      handleLogout()
+    }, AUTO_LOGOUT_MS)
+  }, [handleLogout])
 
   useEffect(() => {
-    // Initial App Boot Loading Screen
+    // Initial App Boot
     const loadTimer = setTimeout(() => {
       setIsInitialLoading(false)
     }, 2000)
@@ -44,9 +61,19 @@ export default function DashboardLayout({
     if (hours >= 12 && hours < 16) msg = "Good Afternoon"
     if (hours >= 16) msg = "Good Evening"
     setGreeting(msg)
+
+    // Security Listeners
+    window.addEventListener("mousemove", resetTimer)
+    window.addEventListener("keydown", resetTimer)
+    resetTimer()
     
-    return () => clearTimeout(loadTimer)
-  }, [])
+    return () => {
+      clearTimeout(loadTimer)
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      window.removeEventListener("mousemove", resetTimer)
+      window.removeEventListener("keydown", resetTimer)
+    }
+  }, [resetTimer])
 
   const bottomNavItems = [
     { label: "Home", icon: LayoutDashboard, href: "/dashboard" },
@@ -102,17 +129,20 @@ export default function DashboardLayout({
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Find student..."
+                placeholder="Quick search..."
                 className="pl-10 bg-muted/30 border-none rounded-full h-9 focus-visible:ring-accent"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <Badge variant="outline" className="hidden xl:flex items-center gap-1.5 border-green-200 bg-green-50 text-green-700 rounded-full px-3 py-1">
-              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] font-bold">LIVE</span>
-            </Badge>
+            <div className="hidden xl:flex flex-col items-end mr-2">
+               <span className="text-[9px] font-black text-primary uppercase">Session Security</span>
+               <div className="flex items-center gap-1">
+                 <Clock className="h-2.5 w-2.5 text-muted-foreground" />
+                 <span className="text-[10px] font-mono font-bold text-muted-foreground">Auto-Lock: 10m</span>
+               </div>
+            </div>
             
             <Button variant="ghost" size="icon" className="relative text-muted-foreground rounded-full hover:bg-accent/10 h-9 w-9">
               <Bell className="h-5 w-5" />
@@ -131,7 +161,6 @@ export default function DashboardLayout({
           {children}
         </main>
 
-        {/* Bottom Navigation for Mobile */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t flex items-center justify-around px-4 z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
           {bottomNavItems.map((item) => {
             const isActive = pathname === item.href

@@ -28,7 +28,9 @@ import {
   Zap,
   MessageCircle,
   Share2,
-  Layout
+  Layout,
+  Star,
+  Instagram
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -132,6 +134,37 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Maker Credits - Side by Side layout */}
+          <div className="grid md:grid-cols-2 gap-8 pt-4">
+            <Card className="p-8 rounded-[2.5rem] bg-muted/30 border-2 border-dashed border-primary/20 space-y-6 shadow-inner hover:border-primary/30 transition-all group">
+              <div className="flex items-center gap-3 text-primary font-black text-xs uppercase tracking-widest">
+                <Star className="h-5 w-5 fill-primary animate-pulse" /> System Architect
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-1">
+                  <p className="text-2xl font-black leading-tight text-foreground/80 group-hover:text-primary transition-colors">Davie Mwijage</p>
+                  <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Lead Engineer & Architect</p>
+                </div>
+                <div className="flex flex-col gap-3 pt-2">
+                  <div className="flex items-center gap-3 text-[11px] font-black text-primary/80">
+                    <Smartphone className="h-4 w-4 text-primary" /> +255 620 641 695
+                  </div>
+                  <div className="flex items-center gap-3 text-[11px] font-black text-accent">
+                    <Instagram className="h-4 w-4" /> @mwijay.davie
+                  </div>
+                </div>
+              </div>
+            </Card>
+            
+            <Card className="p-8 rounded-[2.5rem] bg-accent/5 border-2 border-dashed border-accent/20 flex flex-col justify-center items-center text-center space-y-4">
+               <Shield className="h-12 w-12 text-accent" />
+               <div className="space-y-1">
+                 <p className="text-sm font-black text-accent uppercase tracking-widest tracking-widest">Official v2.0.26</p>
+                 <p className="text-[10px] text-muted-foreground max-w-[200px] font-medium leading-relaxed">Engineered for pure performance and high-fidelity school management.</p>
+               </div>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="branding" className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -296,7 +329,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <Button size="sm" className="rounded-full h-12 font-black colorful-gradient px-8 shadow-xl text-[10px] uppercase tracking-widest group transition-all hover:scale-105">
-                <Plus className="mr-2 h-5 w-5 group-hover:scale-110" /> Issue New Key
+                <Plus className="mr-2 h-5 w-5 group-hover:scale-110" /> Issue New Account
               </Button>
             </CardHeader>
             <CardContent className="p-0">
@@ -304,8 +337,8 @@ export default function SettingsPage() {
                 <TableHeader>
                   <TableRow className="hover:bg-transparent bg-muted/5 border-none h-14">
                     <TableHead className="pl-10 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Personnel Name</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Assigned Role</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Access Key</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">System Role</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Login Email</TableHead>
                     <TableHead className="text-right pr-10 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Management</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -314,18 +347,18 @@ export default function SettingsPage() {
                     <TableRow key={staff.key} className="hover:bg-primary/[0.02] border-none transition-all group">
                       <TableCell className="pl-10 py-6">
                         <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 rounded-[1.25rem] bg-white shadow-xl flex items-center justify-center text-primary font-black text-lg transition-transform group-hover:scale-110">
+                          <div className="h-12 w-12 rounded-[1.25rem] bg-white shadow-xl flex items-center justify-center text-primary font-black text-lg transition-transform group-hover:scale-110 border border-muted">
                             {staff.name.charAt(0)}
                           </div>
                           <div>
                             <p className="font-black text-sm text-foreground/80">{staff.name}</p>
-                            <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none py-0.5 h-5 text-[8px] font-black tracking-widest mt-1">ACTIVE SYSTEM KEY</Badge>
+                            <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none py-0.5 h-5 text-[8px] font-black tracking-widest mt-1">ACTIVE SESSION</Badge>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{staff.role}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="font-mono text-[11px] font-black tracking-[0.3em] bg-white border-muted shadow-sm px-4 py-1.5 rounded-xl uppercase">{staff.key}</Badge>
+                        <Badge variant="outline" className="font-mono text-[10px] font-bold text-muted-foreground lowercase">{staff.name.toLowerCase().replace('. ', '')}@shule.pro</Badge>
                       </TableCell>
                       <TableCell className="text-right pr-10">
                         <div className="flex justify-end gap-2">
@@ -403,10 +436,10 @@ export default function SettingsPage() {
                 </div>
                 
                 <div className="space-y-6">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-6">Omnichannel Security Policies</h4>
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-6">Security Polices</h4>
                   {[
-                    { label: "Biometric Staff Auth", active: true },
-                    { label: "Auto-Session Purge (15m)", active: true },
+                    { label: "10m Auto-Logout Session", active: true },
+                    { label: "Email/Password MFA", active: true },
                     { label: "SMS Verification for PReMS", active: true },
                     { label: "Block International VPNs", active: false },
                   ].map((policy, i) => (

@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -38,15 +39,15 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
 const allNavItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "TEACHER", "BURSAR", "TEACHER_MATH", "TEACHER_ENG", "TEACHER_KISW", "TEACHER_PHY", "TEACHER_CHEM"] },
-  { title: "Student Directory", url: "/dashboard/students", icon: Users, roles: ["ADMIN", "TEACHER", "TEACHER_MATH", "TEACHER_ENG", "TEACHER_KISW", "TEACHER_PHY", "TEACHER_CHEM"] },
-  { title: "Daily Register", url: "/dashboard/attendance", icon: ClipboardCheck, roles: ["ADMIN", "TEACHER", "TEACHER_MATH", "TEACHER_ENG", "TEACHER_KISW", "TEACHER_PHY", "TEACHER_CHEM"] },
-  { title: "Academic Hub", url: "/dashboard/academics", icon: GraduationCap, roles: ["ADMIN", "TEACHER", "TEACHER_MATH", "TEACHER_ENG", "TEACHER_KISW", "TEACHER_PHY", "TEACHER_CHEM"] },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "TEACHER", "BURSAR"] },
+  { title: "Student Directory", url: "/dashboard/students", icon: Users, roles: ["ADMIN", "TEACHER"] },
+  { title: "Daily Register", url: "/dashboard/attendance", icon: ClipboardCheck, roles: ["ADMIN", "TEACHER"] },
+  { title: "Academic Hub", url: "/dashboard/academics", icon: GraduationCap, roles: ["ADMIN", "TEACHER"] },
   { title: "Finance Hub", url: "/dashboard/finance", icon: Banknote, roles: ["ADMIN", "BURSAR"] },
   { title: "Transport", url: "/dashboard/transport", icon: Bus, roles: ["ADMIN", "BURSAR"] },
   { title: "Hostel", url: "/dashboard/hostel", icon: Bed, roles: ["ADMIN", "BURSAR"] },
   { title: "NECTA Reports", url: "/dashboard/reports", icon: Zap, roles: ["ADMIN", "TEACHER", "BURSAR"] },
-  { title: "Help Center", url: "/dashboard/help", icon: HelpCircle, roles: ["ADMIN", "TEACHER", "BURSAR", "TEACHER_MATH", "TEACHER_ENG", "TEACHER_KISW", "TEACHER_PHY", "TEACHER_CHEM"] },
+  { title: "Help Center", url: "/dashboard/help", icon: HelpCircle, roles: ["ADMIN", "TEACHER", "BURSAR"] },
   { title: "System Admin", url: "/dashboard/settings", icon: Settings, roles: ["ADMIN"] },
 ]
 
@@ -65,40 +66,29 @@ export function AppSidebar() {
   const filteredItems = allNavItems.filter(item => item.roles.includes(role))
 
   const handleLogout = () => {
-    localStorage.removeItem("shule_role")
-    localStorage.removeItem("shule_key")
+    localStorage.clear()
     router.push("/login")
-  }
-
-  const getRoleLabel = (role: string) => {
-    if (role.startsWith("TEACHER_")) {
-      const subject = role.split("_")[1]
-      return `${subject} Department`
-    }
-    return role
   }
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/50 shadow-sm transition-all duration-300 font-body">
       <SidebarHeader className="p-6 mb-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 group">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl colorful-gradient text-white shadow-xl group-hover:rotate-12 transition-transform duration-500">
-              <ShieldCheck className="h-7 w-7" />
-            </div>
-            {!isCollapsed && (
-              <div className="flex flex-col gap-0.5 leading-none overflow-hidden animate-in fade-in slide-in-from-left-4 duration-500">
-                <span className="font-headline font-black text-xl text-primary tracking-tighter">ShuleDirect</span>
-                <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-black">Pro Hub 2026</span>
-              </div>
-            )}
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl colorful-gradient text-white shadow-xl group-hover:rotate-12 transition-transform duration-500">
+            <ShieldCheck className="h-7 w-7" />
           </div>
-          {isMobile && (
-            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-muted/50" onClick={() => setOpenMobile(false)}>
-              <X className="h-6 w-6" />
-            </Button>
+          {!isCollapsed && (
+            <div className="flex flex-col gap-0.5 leading-none overflow-hidden animate-in fade-in slide-in-from-left-4 duration-500">
+              <span className="font-headline font-black text-xl text-primary tracking-tighter">ShuleDirect</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-black">Pro Hub 2026</span>
+            </div>
           )}
-        </div>
+        </Link>
+        {isMobile && (
+          <Button variant="ghost" size="icon" className="absolute top-6 right-4 h-10 w-10 rounded-full bg-muted/50" onClick={() => setOpenMobile(false)}>
+            <X className="h-6 w-6" />
+          </Button>
+        )}
       </SidebarHeader>
       
       <SidebarContent className="px-4">
@@ -140,22 +130,7 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-6 border-t border-border/40 mt-auto space-y-6">
-        {!isCollapsed && (
-          <div className="p-6 rounded-[2rem] bg-muted/30 border border-dashed border-primary/20 space-y-4 animate-in fade-in duration-1000">
-            <div className="flex items-center gap-3 text-primary font-black text-[9px] uppercase tracking-widest">
-              <Star className="h-4 w-4 fill-primary animate-pulse" /> Maker Credits
-            </div>
-            <div className="grid grid-cols-1 gap-2">
-              <p className="text-[11px] font-black leading-tight text-foreground/80">Davie Mwijage</p>
-              <div className="flex flex-col gap-1 pt-1 opacity-70">
-                <span className="text-[8px] font-bold text-primary flex items-center gap-1"><Smartphone className="h-2.5 w-2.5" /> +255 620 641 695</span>
-                <span className="text-[8px] font-bold text-accent flex items-center gap-1"><Instagram className="h-2.5 w-2.5" /> @mwijay.davie</span>
-              </div>
-            </div>
-          </div>
-        )}
-
+      <SidebarFooter className="p-6 border-t border-border/40 mt-auto">
         <div className={cn(
           "flex flex-col gap-3",
           isCollapsed ? "items-center" : ""
@@ -166,8 +141,8 @@ export function AppSidebar() {
                 {role.charAt(0)}
               </div>
               <div className="flex flex-col overflow-hidden">
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary truncate">Session Active</span>
-                <span className="text-[9px] text-muted-foreground font-black uppercase tracking-tighter truncate">{getRoleLabel(role)}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary truncate">Active Node</span>
+                <span className="text-[9px] text-muted-foreground font-black uppercase tracking-tighter truncate">{role} Hub</span>
               </div>
             </div>
           )}
@@ -179,7 +154,7 @@ export function AppSidebar() {
             )}
           >
             <LogOut className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-            {!isCollapsed && <span>Logout Portal</span>}
+            {!isCollapsed && <span>Logout Session</span>}
           </button>
         </div>
       </SidebarFooter>
