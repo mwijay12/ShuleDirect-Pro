@@ -13,8 +13,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const KEYS = {
   ADMIN: "ADMIN123",
-  TEACHER: "TEACHER456",
-  BURSAR: "BURSAR789"
+  BURSAR: "BURSAR789",
+  MATH: "MATH101",
+  ENG: "ENG202",
+  KISW: "KISW303",
+  PHY: "PHY404",
+  CHEM: "CHEM505"
 }
 
 export default function LoginPage() {
@@ -32,8 +36,13 @@ export default function LoginPage() {
     setTimeout(() => {
       let role = ""
       if (accessKey === KEYS.ADMIN) role = "ADMIN"
-      else if (accessKey === KEYS.TEACHER) role = "TEACHER"
       else if (accessKey === KEYS.BURSAR) role = "BURSAR"
+      else if (accessKey === KEYS.MATH) role = "TEACHER_MATH"
+      else if (accessKey === KEYS.ENG) role = "TEACHER_ENG"
+      else if (accessKey === KEYS.KISW) role = "TEACHER_KISW"
+      else if (accessKey === KEYS.PHY) role = "TEACHER_PHY"
+      else if (accessKey === KEYS.CHEM) role = "TEACHER_CHEM"
+      else if (accessKey === "TEACHER456") role = "TEACHER"
 
       if (role) {
         localStorage.setItem("shule_role", role)

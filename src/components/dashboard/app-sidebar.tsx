@@ -33,10 +33,10 @@ import {
 import { cn } from "@/lib/utils"
 
 const allNavItems = [
-  { title: "Overview", url: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "TEACHER", "BURSAR"] },
-  { title: "Students", url: "/dashboard/students", icon: Users, roles: ["ADMIN", "TEACHER"] },
-  { title: "Attendance", url: "/dashboard/attendance", icon: ClipboardCheck, roles: ["ADMIN", "TEACHER"] },
-  { title: "Academics", url: "/dashboard/academics", icon: GraduationCap, roles: ["ADMIN", "TEACHER"] },
+  { title: "Overview", url: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "TEACHER", "BURSAR", "TEACHER_MATH", "TEACHER_ENG", "TEACHER_KISW", "TEACHER_PHY", "TEACHER_CHEM"] },
+  { title: "Students", url: "/dashboard/students", icon: Users, roles: ["ADMIN", "TEACHER", "TEACHER_MATH", "TEACHER_ENG", "TEACHER_KISW", "TEACHER_PHY", "TEACHER_CHEM"] },
+  { title: "Attendance", url: "/dashboard/attendance", icon: ClipboardCheck, roles: ["ADMIN", "TEACHER", "TEACHER_MATH", "TEACHER_ENG", "TEACHER_KISW", "TEACHER_PHY", "TEACHER_CHEM"] },
+  { title: "Academics", url: "/dashboard/academics", icon: GraduationCap, roles: ["ADMIN", "TEACHER", "TEACHER_MATH", "TEACHER_ENG", "TEACHER_KISW", "TEACHER_PHY", "TEACHER_CHEM"] },
   { title: "Finance", url: "/dashboard/finance", icon: Banknote, roles: ["ADMIN", "BURSAR"] },
   { title: "Transport", url: "/dashboard/transport", icon: Bus, roles: ["ADMIN", "BURSAR"] },
   { title: "Hostel", url: "/dashboard/hostel", icon: Bed, roles: ["ADMIN", "BURSAR"] },
@@ -62,6 +62,14 @@ export function AppSidebar() {
     localStorage.removeItem("shule_role")
     localStorage.removeItem("shule_key")
     router.push("/login")
+  }
+
+  const getRoleLabel = (role: string) => {
+    if (role.startsWith("TEACHER_")) {
+      const subject = role.split("_")[1]
+      return `${subject} Teacher`
+    }
+    return role
   }
 
   return (
@@ -133,7 +141,7 @@ export function AppSidebar() {
             {!isCollapsed && (
               <div className="flex flex-col overflow-hidden text-left">
                 <span className="text-xs font-bold truncate">Career Access</span>
-                <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">{role}</span>
+                <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">{getRoleLabel(role)}</span>
               </div>
             )}
           </div>

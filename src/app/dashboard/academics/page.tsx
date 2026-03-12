@@ -19,7 +19,9 @@ import {
   GraduationCap,
   FileUp,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  ChevronRight,
+  BookOpen
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { 
@@ -52,9 +54,14 @@ export default function AcademicsPage() {
   const { toast } = useToast()
   const [isUploading, setIsUploading] = useState(false)
   const [role, setRole] = useState("")
+  const [activeSubject, setActiveSubject] = useState<string | null>(null)
 
   useEffect(() => {
-    setRole(localStorage.getItem("shule_role") || "TEACHER")
+    const savedRole = localStorage.getItem("shule_role") || "TEACHER"
+    setRole(savedRole)
+    if (savedRole.startsWith("TEACHER_")) {
+      setActiveSubject(savedRole.split("_")[1])
+    }
   }, [])
 
   const handleExcelUpload = () => {
@@ -63,60 +70,97 @@ export default function AcademicsPage() {
       setIsUploading(false)
       toast({
         title: "Excel Import Successful",
-        description: "Successfully processed 42 student continuous assessment records.",
+        description: `Successfully processed ${activeSubject || 'academic'} records.`,
       })
     }, 2000)
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl mx-auto pb-20">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-headline font-bold text-primary">Academic Hub</h1>
-          <p className="text-muted-foreground">Comprehensive NECTA-aligned grading and performance analytics.</p>
+          <p className="text-muted-foreground text-sm">
+            {activeSubject ? `${activeSubject} Department` : "Comprehensive NECTA-aligned grading."}
+          </p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          {role === "TEACHER" && (
-            <Button 
-              variant="outline" 
-              onClick={handleExcelUpload} 
-              disabled={isUploading}
-              className="flex-1 sm:flex-none rounded-full h-11 border-dashed border-primary text-primary hover:bg-primary/5"
-            >
-              {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileUp className="mr-2 h-4 w-4" />}
-              Import Excel
-            </Button>
-          )}
+          <Button 
+            variant="outline" 
+            onClick={handleExcelUpload} 
+            disabled={isUploading}
+            className="flex-1 sm:flex-none rounded-full h-11 border-dashed border-primary text-primary hover:bg-primary/5"
+          >
+            {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileUp className="mr-2 h-4 w-4" />}
+            Import Excel
+          </Button>
           <Button size="sm" className="flex-1 sm:flex-none rounded-full h-11 colorful-gradient">
             <Plus className="mr-2 h-4 w-4" /> New Assessment
           </Button>
         </div>
       </div>
 
-      <Tabs defaultValue="results" className="space-y-6">
-        <TabsList className="bg-muted/40 p-1 rounded-xl w-full sm:w-fit overflow-x-auto h-auto">
-          <TabsTrigger value="results" className="rounded-lg font-bold py-2">Performance Matrix</TabsTrigger>
-          <TabsTrigger value="grading" className="rounded-lg font-bold py-2">NECTA Criteria</TabsTrigger>
-          <TabsTrigger value="entry" className="rounded-lg font-bold py-2">Teacher Grade Entry</TabsTrigger>
-          <TabsTrigger value="analytics" className="rounded-lg font-bold py-2">Trends & AI Insights</TabsTrigger>
+      <Tabs defaultValue={activeSubject ? "entry" : "results"} className="space-y-6">
+        <TabsList className="bg-muted/40 p-1 rounded-xl w-full sm:w-fit overflow-x-auto h-auto flex sm:inline-flex">
+          <TabsTrigger value="results" className="rounded-lg font-bold py-2 flex-1 sm:flex-none">Matrix</TabsTrigger>
+          <TabsTrigger value="entry" className="rounded-lg font-bold py-2 flex-1 sm:flex-none">Grading</TabsTrigger>
+          <TabsTrigger value="analytics" className="rounded-lg font-bold py-2 flex-1 sm:flex-none">AI Insights</TabsTrigger>
+          <TabsTrigger value="criteria" className="rounded-lg font-bold py-2 flex-1 sm:flex-none">NECTA</TabsTrigger>
         </TabsList>
 
         <TabsContent value="results" className="space-y-4">
-          <Card className="border-none shadow-sm overflow-hidden">
-            <CardHeader className="pb-3 px-6 pt-6 bg-muted/20 border-b">
-              <div className="flex flex-col sm:flex-row justify-between gap-4">
-                <div className="space-y-1">
-                  <CardTitle className="text-xl">Terminal Examination Results</CardTitle>
-                  <CardDescription>Form 4 Mock - Term 1, 2024</CardDescription>
-                </div>
-                <div className="flex gap-2 items-center">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search records..." className="pl-10 h-10 w-[240px] rounded-full bg-white border-none shadow-sm" />
+          <div className="md:hidden space-y-4">
+            {results.map((student) => (
+              <Card key={student.id} className="border-none shadow-sm overflow-hidden">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                       <div className="h-10 w-10 rounded-full bg-primary/5 flex items-center justify-center text-primary font-bold">{student.name.charAt(0)}</div>
+                       <div>
+                         <p className="font-bold text-sm">{student.name}</p>
+                         <p className="text-[10px] text-muted-foreground font-mono">{student.id}</p>
+                       </div>
+                    </div>
+                    <Badge 
+                      className={cn(
+                        "text-[10px] py-0 h-5 px-2 border-none font-bold",
+                        student.division === "I" ? "bg-green-100 text-green-700" : 
+                        student.division === "0" ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      DIV {student.division}
+                    </Badge>
                   </div>
-                  <Button variant="outline" size="icon" className="h-10 w-10 rounded-full bg-white shadow-sm border-none">
-                    <Filter className="h-4 w-4" />
-                  </Button>
+                  <div className="grid grid-cols-4 gap-2 text-center">
+                    <div className="bg-muted/30 p-2 rounded-lg">
+                      <p className="text-[8px] uppercase font-bold text-muted-foreground">Math</p>
+                      <p className="text-sm font-mono font-bold">{student.math}</p>
+                    </div>
+                    <div className="bg-muted/30 p-2 rounded-lg">
+                      <p className="text-[8px] uppercase font-bold text-muted-foreground">Eng</p>
+                      <p className="text-sm font-mono font-bold">{student.eng}</p>
+                    </div>
+                    <div className="bg-muted/30 p-2 rounded-lg">
+                      <p className="text-[8px] uppercase font-bold text-muted-foreground">Kisw</p>
+                      <p className="text-sm font-mono font-bold">{student.kisw}</p>
+                    </div>
+                    <div className="bg-muted/30 p-2 rounded-lg">
+                      <p className="text-[8px] uppercase font-bold text-muted-foreground">Pts</p>
+                      <p className="text-sm font-bold text-primary">{student.points}</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" className="w-full text-xs font-bold text-primary h-8 rounded-full">View Full Report</Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Card className="hidden md:block border-none shadow-sm overflow-hidden">
+            <CardHeader className="pb-3 px-6 pt-6 bg-muted/20 border-b">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-xl">Terminal Examination Matrix</CardTitle>
+                <div className="flex gap-2">
+                  <Input placeholder="Search records..." className="h-9 w-[200px] rounded-full bg-white border-none shadow-sm" />
                 </div>
               </div>
             </CardHeader>
@@ -169,21 +213,21 @@ export default function AcademicsPage() {
 
         <TabsContent value="entry" className="space-y-6">
            <Card className="border-none shadow-sm">
-             <CardHeader>
-               <div className="flex items-center justify-between">
+             <CardHeader className="pb-4">
+               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                  <div>
                    <CardTitle className="text-lg">Rapid Grade Entry</CardTitle>
-                   <CardDescription>Direct subject assessment for teachers.</CardDescription>
+                   <CardDescription>Direct subject assessment for {activeSubject || 'Teachers'}.</CardDescription>
                  </div>
-                 <div className="flex gap-2">
-                   <Button variant="ghost" size="sm" className="text-xs font-bold text-primary">Download Template</Button>
-                 </div>
+                 <Badge variant="outline" className="font-bold bg-accent/5 text-accent border-accent/20">
+                   {activeSubject || "All Subjects"} Active
+                 </Badge>
                </div>
              </CardHeader>
              <CardContent>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {results.slice(0, 3).map((student) => (
-                    <div key={student.id} className="p-5 rounded-[2rem] border-2 border-dashed border-muted flex flex-col gap-4 hover:border-primary/20 transition-colors">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {results.map((student) => (
+                    <div key={student.id} className="p-5 rounded-[2rem] border-2 border-dashed border-muted flex flex-col gap-4 hover:border-primary/20 transition-all bg-card shadow-sm">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-primary/5 flex items-center justify-center text-primary font-bold">{student.name.charAt(0)}</div>
                         <div className="flex flex-col">
@@ -193,23 +237,19 @@ export default function AcademicsPage() {
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Physics</label>
-                          <Input type="number" defaultValue={student.phy} className="h-10 rounded-xl" />
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">{activeSubject || "Subject A"}</label>
+                          <Input type="number" defaultValue={75} className="h-10 rounded-xl bg-muted/20 border-none shadow-inner" />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Chemistry</label>
-                          <Input type="number" defaultValue={student.chem} className="h-10 rounded-xl" />
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Assessment</label>
+                          <Input type="number" defaultValue={24} className="h-10 rounded-xl bg-muted/20 border-none shadow-inner" />
                         </div>
                       </div>
                       <Button size="sm" variant="secondary" className="rounded-full text-xs font-bold h-9">
-                        Save Changes
+                        Save Entry
                       </Button>
                     </div>
                   ))}
-                </div>
-                <div className="mt-8 p-6 rounded-3xl bg-primary/5 border border-dashed border-primary/20 text-center">
-                  <p className="text-sm font-medium text-primary mb-4">Showing first 3 students. Use "Load More" or Excel Import for the full class list.</p>
-                  <Button className="rounded-full font-bold px-8">Load More Students</Button>
                 </div>
              </CardContent>
            </Card>
@@ -222,14 +262,14 @@ export default function AcademicsPage() {
                 <CardTitle className="text-lg flex items-center gap-2">
                   <LineChart className="h-5 w-5 text-primary" /> Subject Averages
                 </CardTitle>
-                <CardDescription>Performance distribution across key learning areas</CardDescription>
+                <CardDescription>Performance distribution across learning areas</CardDescription>
               </CardHeader>
-              <CardContent className="h-[320px]">
+              <CardContent className="h-[280px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={subjectPerformanceData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="subject" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11}} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11}} />
+                    <XAxis dataKey="subject" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} />
                     <RechartsTooltip cursor={{fill: 'rgba(31, 91, 166, 0.05)'}} contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }} />
                     <Bar dataKey="avg" fill="#1F5BA6" radius={[6, 6, 0, 0]} barSize={24} />
                   </BarChart>
@@ -237,28 +277,23 @@ export default function AcademicsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-none shadow-sm flex flex-col items-center justify-center p-10 bg-primary/5 text-center relative overflow-hidden group">
-               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-125 transition-transform">
+            <Card className="border-none shadow-sm flex flex-col items-center justify-center p-8 bg-primary/5 text-center relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-8 opacity-5">
                  <GraduationCap className="h-32 w-32" />
                </div>
                <div className="h-16 w-16 rounded-3xl bg-white shadow-xl flex items-center justify-center mb-6">
                  <TrendingUp className="h-8 w-8 text-primary" />
                </div>
                <h3 className="text-4xl font-black text-primary tracking-tighter">84.2% Passed</h3>
-               <p className="text-muted-foreground font-medium mt-3 max-w-xs">Overall class passing rate (Division I-III) improved by 6.2% vs last term.</p>
-               <div className="flex gap-3 mt-8">
-                 <Button className="rounded-full px-6 font-bold h-11" variant="outline">
-                   Subject Details
-                 </Button>
-                 <Button className="rounded-full px-6 font-bold h-11 colorful-gradient">
-                   Generate CSV
-                 </Button>
-               </div>
+               <p className="text-muted-foreground font-medium mt-3 max-w-xs text-sm">Overall class passing rate (Division I-III) improved vs last term.</p>
+               <Button className="rounded-full px-6 font-bold h-11 mt-6 colorful-gradient">
+                 AI Analysis Report
+               </Button>
             </Card>
           </div>
         </TabsContent>
 
-        <TabsContent value="grading">
+        <TabsContent value="criteria" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
             <Card className="border-none shadow-sm">
               <CardHeader className="pb-4">
@@ -266,7 +301,6 @@ export default function AcademicsPage() {
                   <Calculator className="h-5 w-5 text-primary" />
                   O-Level NECTA (CSEE) Matrix
                 </CardTitle>
-                <CardDescription>Aggregation based on Best 7 Subjects</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {[
@@ -276,11 +310,11 @@ export default function AcademicsPage() {
                   { grade: "D", range: "30 - 44", pts: "4" },
                   { grade: "F", range: "0 - 29", pts: "5" },
                 ].map((row) => (
-                  <div key={row.grade} className="flex justify-between items-center p-4 rounded-2xl bg-muted/20 hover:bg-muted/40 transition-colors border border-transparent hover:border-primary/10">
+                  <div key={row.grade} className="flex justify-between items-center p-3 rounded-2xl bg-muted/20 border border-transparent hover:border-primary/10">
                     <span className="font-black text-primary text-lg">{row.grade}</span>
                     <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{row.range}%</span>
                     <Badge variant="secondary" className="font-bold text-[10px] bg-white shadow-sm border-none px-3">
-                      {row.pts} POINT{row.pts !== "1" && "S"}
+                      {row.pts} POINT
                     </Badge>
                   </div>
                 ))}
@@ -290,7 +324,6 @@ export default function AcademicsPage() {
             <Card className="border-none shadow-sm bg-accent/5 border border-accent/10">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg">Division Classification</CardTitle>
-                <CardDescription>Official NECTA Aggregate Thresholds</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                  {[
@@ -300,7 +333,7 @@ export default function AcademicsPage() {
                    { div: "Division IV", range: "26 - 33 Points" },
                    { div: "Division 0", range: "34+ Points" },
                  ].map((row, i) => (
-                   <div key={i} className="p-4 bg-white rounded-2xl shadow-sm border border-accent/5 flex justify-between items-center hover:translate-x-1 transition-transform cursor-default">
+                   <div key={i} className="p-4 bg-white rounded-2xl shadow-sm border border-accent/5 flex justify-between items-center transition-transform cursor-default">
                      <span className="font-extrabold text-sm">{row.div}</span>
                      <span className="text-accent font-mono text-xs font-black">{row.range}</span>
                    </div>
