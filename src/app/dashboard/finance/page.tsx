@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -16,7 +15,8 @@ import {
   Plus,
   ArrowRight,
   ShieldCheck,
-  SmartphoneNfc
+  SmartphoneNfc,
+  CheckCircle
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -42,11 +42,14 @@ const transactions = [
 
 export default function FinancePage() {
   const { toast } = useToast()
+  const [controlNo, setControlNo] = React.useState<string | null>(null)
   
   const handleGenerateControlNumber = () => {
+    const newNo = "99" + Math.floor(100000000 + Math.random() * 900000000).toString()
+    setControlNo(newNo)
     toast({
       title: "Control Number Generated",
-      description: "Namba ya malipo imetumwa kwa mzazi kupitia SMS (Beem Africa Gateway).",
+      description: `Namba ya malipo ${newNo} imetumwa kwa mzazi kupitia SMS (Beem Africa).`,
     })
   }
 
@@ -54,7 +57,7 @@ export default function FinancePage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-headline font-bold">Financial Operations (Ada)</h1>
+          <h1 className="text-3xl font-headline font-bold text-primary">Ada na Fedha (Finance)</h1>
           <p className="text-muted-foreground">Manage fees, ClickPesa reconciliation, and control numbers.</p>
         </div>
         <div className="flex gap-2">
@@ -87,6 +90,15 @@ export default function FinancePage() {
                   <Label>Amount (TZS)</Label>
                   <Input type="number" defaultValue="650000" />
                 </div>
+                {controlNo && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-center">
+                    <p className="text-[10px] text-green-700 font-bold uppercase tracking-widest mb-1">Generated Control No</p>
+                    <p className="text-2xl font-mono font-bold text-green-900 tracking-tighter">{controlNo}</p>
+                    <p className="text-[10px] text-green-600 mt-2 flex items-center justify-center gap-1">
+                      <CheckCircle className="h-3 w-3" /> Synced with ClickPesa Gateway
+                    </p>
+                  </div>
+                )}
               </div>
               <DialogFooter>
                 <Button onClick={handleGenerateControlNumber} className="w-full">

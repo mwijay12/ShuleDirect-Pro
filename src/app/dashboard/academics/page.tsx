@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -14,7 +13,9 @@ import {
   Search, 
   GraduationCap,
   Calculator,
-  FileText
+  FileText,
+  TrendingUp,
+  Settings2
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 
@@ -31,8 +32,8 @@ export default function AcademicsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-headline font-bold">Academic Management</h1>
-          <p className="text-muted-foreground">Manage NECTA-compliant grading, subjects, and results.</p>
+          <h1 className="text-3xl font-headline font-bold text-primary">Taaluma (Academics)</h1>
+          <p className="text-muted-foreground">Manage NECTA-compliant grading, subjects, and results matrix.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
@@ -49,7 +50,7 @@ export default function AcademicsPage() {
           <TabsTrigger value="results">Exam Results</TabsTrigger>
           <TabsTrigger value="grading">Grading Systems</TabsTrigger>
           <TabsTrigger value="curriculum">Subjects & Topics</TabsTrigger>
-          <TabsTrigger value="attendance">Attendance Logs</TabsTrigger>
+          <TabsTrigger value="analytics">Performance Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="results" className="space-y-4">
@@ -62,10 +63,10 @@ export default function AcademicsPage() {
                 </div>
                 <div className="flex gap-2 items-center">
                   <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search students..." className="pl-8 h-9 w-[200px]" />
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Search students..." className="pl-9 h-10 w-[200px]" />
                   </div>
-                  <Button variant="outline" size="icon" className="h-9 w-9">
+                  <Button variant="outline" size="icon" className="h-10 w-10">
                     <Filter className="h-4 w-4" />
                   </Button>
                 </div>
@@ -120,7 +121,7 @@ export default function AcademicsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calculator className="h-5 w-5 text-primary" />
-                  O-Level NECTA Matrix
+                  O-Level NECTA Matrix (CSEE)
                 </CardTitle>
                 <CardDescription>Rules for Division Classification (7 Best Subjects)</CardDescription>
               </CardHeader>
@@ -156,7 +157,7 @@ export default function AcademicsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-accent" />
-                  A-Level NECTA Matrix
+                  A-Level NECTA Matrix (ACSEE)
                 </CardTitle>
                 <CardDescription>Higher Secondary Grading Standards</CardDescription>
               </CardHeader>
@@ -180,6 +181,24 @@ export default function AcademicsPage() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+        
+        <TabsContent value="analytics">
+          <Card className="border-none shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Performance Trends
+              </CardTitle>
+              <CardDescription>Comparative analysis across terms and years.</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-xl">
+              <div className="text-center space-y-2">
+                <Settings2 className="h-8 w-8 mx-auto text-muted-foreground animate-pulse" />
+                <p className="text-sm text-muted-foreground">Aggregating historical NECTA data for trend analysis...</p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

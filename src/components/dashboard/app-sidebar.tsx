@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -15,7 +14,7 @@ import {
   FileSpreadsheet,
   Bus,
   Bed,
-  MessageSquare
+  ClipboardCheck
 } from "lucide-react"
 
 import {
@@ -40,6 +39,11 @@ const navItems = [
     icon: Users,
   },
   {
+    title: "Attendance (Mahudhurio)",
+    url: "/dashboard/attendance",
+    icon: ClipboardCheck,
+  },
+  {
     title: "Academics (Taaluma)",
     url: "/dashboard/academics",
     icon: GraduationCap,
@@ -60,7 +64,7 @@ const navItems = [
     icon: Bed,
   },
   {
-    title: "AI Hub",
+    title: "AI Hub (Gemini)",
     url: "/dashboard/ai-tools",
     icon: Sparkles,
   },
@@ -70,7 +74,7 @@ const navItems = [
     icon: FileSpreadsheet,
   },
   {
-    title: "Settings",
+    title: "Settings (Mipangilio)",
     url: "/dashboard/settings",
     icon: Settings,
   },
