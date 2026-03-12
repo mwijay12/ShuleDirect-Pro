@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    --background: 216 33% 97%; /* #ECF0F6 */
+    --background: 210 40% 98%; /* Softer, light blue-grey background */
     --foreground: 215 25% 10%;
     --card: 0 0% 100%;
     --card-foreground: 215 25% 10%;
@@ -15,7 +15,7 @@
     --primary-foreground: 0 0% 100%;
     --secondary: 210 40% 96%;
     --secondary-foreground: 214 69% 39%;
-    --muted: 210 40% 96%;
+    --muted: 210 40% 94%;
     --muted-foreground: 215 16% 47%;
     --accent: 264 74% 63%; /* #945CE6 */
     --accent-foreground: 0 0% 100%;
@@ -24,7 +24,7 @@
     --border: 214 32% 91%;
     --input: 214 32% 91%;
     --ring: 214 69% 39%;
-    --radius: 0.75rem;
+    --radius: 1rem; /* More playful, rounded corners */
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 215 25% 10%;
@@ -42,6 +42,29 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body;
   }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline font-bold tracking-tight;
+  }
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.colorful-gradient {
+  background: linear-gradient(135deg, #1F5BA6 0%, #945CE6 100%);
 }

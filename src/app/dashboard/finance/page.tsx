@@ -1,6 +1,8 @@
+
 "use client"
 
 import * as React from "react"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { 
@@ -16,7 +18,10 @@ import {
   ArrowRight,
   ShieldCheck,
   SmartphoneNfc,
-  CheckCircle
+  CheckCircle,
+  TrendingDown,
+  ShoppingCart,
+  Shirt
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -32,76 +37,76 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const transactions = [
   { id: "TX-9021", student: "Amani Mwamba", type: "Tuition", amount: "550,000", method: "M-Pesa", date: "2024-05-12", status: "Success", controlNo: "99102345678" },
-  { id: "TX-9022", student: "Careen Mushi", type: "Transport", amount: "120,000", method: "Tigo Pesa", date: "2024-05-12", status: "Success", controlNo: "99102345679" },
-  { id: "TX-9023", student: "Baraka Juma", type: "Tuition", amount: "300,000", method: "Bank Transfer", date: "2024-05-11", status: "Pending", controlNo: "99102345680" },
-  { id: "TX-9024", student: "Emanuel Lema", type: "Tuition", amount: "450,000", method: "M-Pesa", date: "2024-05-11", status: "Success", controlNo: "99102345681" },
+  { id: "TX-9022", student: "Careen Mushi", type: "Uniform", amount: "120,000", method: "Tigo Pesa", date: "2024-05-12", status: "Success", controlNo: "99102345679" },
+  { id: "TX-9023", student: "Baraka Juma", type: "Stationery", amount: "45,000", method: "Cash", date: "2024-05-11", status: "Success", controlNo: "N/A" },
 ]
 
 export default function FinancePage() {
   const { toast } = useToast()
-  const [controlNo, setControlNo] = React.useState<string | null>(null)
+  const [controlNo, setControlNo] = useState<string | null>(null)
   
   const handleGenerateControlNumber = () => {
     const newNo = "99" + Math.floor(100000000 + Math.random() * 900000000).toString()
     setControlNo(newNo)
     toast({
       title: "Control Number Generated",
-      description: `Namba ya malipo ${newNo} imetumwa kwa mzazi kupitia SMS (Beem Africa).`,
+      description: `Payment ID ${newNo} sent to parent via SMS.`,
     })
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-headline font-bold text-primary">Ada na Fedha (Finance)</h1>
-          <p className="text-muted-foreground">Manage fees, ClickPesa reconciliation, and control numbers.</p>
+          <h1 className="text-3xl font-headline font-extrabold text-primary">Ada na Fedha</h1>
+          <p className="text-muted-foreground">Comprehensive revenue and expense management hub.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
-            <Wallet className="mr-2 h-4 w-4" /> Reconciliation
+          <Button variant="outline" className="rounded-full">
+            <Receipt className="mr-2 h-4 w-4" /> Reports
           </Button>
           <Dialog>
             <DialogTrigger asChild>
-              <Button>
-                <Smartphone className="mr-2 h-4 w-4" /> Create Bill (Control No)
+              <Button className="rounded-full colorful-gradient">
+                <Plus className="mr-2 h-4 w-4" /> Create Invoice
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="rounded-2xl">
               <DialogHeader>
                 <DialogTitle>Generate Control Number</DialogTitle>
-                <DialogDescription>
-                  Create a unique payment ID for ClickPesa / Mobile Money collection.
-                </DialogDescription>
+                <DialogDescription>Create unique payment IDs for ClickPesa / Mobile Money.</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label>Student Name / ID</Label>
-                  <Input placeholder="e.g. Amani Mwamba (2024-001)" />
+                  <Label>Student / Customer</Label>
+                  <Input placeholder="e.g. Amani Mwamba" className="rounded-lg" />
                 </div>
-                <div className="space-y-2">
-                  <Label>Fee Category</Label>
-                  <Input defaultValue="Tuition Fee - Term 2" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Amount (TZS)</Label>
-                  <Input type="number" defaultValue="650000" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Category</Label>
+                    <Input defaultValue="Tuition Fee" className="rounded-lg" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Amount (TZS)</Label>
+                    <Input type="number" defaultValue="650000" className="rounded-lg" />
+                  </div>
                 </div>
                 {controlNo && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-center">
-                    <p className="text-[10px] text-green-700 font-bold uppercase tracking-widest mb-1">Generated Control No</p>
-                    <p className="text-2xl font-mono font-bold text-green-900 tracking-tighter">{controlNo}</p>
-                    <p className="text-[10px] text-green-600 mt-2 flex items-center justify-center gap-1">
-                      <CheckCircle className="h-3 w-3" /> Synced with ClickPesa Gateway
+                  <div className="p-6 bg-green-50/80 border border-green-100 rounded-2xl text-center">
+                    <p className="text-[10px] text-green-700 font-bold uppercase tracking-widest mb-2">Active Control No</p>
+                    <p className="text-3xl font-mono font-extrabold text-green-900 tracking-tight">{controlNo}</p>
+                    <p className="text-[10px] text-green-600 mt-2 flex items-center justify-center gap-1 font-bold">
+                      <CheckCircle className="h-3 w-3" /> CLICKPESA SYNCED
                     </p>
                   </div>
                 )}
               </div>
               <DialogFooter>
-                <Button onClick={handleGenerateControlNumber} className="w-full">
+                <Button onClick={handleGenerateControlNumber} className="w-full rounded-full colorful-gradient">
                   <SmartphoneNfc className="mr-2 h-4 w-4" /> Generate & SMS Parent
                 </Button>
               </DialogFooter>
@@ -110,127 +115,167 @@ export default function FinancePage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-none shadow-sm bg-primary text-primary-foreground">
+      <div className="grid gap-6 md:grid-cols-4">
+        <Card className="border-none shadow-sm bg-primary text-primary-foreground overflow-hidden relative">
+          <div className="absolute -right-4 -bottom-4 opacity-10">
+            <Wallet className="h-24 w-24" />
+          </div>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium opacity-80 uppercase tracking-wider">Total Revenue (Term 1)</CardTitle>
+            <CardTitle className="text-xs font-bold opacity-80 uppercase tracking-widest">Total Revenue (Term 1)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">TZS 124,500,000</div>
-            <p className="text-xs mt-1 flex items-center gap-1 opacity-80">
-              <ArrowUpRight className="h-3 w-3" /> 14% increase from Term 3, 2023
+            <div className="text-2xl font-extrabold">TZS 124.5M</div>
+            <p className="text-[10px] mt-2 flex items-center gap-1 opacity-80 font-bold">
+              <ArrowUpRight className="h-3 w-3" /> 14% growth vs T3
             </p>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-sm">
+        
+        <Card className="border-none shadow-sm bg-accent text-accent-foreground overflow-hidden relative">
+          <div className="absolute -right-4 -bottom-4 opacity-10">
+            <ShoppingCart className="h-24 w-24" />
+          </div>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium uppercase tracking-wider">Outstanding Fees</CardTitle>
+            <CardTitle className="text-xs font-bold opacity-80 uppercase tracking-widest">Canteen & Uniforms</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">TZS 18,240,000</div>
-            <p className="text-xs mt-1 text-muted-foreground flex items-center gap-1">
-              42 students with pending balances
+            <div className="text-2xl font-extrabold">TZS 12.8M</div>
+            <p className="text-[10px] mt-2 flex items-center gap-1 opacity-80 font-bold">
+              Stationery included
             </p>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-sm">
+
+        <Card className="border-none shadow-sm bg-white/60 backdrop-blur-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium uppercase tracking-wider">M-Pesa / Tigo Collections</CardTitle>
+            <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Outstanding</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-accent">82%</div>
-            <p className="text-xs mt-1 text-muted-foreground flex items-center gap-1">
-              Payments via ClickPesa gateway
+            <div className="text-2xl font-extrabold text-destructive">TZS 18.2M</div>
+            <p className="text-[10px] mt-2 text-muted-foreground font-bold">
+              42 Pending Invoices
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-sm bg-white/60 backdrop-blur-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Expenditure</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-extrabold text-orange-600">TZS 45.1M</div>
+            <p className="text-[10px] mt-2 flex items-center gap-1 text-muted-foreground font-bold">
+              <TrendingDown className="h-3 w-3" /> Within budget
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-2 border-none shadow-sm">
-          <CardHeader>
-            <div className="flex justify-between items-center">
+      <Tabs defaultValue="transactions" className="space-y-6">
+        <TabsList className="bg-muted/50 p-1 rounded-xl">
+          <TabsTrigger value="transactions" className="rounded-lg">Recent Collections</TabsTrigger>
+          <TabsTrigger value="inventory" className="rounded-lg">Ancillary Revenue</TabsTrigger>
+          <TabsTrigger value="expenses" className="rounded-lg">Operational Expenses</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="transactions">
+          <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
+            <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Recent Transactions</CardTitle>
-                <CardDescription>Real-time reconciliation via ClickPesa Webhooks</CardDescription>
+                <CardTitle className="text-lg">Fee Reconciliation</CardTitle>
+                <CardDescription>Verified via ClickPesa webhooks</CardDescription>
               </div>
               <div className="flex gap-2">
-                <Input placeholder="Invoice #" className="h-9 w-[150px]" />
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4" />
-                </Button>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Search logs..." className="pl-9 h-9 w-[200px] border-none bg-muted/50 rounded-full" />
+                </div>
+                <Button variant="outline" size="sm" className="rounded-full"><Download className="h-4 w-4" /></Button>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Control No</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Method</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transactions.map((tx) => (
-                  <TableRow key={tx.id}>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-semibold">{tx.student}</span>
-                        <span className="text-[10px] text-muted-foreground">{tx.id}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">{tx.controlNo}</TableCell>
-                    <TableCell className="font-mono">{tx.amount}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-[10px]">{tx.method}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        className={tx.status === "Success" ? "bg-green-100 text-green-700 hover:bg-green-100" : "bg-yellow-100 text-yellow-700 hover:bg-yellow-100"}
-                        variant="secondary"
-                      >
-                        {tx.status}
-                      </Badge>
-                    </TableCell>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Control No</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                </TableHeader>
+                <TableBody>
+                  {transactions.map((tx) => (
+                    <TableRow key={tx.id} className="group cursor-pointer">
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-sm">{tx.student}</span>
+                          <span className="text-[10px] text-muted-foreground font-mono">{tx.id}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono text-[10px] font-bold text-primary">{tx.controlNo}</TableCell>
+                      <TableCell className="font-bold">TZS {tx.amount}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="text-[9px] font-extrabold uppercase bg-muted/80">{tx.type}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none rounded-full px-3 py-0 h-5 text-[10px] font-bold">
+                          {tx.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-        <Card className="border-none shadow-sm">
-          <CardHeader>
-            <CardTitle>Fee Structures (Ada)</CardTitle>
-            <CardDescription>Multi-tiered billing configuration</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {[
-              { label: "Nursery / Primary", amount: "450,000", period: "Termly" },
-              { label: "Secondary O-Level", amount: "650,000", period: "Termly" },
-              { label: "Secondary A-Level", amount: "850,000", period: "Termly" },
-              { label: "Transport (Route A)", amount: "120,000", period: "Monthly" },
-            ].map((fee) => (
-              <div key={fee.label} className="flex justify-between items-center p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
-                <div>
-                  <p className="text-sm font-semibold">{fee.label}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase">{fee.period}</p>
+        <TabsContent value="inventory" className="grid gap-6 md:grid-cols-2">
+          <Card className="border-none shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Shirt className="h-5 w-5 text-primary" /> Uniform & Stationery Shop
+              </CardTitle>
+              <CardDescription>Daily sales from the school store.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[
+                { item: "School Blazer (Form 1)", stock: 45, sales: "1.2M", trend: "+5%" },
+                { item: "Exercise Books (Set of 10)", stock: 890, sales: "0.8M", trend: "+12%" },
+                { item: "School Tracksuit", stock: 12, sales: "2.1M", trend: "+2%" },
+              ].map((row, i) => (
+                <div key={i} className="flex justify-between items-center p-3 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                  <div>
+                    <p className="text-sm font-bold">{row.item}</p>
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">In Stock: {row.stock}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-extrabold text-primary">TZS {row.sales}</p>
+                    <p className="text-[10px] text-green-600 font-bold">{row.trend} This Week</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-primary">{fee.amount}</p>
-                  <p className="text-[10px] text-muted-foreground">TZS</p>
-                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5 text-accent" /> Canteen & Meals
+              </CardTitle>
+              <CardDescription>Weekly food program revenue.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 text-center py-8">
+              <div className="p-6 rounded-2xl bg-accent/5 border border-accent/10">
+                <p className="text-4xl font-extrabold text-accent">TZS 8.4M</p>
+                <p className="text-xs text-muted-foreground font-bold mt-2 uppercase tracking-widest">Total Weekly Meal Sales</p>
               </div>
-            ))}
-            <Button className="w-full mt-4" variant="outline">
-              <Plus className="mr-2 h-4 w-4" /> Define New Fee
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+              <Button variant="outline" className="w-full rounded-full border-accent/20 text-accent">Manage Meal Plans</Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

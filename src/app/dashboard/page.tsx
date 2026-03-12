@@ -2,6 +2,7 @@
 "use client"
 
 import * as React from "react"
+import { useState, useEffect } from "react"
 import { 
   Users, 
   GraduationCap, 
@@ -9,22 +10,27 @@ import {
   TrendingUp, 
   Calendar,
   ArrowUpRight,
-  ArrowDownRight
+  Sparkles,
+  StickyNote,
+  Send,
+  CheckCircle2,
+  Clock,
+  ArrowRight
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip as RechartsTooltip, 
   ResponsiveContainer,
   AreaChart,
-  Area
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip
 } from "recharts"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 
 const data = [
   { name: "Jan", attendance: 92, fees: 4500 },
@@ -37,63 +43,82 @@ const data = [
 
 const stats = [
   {
-    title: "Total Students",
+    title: "Students",
     value: "1,284",
-    description: "+12% from last term",
+    description: "+12% this term",
     icon: Users,
     color: "text-blue-600",
-    bg: "bg-blue-100",
+    bg: "bg-blue-100/50",
   },
   {
     title: "Exam Completion",
     value: "84%",
-    description: "Form 4 NECTA Prep",
+    description: "NECTA Prep Active",
     icon: GraduationCap,
     color: "text-purple-600",
-    bg: "bg-purple-100",
+    bg: "bg-purple-100/50",
   },
   {
-    title: "Fee Collection",
+    title: "Revenue",
     value: "TZS 42.5M",
-    description: "78% of total revenue",
+    description: "Fees & Extras",
     icon: Banknote,
     color: "text-green-600",
-    bg: "bg-green-100",
+    bg: "bg-green-100/50",
   },
   {
     title: "Attendance",
     value: "96.2%",
-    description: "Historical average: 92%",
+    description: "Peak Performance",
     icon: TrendingUp,
     color: "text-orange-600",
-    bg: "bg-orange-100",
+    bg: "bg-orange-100/50",
   },
 ]
 
 export default function DashboardPage() {
+  const [note, setNote] = useState("")
+  const [isLoaded, setIsLoaded] = useState(false)
+
+  useEffect(() => {
+    setIsLoaded(true)
+  }, [])
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-headline font-bold tracking-tight">Academic Overview</h1>
-        <p className="text-muted-foreground">Welcome back, Administrator. Here's what's happening today at Mlimani Academy.</p>
+    <div className={cn("space-y-8 transition-all duration-700", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-headline font-extrabold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Academic Overview
+          </h1>
+          <p className="text-muted-foreground font-medium">Insights and actions for Mlimani Academy today.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" className="rounded-full shadow-sm">
+            <Calendar className="mr-2 h-4 w-4" /> Weekly Schedule
+          </Button>
+          <Button size="sm" className="rounded-full shadow-md colorful-gradient">
+            <Sparkles className="mr-2 h-4 w-4" /> AI Insights
+          </Button>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title} className="overflow-hidden border-none shadow-sm bg-white">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat, i) => (
+          <Card key={stat.title} className="group border-none shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden bg-card/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <div className={`${stat.bg} p-2 rounded-lg`}>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{stat.title}</CardTitle>
+              <div className={cn(stat.bg, "p-2.5 rounded-2xl group-hover:scale-110 transition-transform")}>
+                <stat.icon className={cn("h-5 w-5", stat.color)} />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <div className="text-3xl font-extrabold">{stat.value}</div>
+              <p className="text-[10px] font-bold text-muted-foreground mt-2 flex items-center gap-1">
                 {stat.description.includes('+') ? (
-                  <ArrowUpRight className="h-3 w-3 text-green-500" />
+                  <ArrowUpRight className="h-3.5 w-3.5 text-green-500" />
                 ) : (
-                  <Calendar className="h-3 w-3" />
+                  <Clock className="h-3.5 w-3.5 text-primary" />
                 )}
                 {stat.description}
               </p>
@@ -102,63 +127,90 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="lg:col-span-4 border-none shadow-sm">
-          <CardHeader>
-            <CardTitle className="font-headline">Fee Collection Trends</CardTitle>
-            <CardDescription>Monthly revenue tracking via ClickPesa Gateway</CardDescription>
+      <div className="grid gap-8 lg:grid-cols-12">
+        <Card className="lg:col-span-8 border-none shadow-sm bg-card/60 backdrop-blur-sm">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-xl">Revenue Trends</CardTitle>
+              <CardDescription>Fee collection & Stationery sales via ClickPesa</CardDescription>
+            </div>
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-none">
+              TZS millions
+            </Badge>
           </CardHeader>
-          <CardContent className="h-[300px] mt-4">
+          <CardContent className="h-[350px] pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data}>
                 <defs>
                   <linearGradient id="colorFees" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#1F5BA6" stopOpacity={0.1}/>
+                    <stop offset="5%" stopColor="#1F5BA6" stopOpacity={0.2}/>
                     <stop offset="95%" stopColor="#1F5BA6" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                <RechartsTooltip />
-                <Area type="monotone" dataKey="fees" stroke="#1F5BA6" strokeWidth={3} fillOpacity={1} fill="url(#colorFees)" />
+                <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
+                <Area type="monotone" dataKey="fees" stroke="#1F5BA6" strokeWidth={4} fillOpacity={1} fill="url(#colorFees)" />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-3 border-none shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="font-headline">Recent Alerts</CardTitle>
-              <CardDescription>Urgent notifications for staff</CardDescription>
+        <div className="lg:col-span-4 space-y-6">
+          <Card className="border-none shadow-sm bg-yellow-50/50 border-yellow-100 relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 opacity-5 group-hover:rotate-12 transition-transform">
+              <StickyNote className="h-24 w-24" />
             </div>
-            <Button variant="ghost" size="sm" className="text-primary font-bold">View All</Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[
-                { title: "NECTA Registration Deadline", tag: "Exam", time: "2h ago", color: "destructive" },
-                { title: "M-Pesa Reconciliation Error", tag: "Finance", time: "4h ago", color: "secondary" },
-                { title: "New Resource Generated", tag: "AI", time: "5h ago", color: "outline" },
-                { title: "Bus Route #4 Delay", tag: "Transport", time: "6h ago", color: "secondary" },
-              ].map((alert, i) => (
-                <div key={i} className="flex items-start gap-4 p-3 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer group">
-                  <div className="h-2 w-2 rounded-full bg-primary mt-1.5" />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-semibold group-hover:text-primary transition-colors">{alert.title}</p>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={alert.color as any} className="text-[10px] px-1.5 py-0">
-                        {alert.tag}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">{alert.time}</span>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2 text-yellow-800">
+                <StickyNote className="h-5 w-5" /> Later Entry
+              </CardTitle>
+              <CardDescription className="text-yellow-700/60">Quick notes for later today</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Textarea 
+                placeholder="Buy lab reagents, call parent of S002..." 
+                className="bg-white/50 border-yellow-200 focus-visible:ring-yellow-400 min-h-[100px] resize-none text-sm placeholder:text-yellow-900/30"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+              <Button size="sm" className="w-full bg-yellow-600 hover:bg-yellow-700 text-white rounded-full">
+                <Send className="mr-2 h-4 w-4" /> Save Quick Note
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Staff Pulse</CardTitle>
+              <CardDescription>Recent academic actions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-5">
+                {[
+                  { user: "Mwl. Juma", action: "Uploaded Results", time: "12m ago", icon: CheckCircle2, color: "text-green-500" },
+                  { user: "Bursar", action: "Verified Batch #09", time: "45m ago", icon: Clock, color: "text-primary" },
+                  { user: "System", action: "Sync Completed", time: "1h ago", icon: CheckCircle2, color: "text-accent" },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-4 group cursor-pointer">
+                    <div className={cn("p-2 rounded-xl bg-muted/50 group-hover:bg-muted transition-colors", item.color)}>
+                      <item.icon className="h-4 w-4" />
                     </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold">{item.user}</p>
+                      <p className="text-[10px] text-muted-foreground font-medium">{item.action}</p>
+                    </div>
+                    <span className="text-[10px] font-mono text-muted-foreground">{item.time}</span>
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+                <Button variant="ghost" size="sm" className="w-full text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 rounded-full">
+                  View Full Audit Log <ArrowRight className="ml-2 h-3 w-3" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
