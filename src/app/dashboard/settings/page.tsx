@@ -45,10 +45,10 @@ import { useToast } from "@/hooks/use-toast"
 import { Separator } from "@/components/ui/separator"
 
 const staffKeys = [
-  { name: "Mwl. Juma", role: "Math Teacher", key: "MATH101", status: "Active" },
-  { name: "Mwl. Neema", role: "English Teacher", key: "ENG202", status: "Active" },
-  { name: "Bursar Keshia", role: "Bursar", key: "BURSAR789", status: "Active" },
-  { name: "Mwl. Peter", role: "Physics Teacher", key: "PHY404", status: "Active" },
+  { name: "Admin Lead", role: "Administrator", key: "ADM-990", status: "Active", email: "admin@shule.pro" },
+  { name: "Mwl. Juma", role: "Math Teacher", key: "MATH101", status: "Active", email: "teacher.juma@shule.pro" },
+  { name: "Mwl. Neema", role: "English Teacher", key: "ENG202", status: "Active", email: "teacher.neema@shule.pro" },
+  { name: "Bursar Keshia", role: "Bursar", key: "BURSAR789", status: "Active", email: "bursar@shule.pro" },
 ]
 
 export default function SettingsPage() {
@@ -135,7 +135,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Maker Credits - Side by Side layout */}
+          {/* Maker Credits */}
           <div className="grid md:grid-cols-2 gap-8 pt-4">
             <Card className="p-8 rounded-[2.5rem] bg-muted/30 border-2 border-dashed border-primary/20 space-y-6 shadow-inner hover:border-primary/30 transition-all group">
               <div className="flex items-center gap-3 text-primary font-black text-xs uppercase tracking-widest">
@@ -160,7 +160,7 @@ export default function SettingsPage() {
             <Card className="p-8 rounded-[2.5rem] bg-accent/5 border-2 border-dashed border-accent/20 flex flex-col justify-center items-center text-center space-y-4">
                <Shield className="h-12 w-12 text-accent" />
                <div className="space-y-1">
-                 <p className="text-sm font-black text-accent uppercase tracking-widest tracking-widest">Official v2.0.26</p>
+                 <p className="text-sm font-black text-accent uppercase tracking-widest">Official v2.0.26</p>
                  <p className="text-[10px] text-muted-foreground max-w-[200px] font-medium leading-relaxed">Engineered for pure performance and high-fidelity school management.</p>
                </div>
             </Card>
@@ -253,69 +253,6 @@ export default function SettingsPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="gateways" className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-           <div className="grid gap-8 md:grid-cols-2">
-              <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white/60 backdrop-blur-md border border-orange-100">
-                <CardHeader className="bg-orange-50 border-b border-orange-100 p-8">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-2xl bg-white shadow-lg flex items-center justify-center text-orange-600">
-                      <Smartphone className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg font-black">Beem Africa SMS</CardTitle>
-                      <CardDescription className="text-[10px] font-black uppercase text-orange-600/60">Primary Alert & Notification Engine</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-8 space-y-6">
-                   <div className="space-y-2">
-                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">API Key</Label>
-                     <Input type="password" placeholder="••••••••••••••••" className="rounded-xl h-12 bg-muted/20 border-none font-mono" />
-                   </div>
-                   <div className="space-y-2">
-                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Secret Key</Label>
-                     <Input type="password" placeholder="••••••••••••••••" className="rounded-xl h-12 bg-muted/20 border-none font-mono" />
-                   </div>
-                   <div className="flex items-center justify-between p-4 rounded-2xl bg-orange-100/30 border border-orange-100">
-                      <div className="space-y-0.5">
-                        <p className="text-xs font-black text-orange-700 uppercase">Auto-Recharge</p>
-                        <p className="text-[10px] text-orange-600 font-medium">Auto top-up via ClickPesa when below 100 units.</p>
-                      </div>
-                      <Switch defaultChecked />
-                   </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white/60 backdrop-blur-md border border-green-100">
-                <CardHeader className="bg-green-50 border-b border-green-100 p-8">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-2xl bg-white shadow-lg flex items-center justify-center text-green-600">
-                      <MessageCircle className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg font-black">WhatsApp Official API</CardTitle>
-                      <CardDescription className="text-[10px] font-black uppercase text-green-600/60">Interactive Results & Engagement Hub</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-8 space-y-6">
-                   <div className="space-y-2">
-                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Display Phone Number</Label>
-                     <Input defaultValue="+255 700 000 000" className="rounded-xl h-12 bg-muted/20 border-none font-black shadow-inner" />
-                   </div>
-                   <div className="p-5 rounded-[2rem] bg-primary/5 border border-dashed border-primary/20 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-primary fill-primary" />
-                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Automation Template</span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground leading-relaxed italic">"Habari {{parent_name}}, matokeo ya {{student_name}} kwa muhula huu yameshatoka..."</p>
-                      <Button variant="link" className="h-auto p-0 text-[10px] font-black uppercase text-primary underline">Edit Official Templates</Button>
-                   </div>
-                </CardContent>
-              </Card>
-           </div>
-        </TabsContent>
-
         <TabsContent value="staff" className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <Card className="border-none shadow-xl overflow-hidden rounded-[2.5rem] bg-white/60 backdrop-blur-md">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 bg-muted/20 border-b p-8">
@@ -358,7 +295,7 @@ export default function SettingsPage() {
                       </TableCell>
                       <TableCell className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{staff.role}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="font-mono text-[10px] font-bold text-muted-foreground lowercase">{staff.name.toLowerCase().replace('. ', '')}@shule.pro</Badge>
+                        <Badge variant="outline" className="font-mono text-[10px] font-bold text-muted-foreground lowercase">{staff.email}</Badge>
                       </TableCell>
                       <TableCell className="text-right pr-10">
                         <div className="flex justify-end gap-2">
