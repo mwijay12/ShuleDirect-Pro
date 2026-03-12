@@ -15,7 +15,9 @@ import {
   Send,
   CheckCircle2,
   Clock,
-  ArrowRight
+  ArrowRight,
+  Megaphone,
+  BellRing
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { 
@@ -76,6 +78,12 @@ const stats = [
   },
 ]
 
+const announcements = [
+  { id: 1, title: "Staff Meeting", body: "General staff meeting in the hall at 2:00 PM today.", priority: "High", time: "2h ago" },
+  { id: 2, title: "Mock Exams", body: "Form 4 Mock Exams start next Monday. Ensure all scripts are ready.", priority: "Medium", time: "5h ago" },
+  { id: 3, title: "System Update", body: "ClickPesa sync will be down for 10 mins at midnight.", priority: "Low", time: "Yesterday" },
+]
+
 export default function DashboardPage() {
   const [note, setNote] = useState("")
   const [isLoaded, setIsLoaded] = useState(false)
@@ -104,7 +112,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, i) => (
+        {stats.map((stat) => (
           <Card key={stat.title} className="group border-none shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden bg-card/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{stat.title}</CardTitle>
@@ -128,34 +136,75 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-12">
-        <Card className="lg:col-span-8 border-none shadow-sm bg-card/60 backdrop-blur-sm">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-xl">Revenue Trends</CardTitle>
-              <CardDescription>Fee collection & Stationery sales via ClickPesa</CardDescription>
-            </div>
-            <Badge variant="secondary" className="bg-primary/10 text-primary border-none">
-              TZS millions
-            </Badge>
-          </CardHeader>
-          <CardContent className="h-[350px] pt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data}>
-                <defs>
-                  <linearGradient id="colorFees" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#1F5BA6" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#1F5BA6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
-                <Area type="monotone" dataKey="fees" stroke="#1F5BA6" strokeWidth={4} fillOpacity={1} fill="url(#colorFees)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-8 space-y-8">
+          <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-xl">Revenue Trends</CardTitle>
+                <CardDescription>Fee collection & Stationery sales via ClickPesa</CardDescription>
+              </div>
+              <Badge variant="secondary" className="bg-primary/10 text-primary border-none">
+                TZS millions
+              </Badge>
+            </CardHeader>
+            <CardContent className="h-[350px] pt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data}>
+                  <defs>
+                    <linearGradient id="colorFees" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#1F5BA6" stopOpacity={0.2}/>
+                      <stop offset="95%" stopColor="#1F5BA6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
+                  <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
+                  <Area type="monotone" dataKey="fees" stroke="#1F5BA6" strokeWidth={4} fillOpacity={1} fill="url(#colorFees)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-sm overflow-hidden bg-card/60 backdrop-blur-sm">
+            <CardHeader className="bg-primary/5">
+              <div className="flex items-center gap-2">
+                <Megaphone className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg">Staff Notice Board</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-border/40">
+                {announcements.map((item) => (
+                  <div key={item.id} className="p-4 hover:bg-muted/30 transition-colors group cursor-pointer">
+                    <div className="flex justify-between items-start mb-1">
+                      <h4 className="font-bold text-sm group-hover:text-primary transition-colors">{item.title}</h4>
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "text-[9px] font-bold uppercase",
+                          item.priority === "High" ? "border-destructive text-destructive bg-destructive/5" :
+                          item.priority === "Medium" ? "border-orange-500 text-orange-600 bg-orange-50" : "border-muted-foreground/30 text-muted-foreground"
+                        )}
+                      >
+                        {item.priority}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{item.body}</p>
+                    <div className="flex items-center gap-1 mt-2 text-[9px] text-muted-foreground font-mono">
+                      <Clock className="h-3 w-3" /> {item.time}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="p-3 bg-muted/20 border-t">
+                <Button variant="ghost" size="sm" className="w-full text-[10px] font-bold uppercase tracking-widest text-primary">
+                  Post Announcement
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="lg:col-span-4 space-y-6">
           <Card className="border-none shadow-sm bg-yellow-50/50 border-yellow-100 relative overflow-hidden group">
@@ -175,18 +224,20 @@ export default function DashboardPage() {
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
               />
-              <Button size="sm" className="w-full bg-yellow-600 hover:bg-yellow-700 text-white rounded-full">
+              <Button size="sm" className="w-full bg-yellow-600 hover:bg-yellow-700 text-white rounded-full shadow-lg">
                 <Send className="mr-2 h-4 w-4" /> Save Quick Note
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Staff Pulse</CardTitle>
+          <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm overflow-hidden">
+            <CardHeader className="pb-2 bg-accent/5 border-b border-accent/10">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <BellRing className="h-4 w-4 text-accent" /> Staff Pulse
+              </CardTitle>
               <CardDescription>Recent academic actions</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               <div className="space-y-5">
                 {[
                   { user: "Mwl. Juma", action: "Uploaded Results", time: "12m ago", icon: CheckCircle2, color: "text-green-500" },

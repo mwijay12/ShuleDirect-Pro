@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -17,7 +18,13 @@ import {
   Phone,
   Clock,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Stethoscope,
+  ShieldAlert,
+  GraduationCap,
+  MessageSquare,
+  Sparkles,
+  Loader2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -42,6 +49,8 @@ import {
 } from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
+import { generateStudentProgressSummary } from "@/ai/flows/generate-student-progress-summary-flow"
 
 const students = [
   { id: "2024-001", name: "Amani Mwamba", class: "Form 4A", gender: "Male", status: "Active", parent: "Juma Mwamba", contact: "+255 712 000 001", attendance: "98%", balance: "TZS 120,000", email: "amani@example.com" },
@@ -52,7 +61,32 @@ const students = [
 ]
 
 export default function StudentsPage() {
+  const { toast } = useToast()
   const [selectedStudent, setSelectedStudent] = useState<typeof students[0] | null>(null)
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false)
+  const [aiSummary, setAiSummary] = useState("")
+
+  const handleGenerateAiSummary = async () => {
+    if (!selectedStudent) return
+    setIsGeneratingAi(true)
+    try {
+      const result = await generateStudentProgressSummary({
+        studentName: selectedStudent.name,
+        academicPerformance: [
+          { subject: "Mathematics", grade: "A", comment: "Excellent logic skills." },
+          { subject: "Physics", grade: "B", comment: "Improving in practical work." }
+        ],
+        attendanceSummary: `Current attendance is ${selectedStudent.attendance}. Generally punctual.`,
+        behavioralNotes: "Demonstrates positive leadership in class and participates actively."
+      })
+      setAiSummary(result.summary)
+      toast({ title: "Summary Ready", description: "AI progress report generated." })
+    } catch (err) {
+      toast({ variant: "destructive", title: "AI Error", description: "Could not generate summary." })
+    } finally {
+      setIsGeneratingAi(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -91,17 +125,17 @@ export default function StudentsPage() {
       </div>
 
       <Card className="border-none shadow-sm overflow-hidden">
-        <CardHeader className="pb-3 px-6 pt-6">
+        <CardHeader className="pb-3 px-6 pt-6 bg-muted/20">
           <div className="flex flex-col sm:flex-row justify-between gap-4">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by name, ID or parent..."
-                className="pl-10 bg-muted/40 border-none rounded-full h-10"
+                className="pl-10 bg-white border-none rounded-full h-10 shadow-sm"
               />
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="h-10 rounded-full px-4">
+              <Button variant="outline" size="sm" className="h-10 rounded-full px-4 bg-white border-none shadow-sm">
                 <Filter className="mr-2 h-4 w-4" /> Filters
               </Button>
             </div>
@@ -157,181 +191,190 @@ export default function StudentsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right pr-6">
-                    <Sheet>
+                    <Sheet onOpenChange={() => { setAiSummary(""); setSelectedStudent(student); }}>
                       <SheetTrigger asChild>
                         <Button 
                           variant="ghost" 
                           size="sm" 
                           className="text-xs font-bold text-primary hover:bg-primary/5 rounded-full"
-                          onClick={() => setSelectedStudent(student)}
                         >
                           Deep View
                         </Button>
                       </SheetTrigger>
-                      <SheetContent className="sm:max-w-2xl overflow-y-auto border-l-0 shadow-2xl">
-                        <SheetHeader className="text-left mb-8">
-                          <div className="flex items-center gap-6 mb-6">
-                            <div className="relative">
-                              <Avatar className="h-24 w-24 ring-4 ring-primary/10 shadow-xl rounded-2xl">
-                                <AvatarImage src={`https://picsum.photos/seed/${selectedStudent?.id}/150`} />
-                                <AvatarFallback className="text-3xl font-bold bg-primary/5">{selectedStudent?.name.charAt(0)}</AvatarFallback>
-                              </Avatar>
-                              <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-green-500 border-4 border-background flex items-center justify-center">
-                                <CheckCircle2 className="h-4 w-4 text-white" />
+                      <SheetContent className="sm:max-w-2xl overflow-y-auto border-l-0 shadow-2xl p-0">
+                        <div className="bg-primary/5 p-8 border-b">
+                          <SheetHeader className="text-left">
+                            <div className="flex items-center gap-6">
+                              <div className="relative">
+                                <Avatar className="h-24 w-24 ring-4 ring-white shadow-xl rounded-2xl">
+                                  <AvatarImage src={`https://picsum.photos/seed/${selectedStudent?.id}/150`} />
+                                  <AvatarFallback className="text-3xl font-bold bg-primary/5">{selectedStudent?.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-green-500 border-4 border-white flex items-center justify-center">
+                                  <CheckCircle2 className="h-4 w-4 text-white" />
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <SheetTitle className="text-3xl font-headline font-extrabold text-primary">{selectedStudent?.name}</SheetTitle>
+                                <div className="flex flex-wrap gap-2 items-center">
+                                  <Badge variant="secondary" className="rounded-full bg-white text-primary border-none shadow-sm">{selectedStudent?.class}</Badge>
+                                  <span className="text-xs font-mono text-muted-foreground tracking-tighter uppercase">{selectedStudent?.id}</span>
+                                </div>
                               </div>
                             </div>
-                            <div className="space-y-1">
-                              <SheetTitle className="text-3xl font-headline font-extrabold text-primary">{selectedStudent?.name}</SheetTitle>
-                              <div className="flex flex-wrap gap-2 items-center">
-                                <Badge variant="secondary" className="rounded-full bg-primary/5 text-primary border-none">{selectedStudent?.class}</Badge>
-                                <span className="text-xs font-mono text-muted-foreground tracking-tighter uppercase">{selectedStudent?.id}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </SheetHeader>
+                          </SheetHeader>
+                        </div>
 
-                        <Tabs defaultValue="overview" className="space-y-8">
-                          <TabsList className="grid w-full grid-cols-4 bg-muted/40 p-1 rounded-xl h-11">
-                            <TabsTrigger value="overview" className="rounded-lg text-xs font-bold">Overview</TabsTrigger>
-                            <TabsTrigger value="performance" className="rounded-lg text-xs font-bold">Performance</TabsTrigger>
-                            <TabsTrigger value="ledger" className="rounded-lg text-xs font-bold">Ledger</TabsTrigger>
-                            <TabsTrigger value="behavior" className="rounded-lg text-xs font-bold">Notes</TabsTrigger>
-                          </TabsList>
+                        <div className="p-8">
+                          <Tabs defaultValue="overview" className="space-y-8">
+                            <TabsList className="grid w-full grid-cols-4 bg-muted/40 p-1 rounded-xl h-11">
+                              <TabsTrigger value="overview" className="rounded-lg text-xs font-bold">Health & AI</TabsTrigger>
+                              <TabsTrigger value="performance" className="rounded-lg text-xs font-bold">Academics</TabsTrigger>
+                              <TabsTrigger value="ledger" className="rounded-lg text-xs font-bold">Ledger</TabsTrigger>
+                              <TabsTrigger value="conduct" className="rounded-lg text-xs font-bold">Discipline</TabsTrigger>
+                            </TabsList>
 
-                          <TabsContent value="overview" className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                              <Card className="border-none bg-primary/5 shadow-none group">
-                                <CardContent className="p-5 flex flex-col items-center justify-center text-center">
-                                  <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform">
-                                    <Clock className="h-5 w-5 text-primary" />
+                            <TabsContent value="overview" className="space-y-8">
+                              <Card className="border-none bg-accent/5 border border-accent/10 relative overflow-hidden p-6">
+                                <div className="absolute -right-4 -top-4 opacity-5">
+                                  <Sparkles className="h-24 w-24" />
+                                </div>
+                                <div className="flex items-center justify-between mb-4">
+                                  <div className="flex items-center gap-2">
+                                    <Sparkles className="h-4 w-4 text-accent" />
+                                    <span className="text-sm font-bold text-accent">AI Progress Agent</span>
                                   </div>
-                                  <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-1">Attendance</p>
-                                  <p className="text-2xl font-black text-primary">{selectedStudent?.attendance}</p>
-                                </CardContent>
+                                  <Button 
+                                    size="sm" 
+                                    className="rounded-full h-8 px-4 colorful-gradient text-[10px]"
+                                    onClick={handleGenerateAiSummary}
+                                    disabled={isGeneratingAi}
+                                  >
+                                    {isGeneratingAi ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Sparkles className="h-3 w-3 mr-2" />}
+                                    Analyze Progress
+                                  </Button>
+                                </div>
+                                <div className="bg-white/80 rounded-xl p-4 min-h-[100px] text-xs leading-relaxed text-foreground/80 border border-dashed border-accent/20">
+                                  {aiSummary || "Click analyze to generate a natural language summary of this student's current performance for parents."}
+                                </div>
                               </Card>
-                              <Card className="border-none bg-orange-50 shadow-none group">
-                                <CardContent className="p-5 flex flex-col items-center justify-center text-center">
-                                  <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform">
-                                    <Banknote className="h-5 w-5 text-orange-600" />
-                                  </div>
-                                  <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-1">Balance Due</p>
-                                  <p className="text-2xl font-black text-orange-700">{selectedStudent?.balance}</p>
-                                </CardContent>
-                              </Card>
-                            </div>
 
-                            <div className="space-y-4">
-                              <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Detailed Information</h3>
-                              <div className="grid grid-cols-2 gap-y-6 bg-muted/20 p-6 rounded-2xl">
-                                <div className="space-y-1">
-                                  <p className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" /> Residency</p>
-                                  <p className="font-semibold text-sm">Off-Campus (Day)</p>
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1"><Mail className="h-3 w-3" /> Email</p>
-                                  <p className="font-semibold text-sm truncate">{selectedStudent?.email}</p>
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-[10px] uppercase font-bold text-muted-foreground">Emergency Contact</p>
-                                  <p className="font-semibold text-sm">{selectedStudent?.contact}</p>
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-[10px] uppercase font-bold text-muted-foreground">Blood Type</p>
-                                  <p className="font-semibold text-sm">O Positive</p>
-                                </div>
-                              </div>
-                            </div>
-                          </TabsContent>
-
-                          <TabsContent value="performance" className="space-y-6">
-                             <div className="flex items-center justify-between mb-2">
-                               <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Subject Matrix</h3>
-                               <Badge className="bg-green-100 text-green-700">Rank: #4 in Class</Badge>
-                             </div>
-                             <div className="space-y-3">
-                               {[
-                                 { subject: "Mathematics", grade: "A", score: 82, trend: "up" },
-                                 { subject: "Physics", grade: "B", score: 68, trend: "down" },
-                                 { subject: "Chemistry", grade: "A", score: 77, trend: "stable" },
-                                 { subject: "English", grade: "A", score: 85, trend: "up" },
-                                 { subject: "Geography", grade: "A", score: 91, trend: "up" },
-                               ].map((sub) => (
-                                 <div key={sub.subject} className="flex items-center justify-between p-4 rounded-2xl bg-muted/20 hover:bg-muted/40 transition-colors">
-                                   <div className="flex items-center gap-3">
-                                      <div className={cn(
-                                        "h-8 w-8 rounded-lg flex items-center justify-center font-bold text-xs",
-                                        sub.grade === "A" ? "bg-green-100 text-green-700" : "bg-primary/10 text-primary"
-                                      )}>
-                                        {sub.grade}
-                                      </div>
-                                      <div>
-                                        <p className="text-sm font-bold">{sub.subject}</p>
-                                        <p className="text-[10px] text-muted-foreground">Score: {sub.score}%</p>
-                                      </div>
-                                   </div>
-                                   {sub.trend === "up" && <TrendingUp className="h-4 w-4 text-green-500" />}
-                                 </div>
-                               ))}
-                             </div>
-                          </TabsContent>
-                          
-                          <TabsContent value="ledger" className="space-y-4">
-                            <div className="flex items-center justify-between">
-                               <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Transaction History</h3>
-                               <Button variant="outline" size="sm" className="h-8 text-[10px] rounded-full">Download PDF</Button>
-                            </div>
-                            <div className="rounded-2xl border border-dashed p-2">
-                               <Table>
-                                 <TableBody>
-                                   {[
-                                     { date: "May 12, 2024", ref: "TX-9021", type: "Fee Payment", amount: "550,000", status: "Verified" },
-                                     { date: "Mar 05, 2024", ref: "TX-8812", type: "Uniform Shop", amount: "45,000", status: "Verified" },
-                                     { date: "Jan 10, 2024", ref: "TX-7712", type: "Term 1 Fees", amount: "650,000", status: "Verified" },
-                                   ].map((row, i) => (
-                                     <TableRow key={i} className="hover:bg-muted/30 border-none">
-                                       <TableCell className="py-3">
-                                         <p className="text-xs font-bold">{row.type}</p>
-                                         <p className="text-[9px] text-muted-foreground font-mono">{row.ref}</p>
-                                       </TableCell>
-                                       <TableCell className="text-right">
-                                         <p className="text-xs font-bold">TZS {row.amount}</p>
-                                         <p className="text-[9px] text-green-600 font-bold uppercase">{row.status}</p>
-                                       </TableCell>
-                                     </TableRow>
-                                   ))}
-                                 </TableBody>
-                               </Table>
-                            </div>
-                            <Button className="w-full rounded-full colorful-gradient h-11 font-bold">
-                               Issue New Invoice
-                            </Button>
-                          </TabsContent>
-
-                          <TabsContent value="behavior">
-                            <div className="space-y-4">
-                              <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Staff Logs & Conduct</h3>
                               <div className="space-y-4">
-                                {[
-                                  { date: "1 week ago", author: "Mwl. Juma", note: "Consistently participates in Physics lab sessions. Demonstrates leadership.", type: "Positive" },
-                                  { date: "3 weeks ago", author: "Headmaster", note: "Represented school in Regional Sports Meet. Awarded Certificate of Merit.", type: "Achievement" },
-                                ].map((note, i) => (
-                                  <div key={i} className="p-4 rounded-2xl bg-muted/10 relative overflow-hidden">
-                                    <div className={cn("absolute left-0 top-0 bottom-0 w-1", note.type === "Positive" ? "bg-green-500" : "bg-primary")} />
-                                    <div className="flex justify-between items-start mb-2">
-                                      <span className="text-[10px] font-bold text-primary uppercase">{note.type}</span>
-                                      <span className="text-[10px] text-muted-foreground">{note.date}</span>
-                                    </div>
-                                    <p className="text-xs italic text-foreground/80 leading-relaxed">"{note.note}"</p>
-                                    <p className="text-[10px] font-bold mt-2 text-muted-foreground">— {note.author}</p>
+                                <h3 className="text-sm font-bold flex items-center gap-2">
+                                  <Stethoscope className="h-4 w-4 text-primary" /> Medical Status
+                                </h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="p-4 rounded-2xl bg-muted/20 border border-transparent">
+                                    <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Blood Type</p>
+                                    <p className="text-sm font-bold">O Positive</p>
                                   </div>
-                                ))}
-                                <Button variant="secondary" className="w-full rounded-full text-xs font-bold py-6">
-                                  <Plus className="mr-2 h-4 w-4" /> Add New Observation
-                                </Button>
+                                  <div className="p-4 rounded-2xl bg-muted/20 border border-transparent">
+                                    <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Allergies</p>
+                                    <p className="text-sm font-bold">None Reported</p>
+                                  </div>
+                                </div>
+                                <div className="p-4 rounded-2xl bg-red-50 border border-red-100">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <ShieldAlert className="h-4 w-4 text-red-600" />
+                                    <span className="text-xs font-bold text-red-700">Health History</span>
+                                  </div>
+                                  <p className="text-[11px] text-red-600/80">No current medical alerts. Last checkup: Term 1 Start.</p>
+                                </div>
                               </div>
-                            </div>
-                          </TabsContent>
-                        </Tabs>
+                            </TabsContent>
+
+                            <TabsContent value="performance" className="space-y-6">
+                               <div className="flex items-center justify-between mb-2">
+                                 <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Subject Matrix</h3>
+                                 <Badge className="bg-green-100 text-green-700">Rank: #4 in Class</Badge>
+                               </div>
+                               <div className="space-y-3">
+                                 {[
+                                   { subject: "Mathematics", grade: "A", score: 82, trend: "up" },
+                                   { subject: "Physics", grade: "B", score: 68, trend: "down" },
+                                   { subject: "Chemistry", grade: "A", score: 77, trend: "stable" },
+                                   { subject: "English", grade: "A", score: 85, trend: "up" },
+                                   { subject: "Geography", grade: "A", score: 91, trend: "up" },
+                                 ].map((sub) => (
+                                   <div key={sub.subject} className="flex items-center justify-between p-4 rounded-2xl bg-muted/20 hover:bg-muted/40 transition-colors">
+                                     <div className="flex items-center gap-3">
+                                        <div className={cn(
+                                          "h-8 w-8 rounded-lg flex items-center justify-center font-bold text-xs",
+                                          sub.grade === "A" ? "bg-green-100 text-green-700" : "bg-primary/10 text-primary"
+                                        )}>
+                                          {sub.grade}
+                                        </div>
+                                        <div>
+                                          <p className="text-sm font-bold">{sub.subject}</p>
+                                          <p className="text-[10px] text-muted-foreground">Score: {sub.score}%</p>
+                                        </div>
+                                     </div>
+                                     {sub.trend === "up" && <TrendingUp className="h-4 w-4 text-green-500" />}
+                                   </div>
+                                 ))}
+                               </div>
+                            </TabsContent>
+                            
+                            <TabsContent value="ledger" className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                 <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Transaction History</h3>
+                                 <Button variant="outline" size="sm" className="h-8 text-[10px] rounded-full">Download PDF</Button>
+                              </div>
+                              <div className="rounded-2xl border border-dashed p-2">
+                                 <Table>
+                                   <TableBody>
+                                     {[
+                                       { date: "May 12, 2024", ref: "TX-9021", type: "Fee Payment", amount: "550,000", status: "Verified" },
+                                       { date: "Mar 05, 2024", ref: "TX-8812", type: "Uniform Shop", amount: "45,000", status: "Verified" },
+                                       { date: "Jan 10, 2024", ref: "TX-7712", type: "Term 1 Fees", amount: "650,000", status: "Verified" },
+                                     ].map((row, i) => (
+                                       <TableRow key={i} className="hover:bg-muted/30 border-none">
+                                         <TableCell className="py-3">
+                                           <p className="text-xs font-bold">{row.type}</p>
+                                           <p className="text-[9px] text-muted-foreground font-mono">{row.ref}</p>
+                                         </TableCell>
+                                         <TableCell className="text-right">
+                                           <p className="text-xs font-bold">TZS {row.amount}</p>
+                                           <p className="text-[9px] text-green-600 font-bold uppercase">{row.status}</p>
+                                         </TableCell>
+                                       </TableRow>
+                                     ))}
+                                   </TableBody>
+                                 </Table>
+                              </div>
+                              <Button className="w-full rounded-full colorful-gradient h-11 font-bold">
+                                 Issue New Invoice
+                              </Button>
+                            </TabsContent>
+
+                            <TabsContent value="conduct">
+                              <div className="space-y-6">
+                                <h3 className="text-sm font-bold flex items-center gap-2">
+                                  <ShieldAlert className="h-4 w-4 text-orange-600" /> Discipline Log
+                                </h3>
+                                <div className="space-y-4">
+                                  {[
+                                    { date: "1 week ago", author: "Mwl. Juma", note: "Consistently participates in Physics lab sessions. Demonstrates leadership.", type: "Positive" },
+                                    { date: "3 weeks ago", author: "Headmaster", note: "Represented school in Regional Sports Meet. Awarded Certificate of Merit.", type: "Achievement" },
+                                  ].map((note, i) => (
+                                    <div key={i} className="p-4 rounded-2xl bg-muted/10 relative overflow-hidden border border-muted-foreground/10">
+                                      <div className={cn("absolute left-0 top-0 bottom-0 w-1", note.type === "Positive" ? "bg-green-500" : "bg-primary")} />
+                                      <div className="flex justify-between items-start mb-2">
+                                        <span className="text-[10px] font-bold text-primary uppercase">{note.type}</span>
+                                        <span className="text-[10px] text-muted-foreground">{note.date}</span>
+                                      </div>
+                                      <p className="text-xs italic text-foreground/80 leading-relaxed">"{note.note}"</p>
+                                      <p className="text-[10px] font-bold mt-2 text-muted-foreground">— {note.author}</p>
+                                    </div>
+                                  ))}
+                                  <Button variant="secondary" className="w-full rounded-full text-xs font-bold py-6">
+                                    <Plus className="mr-2 h-4 w-4" /> Add New Record
+                                  </Button>
+                                </div>
+                              </div>
+                            </TabsContent>
+                          </Tabs>
+                        </div>
                       </SheetContent>
                     </Sheet>
                   </TableCell>
