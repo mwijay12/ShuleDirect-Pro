@@ -18,7 +18,8 @@ import {
   Zap,
   ChevronRight,
   LogOut,
-  X
+  X,
+  HelpCircle
 } from "lucide-react"
 
 import {
@@ -43,6 +44,7 @@ const allNavItems = [
   { title: "Transport", url: "/dashboard/transport", icon: Bus, roles: ["ADMIN", "BURSAR"] },
   { title: "Hostel", url: "/dashboard/hostel", icon: Bed, roles: ["ADMIN", "BURSAR"] },
   { title: "NECTA Reports", url: "/dashboard/reports", icon: Zap, roles: ["ADMIN", "TEACHER", "BURSAR"] },
+  { title: "Help Center", url: "/dashboard/help", icon: HelpCircle, roles: ["ADMIN", "TEACHER", "BURSAR", "TEACHER_MATH", "TEACHER_ENG", "TEACHER_KISW", "TEACHER_PHY", "TEACHER_CHEM"] },
   { title: "System Admin", url: "/dashboard/settings", icon: Settings, roles: ["ADMIN"] },
 ]
 

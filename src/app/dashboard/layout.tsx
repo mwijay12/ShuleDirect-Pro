@@ -13,7 +13,9 @@ import {
   ClipboardCheck, 
   Users, 
   Banknote,
-  Menu
+  Menu,
+  ShieldCheck,
+  Loader2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,20 +31,21 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname()
   const [greeting, setGreeting] = useState("Welcome...")
-  const [loading, setLoading] = useState(true)
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
 
   useEffect(() => {
+    // Initial App Boot Loading Screen
+    const loadTimer = setTimeout(() => {
+      setIsInitialLoading(false)
+    }, 2000)
+
     const hours = new Date().getHours()
     let msg = "Good Morning"
     if (hours >= 12 && hours < 16) msg = "Good Afternoon"
     if (hours >= 16) msg = "Good Evening"
+    setGreeting(msg)
     
-    const timer = setTimeout(() => {
-      setGreeting(msg)
-      setLoading(false)
-    }, 800)
-    
-    return () => clearTimeout(timer)
+    return () => clearTimeout(loadTimer)
   }, [])
 
   const bottomNavItems = [
@@ -51,6 +54,25 @@ export default function DashboardLayout({
     { label: "Students", icon: Users, href: "/dashboard/students" },
     { label: "Finance", icon: Banknote, href: "/dashboard/finance" },
   ]
+
+  if (isInitialLoading) {
+    return (
+      <div className="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center space-y-6">
+        <div className="relative">
+          <div className="h-24 w-24 rounded-[2.5rem] colorful-gradient flex items-center justify-center text-white shadow-2xl animate-bounce">
+            <ShieldCheck className="h-14 w-14" />
+          </div>
+          <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1.5 shadow-lg">
+            <Loader2 className="h-6 w-6 text-primary animate-spin" />
+          </div>
+        </div>
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl font-headline font-black text-primary tracking-tighter">ShuleDirect <span className="text-accent">Pro</span></h1>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] animate-pulse">Securing Academic Excellence</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <SidebarProvider>
@@ -68,10 +90,7 @@ export default function DashboardLayout({
           
           <div className="flex flex-1 items-center gap-4 sm:gap-6 overflow-hidden">
             <div className="flex flex-col min-w-0">
-              <h2 className={cn(
-                "text-sm sm:text-lg font-bold text-primary transition-all duration-500 flex items-center gap-2 truncate",
-                loading ? "opacity-30 blur-sm" : "opacity-100 blur-0"
-              )}>
+              <h2 className="text-sm sm:text-lg font-bold text-primary transition-all duration-500 flex items-center gap-2 truncate">
                 {greeting}, Admin! <span className="hidden sm:inline animate-bounce">👋</span>
               </h2>
               <p className="text-[9px] text-muted-foreground font-semibold uppercase tracking-widest hidden sm:block">
@@ -108,7 +127,7 @@ export default function DashboardLayout({
           </div>
         </header>
         
-        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto animate-in fade-in duration-700">
           {children}
         </main>
 

@@ -24,7 +24,7 @@
     --border: 214 32% 91%;
     --input: 214 32% 91%;
     --ring: 214 69% 39%;
-    --radius: 1rem; /* More playful, rounded corners */
+    --radius: 1.25rem; /* More playful, rounded corners */
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 215 25% 10%;
@@ -42,7 +42,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground font-body antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline font-bold tracking-tight;
@@ -61,10 +61,42 @@
   100% { transform: translateY(0px); }
 }
 
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
 
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
 .colorful-gradient {
   background: linear-gradient(135deg, #1F5BA6 0%, #945CE6 100%);
+}
+
+.colorful-gradient-hover:hover {
+  background: linear-gradient(135deg, #1a4d8c 0%, #7e4ebf 100%);
+}
+
+/* Custom Scrollbar for Pro feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
