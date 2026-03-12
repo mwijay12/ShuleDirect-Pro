@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -33,14 +32,14 @@ import { cn } from "@/lib/utils"
 
 const navItems = [
   { title: "Overview", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Students (Wanafunzi)", url: "/dashboard/students", icon: Users },
-  { title: "Attendance (Mahudhurio)", url: "/dashboard/attendance", icon: ClipboardCheck },
-  { title: "Academics (Taaluma)", url: "/dashboard/academics", icon: GraduationCap },
-  { title: "Finance (Ada na Fedha)", url: "/dashboard/finance", icon: Banknote },
-  { title: "Transport (Usafiri)", url: "/dashboard/transport", icon: Bus },
-  { title: "Hostel (Hosteli)", url: "/dashboard/hostel", icon: Bed },
-  { title: "Insights (Reports & AI)", url: "/dashboard/reports", icon: Zap },
-  { title: "Settings (Mipangilio)", url: "/dashboard/settings", icon: Settings },
+  { title: "Students", url: "/dashboard/students", icon: Users },
+  { title: "Attendance", url: "/dashboard/attendance", icon: ClipboardCheck },
+  { title: "Academics", url: "/dashboard/academics", icon: GraduationCap },
+  { title: "Finance", url: "/dashboard/finance", icon: Banknote },
+  { title: "Transport", url: "/dashboard/transport", icon: Bus },
+  { title: "Hostel", url: "/dashboard/hostel", icon: Bed },
+  { title: "Insights Hub", url: "/dashboard/reports", icon: Zap },
+  { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ]
 
 export function AppSidebar() {
@@ -58,7 +57,7 @@ export function AppSidebar() {
           {!isCollapsed && (
             <div className="flex flex-col gap-0.5 leading-none overflow-hidden transition-all duration-300">
               <span className="font-headline font-extrabold text-lg text-primary tracking-tighter">ShuleDirect</span>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-bold">Pro Version</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-bold">Pro Edition</span>
             </div>
           )}
         </div>
@@ -111,7 +110,7 @@ export function AppSidebar() {
             JD
           </div>
           {!isCollapsed && (
-            <div className="flex flex-col overflow-hidden">
+            <div className="flex flex-col overflow-hidden text-left">
               <span className="text-xs font-bold truncate">Jane Doe</span>
               <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Super Admin</span>
             </div>
