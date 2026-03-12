@@ -48,7 +48,7 @@ export default function HostelPage() {
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="border-none shadow-sm">
           <CardHeader className="pb-2">
-            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Total Boarders</CardTitle>
+            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Total Boarders</CardDescription>
             <CardTitle className="text-3xl">570 Students</CardTitle>
           </CardHeader>
           <CardContent>
@@ -60,7 +60,7 @@ export default function HostelPage() {
         </Card>
         <Card className="border-none shadow-sm">
           <CardHeader className="pb-2">
-            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Available Beds</CardTitle>
+            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Available Beds</CardDescription>
             <CardTitle className="text-3xl text-accent">80</CardTitle>
           </CardHeader>
           <CardContent>
@@ -69,7 +69,7 @@ export default function HostelPage() {
         </Card>
         <Card className="border-none shadow-sm">
           <CardHeader className="pb-2">
-            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Incident Reports</CardTitle>
+            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Incident Reports</CardDescription>
             <CardTitle className="text-3xl text-destructive">0</CardTitle>
           </CardHeader>
           <CardContent>

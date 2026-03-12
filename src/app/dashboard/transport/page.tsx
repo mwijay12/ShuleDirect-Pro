@@ -46,25 +46,25 @@ export default function TransportPage() {
       <div className="grid gap-6 md:grid-cols-4">
         <Card className="border-none shadow-sm bg-accent text-accent-foreground">
           <CardHeader className="pb-2">
-            <CardDescription className="text-white/80 uppercase text-[10px] font-bold tracking-widest">Active Fleet</CardTitle>
+            <CardDescription className="text-white/80 uppercase text-[10px] font-bold tracking-widest">Active Fleet</CardDescription>
             <CardTitle className="text-3xl">12 Buses</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-none shadow-sm">
           <CardHeader className="pb-2">
-            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Transport Users</CardTitle>
+            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Transport Users</CardDescription>
             <CardTitle className="text-3xl">480 Students</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-none shadow-sm">
           <CardHeader className="pb-2">
-            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Covered Areas</CardTitle>
+            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Covered Areas</CardDescription>
             <CardTitle className="text-3xl">24 Zones</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-none shadow-sm">
           <CardHeader className="pb-2">
-            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Safety Compliance</CardTitle>
+            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Safety Compliance</CardDescription>
             <CardTitle className="text-3xl text-green-600">100%</CardTitle>
           </CardHeader>
         </Card>
