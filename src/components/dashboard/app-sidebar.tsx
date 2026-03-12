@@ -19,7 +19,8 @@ import {
   ChevronRight,
   LogOut,
   X,
-  HelpCircle
+  HelpCircle,
+  Star
 } from "lucide-react"
 
 import {
@@ -77,30 +78,30 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border/50 shadow-sm transition-all duration-300">
-      <SidebarHeader className="p-4 mb-4">
+    <Sidebar collapsible="icon" className="border-r border-border/50 shadow-sm transition-all duration-300 font-body">
+      <SidebarHeader className="p-6 mb-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl colorful-gradient text-white shadow-lg">
-              <ShieldCheck className="h-6 w-6" />
+          <div className="flex items-center gap-3 group">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl colorful-gradient text-white shadow-xl group-hover:rotate-12 transition-transform duration-500">
+              <ShieldCheck className="h-7 w-7" />
             </div>
             {!isCollapsed && (
-              <div className="flex flex-col gap-0.5 leading-none overflow-hidden">
-                <span className="font-headline font-extrabold text-lg text-primary tracking-tighter">ShuleDirect</span>
-                <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-bold">Pro Hub</span>
+              <div className="flex flex-col gap-0.5 leading-none overflow-hidden animate-in fade-in slide-in-from-left-4 duration-500">
+                <span className="font-headline font-black text-xl text-primary tracking-tighter">ShuleDirect</span>
+                <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-black">Pro Hub 2026</span>
               </div>
             )}
           </div>
           {isMobile && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setOpenMobile(false)}>
-              <X className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-muted/50" onClick={() => setOpenMobile(false)}>
+              <X className="h-6 w-6" />
             </Button>
           )}
         </div>
       </SidebarHeader>
       
-      <SidebarContent>
-        <SidebarMenu className="px-3 gap-1.5">
+      <SidebarContent className="px-4">
+        <SidebarMenu className="gap-2">
           {filteredItems.map((item) => {
             const isActive = pathname === item.url
             return (
@@ -110,25 +111,25 @@ export function AppSidebar() {
                   isActive={isActive}
                   tooltip={item.title}
                   className={cn(
-                    "relative group h-11 px-3 rounded-xl transition-all duration-200",
+                    "relative group h-12 px-4 rounded-[1.25rem] transition-all duration-300",
                     isActive 
-                      ? "bg-primary/10 text-primary hover:bg-primary/15" 
-                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                      ? "bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]" 
+                      : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
                   )}
                   onClick={() => isMobile && setOpenMobile(false)}
                 >
                   <Link href={item.url} className="flex items-center">
                     <item.icon className={cn(
-                      "h-5 w-5 transition-transform duration-300",
-                      isActive ? "text-primary" : "text-muted-foreground"
+                      "h-5 w-5 transition-transform duration-500 group-hover:rotate-12",
+                      isActive ? "text-white" : "text-muted-foreground"
                     )} />
                     {!isCollapsed && (
-                      <span className="ml-3 font-bold text-sm truncate flex-1">
+                      <span className="ml-4 font-black text-xs uppercase tracking-widest truncate flex-1">
                         {item.title}
                       </span>
                     )}
                     {!isCollapsed && isActive && (
-                      <ChevronRight className="h-3 w-3 opacity-50" />
+                      <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
                     )}
                   </Link>
                 </SidebarMenuButton>
@@ -138,31 +139,43 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-border/40 mt-auto">
+      <SidebarFooter className="p-6 border-t border-border/40 mt-auto space-y-6">
+        {!isCollapsed && (
+          <div className="p-5 rounded-[2rem] bg-muted/30 border border-dashed border-primary/20 space-y-3 animate-in fade-in duration-1000">
+            <div className="flex items-center gap-2 text-primary font-black text-[9px] uppercase tracking-widest">
+              <Star className="h-3 w-3 fill-primary" /> Powered By
+            </div>
+            <p className="text-[10px] font-black leading-tight">
+              ShulePro Maker Team <br/>
+              <span className="text-muted-foreground font-medium italic">Architect Excellence</span>
+            </p>
+          </div>
+        )}
+
         <div className={cn(
-          "flex flex-col gap-2",
+          "flex flex-col gap-3",
           isCollapsed ? "items-center" : ""
         )}>
           {!isCollapsed && (
-            <div className="flex items-center gap-3 group bg-muted/30 p-2 rounded-2xl">
-              <div className="h-9 w-9 shrink-0 rounded-full colorful-gradient flex items-center justify-center text-white font-extrabold text-xs">
+            <div className="flex items-center gap-4 group bg-primary/5 p-3 rounded-2xl border border-primary/10 shadow-inner">
+              <div className="h-10 w-10 shrink-0 rounded-full colorful-gradient flex items-center justify-center text-white font-black text-xs shadow-lg animate-pulse-soft">
                 {role.charAt(0)}
               </div>
               <div className="flex flex-col overflow-hidden">
-                <span className="text-xs font-bold truncate">Career Access</span>
-                <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">{getRoleLabel(role)}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary truncate">Session Active</span>
+                <span className="text-[9px] text-muted-foreground font-black uppercase tracking-tighter truncate">{getRoleLabel(role)}</span>
               </div>
             </div>
           )}
           <button 
             onClick={handleLogout}
             className={cn(
-              "flex items-center gap-2 p-2 rounded-xl text-destructive hover:bg-destructive/10 transition-colors",
+              "flex items-center gap-3 p-3 rounded-2xl text-destructive font-black text-[10px] uppercase tracking-widest hover:bg-destructive/10 transition-all group",
               isCollapsed ? "justify-center" : "w-full"
             )}
           >
-            <LogOut className="h-4 w-4" />
-            {!isCollapsed && <span className="text-xs font-bold">Logout Portal</span>}
+            <LogOut className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            {!isCollapsed && <span>Logout Portal</span>}
           </button>
         </div>
       </SidebarFooter>

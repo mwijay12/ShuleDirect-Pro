@@ -30,6 +30,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { cn } from "@/lib/utils"
 
 const articles = [
   { 
@@ -80,7 +81,7 @@ const articles = [
 
 export default function HelpPage() {
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-20">
+    <div className="space-y-8 max-w-6xl mx-auto pb-20 px-4">
       <div className="text-center space-y-4 py-12 px-6 rounded-[3rem] bg-primary text-primary-foreground relative overflow-hidden shadow-2xl">
         <div className="absolute top-0 left-0 p-8 opacity-10">
           <LifeBuoy className="h-48 w-48 rotate-12" />
@@ -98,7 +99,7 @@ export default function HelpPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {articles.map((section) => (
           <Card key={section.cat} className="border-none shadow-sm hover:shadow-xl transition-all duration-500 group cursor-pointer overflow-hidden rounded-[2rem]">
             <CardHeader className="pb-4">
@@ -118,13 +119,6 @@ export default function HelpPage() {
               <Button variant="ghost" size="sm" className="w-full mt-4 text-[10px] font-black text-primary uppercase tracking-widest hover:bg-primary/5 rounded-full">
                 View All <ArrowRight className="ml-2 h-3 w-3" />
               </Button>
-            </CardContent>
-          </Card> section.items.map((item, i) => (
-                <div key={i} className="flex items-center gap-2 text-[11px] font-bold text-muted-foreground hover:text-primary transition-colors">
-                  <ChevronRight className="h-3 w-3 shrink-0" />
-                  <span className="truncate">{item}</span>
-                </div>
-              ))
             </CardContent>
           </Card>
         ))}

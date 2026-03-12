@@ -31,7 +31,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { createLearningResource } from "@/ai/flows/create-learning-resource-flow"
 import { cn } from "@/lib/utils"
 
 // Official NECTA Portal Mapping Logic
@@ -86,10 +85,10 @@ const nectaMockResultsByLevel: Record<string, any> = {
 
 export default function ReportsPage() {
   const { toast } = useToast()
-  const [loading, setLoading] = useState(false)
   const [fetchingNecta, setFetchingNecta] = useState(false)
   const [nectaResults, setNectaResults] = useState<any>(null)
   const [centerNo, setCenterNo] = useState("S.1234")
+  const [centerName, setCenterName] = useState("")
   const [examYear, setExamYear] = useState("2024")
   const [examLevel, setExamLevel] = useState("CSEE")
 
@@ -105,7 +104,7 @@ export default function ReportsPage() {
         title: "Sync Successful",
         description: `Official records retrieved for ${examLevel} ${examYear}.`,
       })
-    }, 1500)
+    }, 2000)
   }
 
   const officialUrl = getNectaUrl(examLevel, examYear)
@@ -155,8 +154,8 @@ export default function ReportsPage() {
               </div>
             </CardHeader>
             <CardContent className="p-4 sm:p-6 space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                <div className="space-y-2 lg:col-span-1">
                   <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Center ID</Label>
                   <Input 
                     value={centerNo} 
@@ -165,11 +164,20 @@ export default function ReportsPage() {
                     className="h-12 rounded-xl bg-muted/20 border-none shadow-inner font-mono font-bold"
                   />
                 </div>
+                <div className="space-y-2 lg:col-span-1">
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">School Name (Optional)</Label>
+                  <Input 
+                    value={centerName} 
+                    onChange={(e) => setCenterName(e.target.value)} 
+                    placeholder="Search by name..." 
+                    className="h-12 rounded-xl bg-muted/20 border-none shadow-inner font-bold"
+                  />
+                </div>
                 <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Academic Year</Label>
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Year</Label>
                   <Select value={examYear} onValueChange={setExamYear}>
                     <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-inner font-bold text-sm">
-                      <SelectValue placeholder="Select Year" />
+                      <SelectValue placeholder="Year" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
                       <SelectItem value="2025">2025 (Official)</SelectItem>
@@ -179,10 +187,10 @@ export default function ReportsPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Examination Level</Label>
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Level</Label>
                   <Select value={examLevel} onValueChange={setExamLevel}>
                     <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-inner font-bold text-sm">
-                      <SelectValue placeholder="Select Level" />
+                      <SelectValue placeholder="Level" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
                       <SelectItem value="FTNA">Form Two (FTNA)</SelectItem>
@@ -196,8 +204,8 @@ export default function ReportsPage() {
                   disabled={fetchingNecta} 
                   className="h-12 rounded-xl colorful-gradient font-black shadow-lg text-sm group"
                 >
-                  {fetchingNecta ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />}
-                  Retrieve Online Records
+                  {fetchingNecta ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />}
+                  AI Deep Search
                 </Button>
               </div>
 
@@ -229,7 +237,7 @@ export default function ReportsPage() {
                         </div>
                         <div className="text-center sm:text-left">
                            <p className="text-xs font-bold text-primary">Live Portal Access Verified</p>
-                           <p className="text-[10px] text-muted-foreground">Results retrieved via PReMS official management node.</p>
+                           <p className="text-[10px] text-muted-foreground">Results retrieved via PReMS official management node for center {centerNo}.</p>
                         </div>
                      </div>
                      <Button variant="default" size="sm" className="rounded-full px-6 font-bold text-[11px] h-9" asChild>
@@ -306,7 +314,6 @@ export default function ReportsPage() {
         </TabsContent>
 
         <TabsContent value="ai-lab">
-          {/* AI Content Lab Logic remains as placeholder for teacher resources */}
           <Card className="border-none shadow-sm bg-accent/5 border border-accent/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
