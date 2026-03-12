@@ -18,6 +18,7 @@ import {
   Plus,
   Trash2,
   CheckCircle2,
+  ShieldCheck,
   Palette,
   Upload,
   Image as ImageIcon,
