@@ -8,22 +8,16 @@ import {
   Download, 
   Search, 
   BarChart, 
-  PieChart, 
   CheckCircle2, 
   AlertCircle,
-  FileText,
   Sparkles,
-  BookOpen,
-  UserCheck,
   Loader2,
   Copy,
-  Check,
-  BrainCircuit,
+  ExternalLink,
   Globe,
   History,
   TrendingUp,
   GraduationCap,
-  Filter,
   ArrowRight
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -32,7 +26,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Label } from "@/components/ui/label"
+import { Label } from "@/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { createLearningResource } from "@/ai/flows/create-learning-resource-flow"
@@ -67,6 +61,12 @@ const nectaMockResultsByLevel: Record<string, any> = {
   }
 }
 
+const nectaPortals = [
+  { name: "Official NECTA Results", url: "https://www.necta.go.tz/results/", description: "Main public results portal." },
+  { name: "PReMS Secondary", url: "https://prems.necta.go.tz/", description: "School-level registration and scores." },
+  { name: "PReM Primary", url: "https://prem.necta.go.tz/", description: "Standard 7 and 4 data management." },
+]
+
 export default function ReportsPage() {
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
@@ -93,10 +93,10 @@ export default function ReportsPage() {
       setNectaResults(resultData)
       setFetchingNecta(false)
       toast({
-        title: "PReMS Sync Successful",
-        description: `Official ${examLevel} results for Center ${centerNo} (${examYear}) retrieved.`,
+        title: "Database Sync Successful",
+        description: `Retrieved ${examLevel} records for ${centerNo} (${examYear}).`,
       })
-    }, 2500)
+    }, 2000)
   }
 
   const handleCreateResource = async () => {
@@ -109,9 +109,9 @@ export default function ReportsPage() {
         resourceType: type
       })
       setResourceOutput(result.resourceContent)
-      toast({ title: "Resource Generated", description: "The content is ready for review." })
+      toast({ title: "Resource Generated", description: "Content ready for download." })
     } catch (err) {
-      toast({ title: "Generation Failed", description: "AI service is currently busy.", variant: "destructive" })
+      toast({ title: "AI Error", description: "Service busy.", variant: "destructive" })
     } finally {
       setLoading(false)
     }
@@ -121,8 +121,8 @@ export default function ReportsPage() {
     <div className="space-y-6 max-w-7xl mx-auto pb-24">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-headline font-black text-primary tracking-tight">Institutional Insights</h1>
-          <p className="text-muted-foreground text-sm font-medium">Official NECTA compliance & Gemini AI resource generation.</p>
+          <h1 className="text-3xl font-headline font-black text-primary tracking-tight">Insights Hub</h1>
+          <p className="text-muted-foreground text-sm font-medium">Official NECTA compliance, Portal Links & AI Lab.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <Button variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm hover:bg-primary/5">
@@ -138,183 +138,209 @@ export default function ReportsPage() {
         <TabsList className="bg-muted/40 p-1.5 rounded-2xl w-full sm:w-fit overflow-x-auto flex h-auto gap-1">
           <TabsTrigger value="necta-explorer" className="rounded-xl font-bold py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">NECTA Explorer</TabsTrigger>
           <TabsTrigger value="ai-generator" className="rounded-xl font-bold py-2.5 px-6 gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <Sparkles className="h-4 w-4 text-accent" /> AI Lab
+            <Sparkles className="h-4 w-4 text-accent" /> AI Content Lab
           </TabsTrigger>
-          <TabsTrigger value="history" className="rounded-xl font-bold py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">Archived Results</TabsTrigger>
+          <TabsTrigger value="history" className="rounded-xl font-bold py-2.5 px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">Historical Data</TabsTrigger>
         </TabsList>
 
         <TabsContent value="necta-explorer" className="space-y-6">
-          <Card className="border-none shadow-sm overflow-hidden bg-card/60 backdrop-blur-md">
-            <CardHeader className="bg-primary/5 border-b border-primary/10 py-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
-                    <Globe className="h-6 w-6" />
+          <div className="grid gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-8 space-y-6">
+              <Card className="border-none shadow-sm overflow-hidden bg-card/60 backdrop-blur-md">
+                <CardHeader className="bg-primary/5 border-b border-primary/10 py-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
+                        <Globe className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl">NECTA Data Retrieval</CardTitle>
+                        <CardDescription className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Link directly to National Examination Databases</CardDescription>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="font-bold border-green-200 bg-green-50 text-green-700 px-4 py-1.5 rounded-full text-[10px]">
+                      <div className="h-2 w-2 rounded-full bg-green-500 mr-2 animate-pulse" /> DATABASE LIVE
+                    </Badge>
                   </div>
-                  <div>
-                    <CardTitle className="text-xl">PReMS Result Retriever</CardTitle>
-                    <CardDescription className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Official link to NECTA Primary/Secondary Databases</CardDescription>
-                  </div>
-                </div>
-                <Badge variant="outline" className="font-bold border-green-200 bg-green-50 text-green-700 px-4 py-1.5 rounded-full text-[10px] animate-pulse">
-                  <div className="h-2 w-2 rounded-full bg-green-500 mr-2" /> PReMS LIVE
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6 md:p-8 space-y-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Center ID</Label>
-                  <Input 
-                    value={centerNo} 
-                    onChange={(e) => setCenterNo(e.target.value)} 
-                    placeholder="e.g. S.1234" 
-                    className="h-12 rounded-2xl bg-muted/20 border-none shadow-inner font-mono font-bold text-lg"
-                  />
-                </div>
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Cycle Year</Label>
-                  <Select value={examYear} onValueChange={setExamYear}>
-                    <SelectTrigger className="h-12 rounded-2xl bg-muted/20 border-none shadow-inner font-bold text-base">
-                      <SelectValue placeholder="Select Year" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl">
-                      <SelectItem value="2026">2026 (Active)</SelectItem>
-                      <SelectItem value="2025">2025</SelectItem>
-                      <SelectItem value="2024">2024</SelectItem>
-                      <SelectItem value="2023">2023</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Examination</Label>
-                  <Select value={examLevel} onValueChange={setExamLevel}>
-                    <SelectTrigger className="h-12 rounded-2xl bg-muted/20 border-none shadow-inner font-bold text-base">
-                      <SelectValue placeholder="Select Level" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl">
-                      <SelectItem value="FTSEE">Form Two (FTSEE)</SelectItem>
-                      <SelectItem value="CSEE">Form Four (CSEE)</SelectItem>
-                      <SelectItem value="ACSEE">Form Six (ACSEE)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button 
-                  onClick={handleFetchNectaResults} 
-                  disabled={fetchingNecta} 
-                  className="h-12 rounded-2xl colorful-gradient font-black shadow-xl text-base group"
-                >
-                  {fetchingNecta ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Search className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />}
-                  Fetch NECTA Data
-                </Button>
-              </div>
-
-              {nectaResults ? (
-                <div className="space-y-8 pt-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="p-6 rounded-[2rem] bg-primary/5 border border-primary/10 flex flex-col items-center text-center">
-                      <p className="text-[10px] uppercase font-black text-muted-foreground tracking-widest mb-2">Overall Pass Rate</p>
-                      <p className="text-4xl font-black text-primary">{nectaResults.summary.passRate}</p>
+                </CardHeader>
+                <CardContent className="p-6 space-y-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Center ID</Label>
+                      <Input 
+                        value={centerNo} 
+                        onChange={(e) => setCenterNo(e.target.value)} 
+                        placeholder="e.g. S.1234" 
+                        className="h-12 rounded-2xl bg-muted/20 border-none shadow-inner font-mono font-bold text-lg"
+                      />
                     </div>
-                    <div className="p-6 rounded-[2rem] bg-green-50 border border-green-100 flex flex-col items-center text-center">
-                      <p className="text-[10px] uppercase font-black text-green-700 tracking-widest mb-2">Division I Count</p>
-                      <p className="text-4xl font-black text-green-800">{nectaResults.summary.divisionI}</p>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Cycle Year</Label>
+                      <Select value={examYear} onValueChange={setExamYear}>
+                        <SelectTrigger className="h-12 rounded-2xl bg-muted/20 border-none shadow-inner font-bold text-base">
+                          <SelectValue placeholder="Select Year" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl">
+                          <SelectItem value="2026">2026 (Active)</SelectItem>
+                          <SelectItem value="2025">2025</SelectItem>
+                          <SelectItem value="2024">2024</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div className="p-6 rounded-[2rem] bg-muted/20 border border-transparent flex flex-col items-center text-center">
-                      <p className="text-[10px] uppercase font-black text-muted-foreground tracking-widest mb-2">Division II Count</p>
-                      <p className="text-4xl font-black text-foreground/80">{nectaResults.summary.divisionII}</p>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Examination</Label>
+                      <Select value={examLevel} onValueChange={setExamLevel}>
+                        <SelectTrigger className="h-12 rounded-2xl bg-muted/20 border-none shadow-inner font-bold text-base">
+                          <SelectValue placeholder="Select Level" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl">
+                          <SelectItem value="FTSEE">Form Two (FTSEE)</SelectItem>
+                          <SelectItem value="CSEE">Form Four (CSEE)</SelectItem>
+                          <SelectItem value="ACSEE">Form Six (ACSEE)</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div className="p-6 rounded-[2rem] bg-orange-50 border border-orange-100 flex flex-col items-center text-center">
-                      <p className="text-[10px] uppercase font-black text-orange-700 tracking-widest mb-2">Institution GPA</p>
-                      <p className="text-4xl font-black text-orange-800">{nectaResults.summary.gpa}</p>
-                    </div>
+                    <Button 
+                      onClick={handleFetchNectaResults} 
+                      disabled={fetchingNecta} 
+                      className="h-12 rounded-2xl colorful-gradient font-black shadow-xl text-base group"
+                    >
+                      {fetchingNecta ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Search className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />}
+                      Sync Data
+                    </Button>
                   </div>
 
-                  <div className="grid md:grid-cols-12 gap-6">
-                    <div className="md:col-span-12 lg:col-span-8">
-                      <Card className="border-none shadow-sm bg-white/50 h-full overflow-hidden">
+                  {nectaResults && (
+                    <div className="space-y-8 pt-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="p-4 rounded-3xl bg-primary/5 border border-primary/10 flex flex-col items-center text-center">
+                          <p className="text-[9px] uppercase font-black text-muted-foreground tracking-widest mb-1">Pass Rate</p>
+                          <p className="text-3xl font-black text-primary">{nectaResults.summary.passRate}</p>
+                        </div>
+                        <div className="p-4 rounded-3xl bg-green-50 border border-green-100 flex flex-col items-center text-center">
+                          <p className="text-[9px] uppercase font-black text-green-700 tracking-widest mb-1">Division I</p>
+                          <p className="text-3xl font-black text-green-800">{nectaResults.summary.divisionI}</p>
+                        </div>
+                        <div className="p-4 rounded-3xl bg-muted/20 border border-transparent flex flex-col items-center text-center">
+                          <p className="text-[9px] uppercase font-black text-muted-foreground tracking-widest mb-1">Division II</p>
+                          <p className="text-3xl font-black text-foreground/80">{nectaResults.summary.divisionII}</p>
+                        </div>
+                        <div className="p-4 rounded-3xl bg-orange-50 border border-orange-100 flex flex-col items-center text-center">
+                          <p className="text-[9px] uppercase font-black text-orange-700 tracking-widest mb-1">School GPA</p>
+                          <p className="text-3xl font-black text-orange-800">{nectaResults.summary.gpa}</p>
+                        </div>
+                      </div>
+
+                      <Card className="border-none shadow-sm bg-white/50 overflow-hidden">
                         <CardHeader className="pb-4 bg-muted/20 border-b">
                           <CardTitle className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-                            <GraduationCap className="h-4 w-4 text-primary" /> Top Candidates Matrix ({examLevel})
+                            <GraduationCap className="h-4 w-4 text-primary" /> Top Candidate Analysis ({examLevel})
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
-                          <Table>
-                            <TableHeader>
-                              <TableRow className="hover:bg-transparent border-none bg-muted/5">
-                                <TableHead className="pl-6">Candidate Name</TableHead>
-                                <TableHead className="text-center">Points</TableHead>
-                                <TableHead className="text-center">Division</TableHead>
-                                <TableHead className="hidden md:table-cell">Subject Grades</TableHead>
-                                <TableHead className="text-right pr-6">Portal View</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {nectaResults.topStudents.map((student: any, i: number) => (
-                                <TableRow key={i} className="group hover:bg-white transition-colors">
-                                  <TableCell className="pl-6">
-                                    <div className="flex items-center gap-3">
-                                      <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center text-primary font-black text-xs">
-                                        {i + 1}
-                                      </div>
-                                      <span className="font-bold text-sm">{student.name}</span>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell className="text-center font-mono font-bold">{student.points}</TableCell>
-                                  <TableCell className="text-center">
-                                    <Badge className={cn(
-                                      "px-3 py-1 rounded-full text-[10px] font-black border-none",
-                                      student.division === "I" ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"
-                                    )}>
-                                      DIV {student.division}
-                                    </Badge>
-                                  </TableCell>
-                                  <TableCell className="hidden md:table-cell text-xs font-mono text-muted-foreground">{student.grades}</TableCell>
-                                  <TableCell className="text-right pr-6">
-                                    <Button variant="ghost" size="sm" className="rounded-full h-8 text-[10px] font-bold text-primary hover:bg-primary/5">
-                                      Full Script <ArrowRight className="ml-1 h-3 w-3" />
-                                    </Button>
-                                  </TableCell>
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow className="hover:bg-transparent border-none bg-muted/5">
+                                  <TableHead className="pl-6">Candidate Name</TableHead>
+                                  <TableHead className="text-center">Pts</TableHead>
+                                  <TableHead className="text-center">Div</TableHead>
+                                  <TableHead className="hidden md:table-cell">Subject Grades</TableHead>
+                                  <TableHead className="text-right pr-6">Source</TableHead>
                                 </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
+                              </TableHeader>
+                              <TableBody>
+                                {nectaResults.topStudents.map((student: any, i: number) => (
+                                  <TableRow key={i} className="group hover:bg-white transition-colors">
+                                    <TableCell className="pl-6">
+                                      <div className="flex items-center gap-3">
+                                        <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center text-primary font-black text-xs">
+                                          {i + 1}
+                                        </div>
+                                        <span className="font-bold text-sm whitespace-nowrap">{student.name}</span>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="text-center font-mono font-bold">{student.points}</TableCell>
+                                    <TableCell className="text-center">
+                                      <Badge className={cn(
+                                        "px-2 py-0.5 rounded-full text-[10px] font-black border-none",
+                                        student.division === "I" ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"
+                                      )}>
+                                        DIV {student.division}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="hidden md:table-cell text-xs font-mono text-muted-foreground">{student.grades}</TableCell>
+                                    <TableCell className="text-right pr-6">
+                                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                                        <ExternalLink className="h-3.5 w-3.5 text-primary" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
                         </CardContent>
                       </Card>
                     </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
 
-                    <div className="md:col-span-12 lg:col-span-4">
-                      <Card className="border-none shadow-sm bg-primary text-primary-foreground h-full flex flex-col items-center justify-center p-10 text-center relative overflow-hidden group min-h-[400px]">
-                        <div className="absolute -right-6 -bottom-6 opacity-10 group-hover:scale-125 transition-transform duration-1000">
-                          <TrendingUp className="h-48 w-48" />
-                        </div>
-                        <div className="h-20 w-20 rounded-[2.5rem] bg-white/20 backdrop-blur-md shadow-2xl flex items-center justify-center mb-6">
-                          <BarChart className="h-10 w-10 text-white" />
-                        </div>
-                        <h3 className="text-2xl font-black tracking-tight">Academic Momentum</h3>
-                        <p className="text-sm text-white/70 font-medium mt-3 max-w-[240px] leading-relaxed">
-                          Your institution has observed a 6.5% performance surge compared to the {parseInt(examYear) - 1} cycle. 
-                        </p>
-                        <Button size="lg" variant="secondary" className="mt-8 rounded-full font-black h-12 px-8 bg-white text-primary hover:bg-white/90 shadow-xl">
-                          Full 2024-2026 Audit
-                        </Button>
-                      </Card>
-                    </div>
+            <div className="lg:col-span-4 space-y-6">
+              <Card className="border-none shadow-sm bg-accent text-accent-foreground overflow-hidden relative group">
+                <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
+                  <Globe className="h-32 w-32" />
+                </div>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    Official Portals
+                  </CardTitle>
+                  <CardDescription className="text-white/70">Quick access to public NECTA resources.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {nectaPortals.map((portal) => (
+                    <a 
+                      key={portal.name} 
+                      href={portal.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex flex-col p-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/5 transition-all group/link"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-black text-sm">{portal.name}</span>
+                        <ExternalLink className="h-3 w-3 opacity-50 group-hover/link:opacity-100 transition-opacity" />
+                      </div>
+                      <span className="text-[10px] opacity-70 font-medium">{portal.description}</span>
+                    </a>
+                  ))}
+                  <div className="p-4 rounded-2xl bg-black/10 text-center space-y-2">
+                    <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Compliance Note</p>
+                    <p className="text-[11px] leading-relaxed opacity-80">
+                      Results retrieved through this interface are synchronized with public records. Use official PReMS credentials for data entry.
+                    </p>
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm p-8 text-center flex flex-col items-center justify-center min-h-[300px] relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform">
+                  <TrendingUp className="h-32 w-32" />
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed rounded-[2.5rem] bg-muted/5 border-muted-foreground/10">
-                   <div className="h-16 w-16 rounded-full bg-muted/20 flex items-center justify-center mb-4">
-                     <AlertCircle className="h-8 w-8 text-muted-foreground" />
-                   </div>
-                   <h3 className="text-lg font-bold text-muted-foreground">No Result Data Retrieved</h3>
-                   <p className="text-sm text-muted-foreground/60 max-w-sm mt-2 font-medium">
-                     Enter your Center Number and choose an examination level to link with NECTA PReMS databases.
-                   </p>
+                <div className="h-16 w-16 rounded-[2rem] bg-primary/10 flex items-center justify-center mb-6">
+                  <BarChart className="h-8 w-8 text-primary" />
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <h3 className="text-2xl font-black text-primary">Academic Pulse</h3>
+                <p className="text-sm text-muted-foreground mt-3 leading-relaxed max-w-[200px]">
+                  Institutional performance is currently 6.5% higher than the 2024 average.
+                </p>
+                <Button variant="outline" className="mt-8 rounded-full font-black h-11 px-8 border-primary/20 text-primary bg-white shadow-sm">
+                  View Full Audit
+                </Button>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="ai-generator" className="grid gap-6 md:grid-cols-2">
@@ -325,8 +351,8 @@ export default function ReportsPage() {
                   <Sparkles className="h-5 w-5" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl">Gemini AI Lab</CardTitle>
-                  <CardDescription className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Official NECTA Resource Generator</CardDescription>
+                  <CardTitle className="text-xl">Gemini Content Lab</CardTitle>
+                  <CardDescription className="text-xs font-bold text-muted-foreground uppercase tracking-wider">NECTA-Aligned Resource Generator</CardDescription>
                 </div>
               </div>
             </CardHeader>
