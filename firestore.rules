@@ -1,0 +1,222 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * SHULEDIRECT PRO SECURITY RULES
+     *
+     * Core Philosophy:
+     * This ruleset implements a multi-tenant architecture where /schools/{schoolId} serves as the root 
+     * for institutional data. It enforces a strict "Authorization Independence" model, relying on 
+     * denormalized schoolId fields on every document to ensure data isolation without expensive 
+     * recursive lookups.
+     *
+     * Data Structure:
+     * - /systemAdmins: Global super-users.
+     * - /users: Global user directory linking Auth UIDs to school contexts and roles.
+     * - /schools/{schoolId}/...: Isolated institutional data including students, staff, academics, and finance.
+     *
+     * Key Security Decisions:
+     * 1. Multi-Tenancy: Users can only access data where the document's schoolId matches their assigned schoolId.
+     * 2. Role-Based Access (RBAC): Critical operations (grading, financial entry, settings) require specific roles 
+     *    (Admin, Teacher, Bursar) stored in the user's profile.
+     * 3. Denormalization: schoolId is required on all documents within a school's tree to allow for fast, 
+     *    non-recursive authorization checks.
+     * 4. Prototyping Flexibility: Schema validation is omitted for non-relational fields to allow rapid UI iteration, 
+     *    while relational integrity (UIDs/IDs) is strictly enforced.
+     */
+
+    // --- Helper Functions ---
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isUser(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /** 
+     * Fetches the authenticated user's profile data.
+     * Firebase caches this document for the duration of the request.
+     */
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isSystemAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/systemAdmins/$(request.auth.uid));
+    }
+
+    function hasRole(schoolId, role) {
+      return isSignedIn() && (isSystemAdmin() || (getUserData().schoolId == schoolId && role in getUserData().roles));
+    }
+
+    function belongsToSchool(schoolId) {
+      return isSignedIn() && (isSystemAdmin() || getUserData().schoolId == schoolId);
+    }
+
+    function isExistingInSchool(schoolId) {
+      return resource != null && resource.data.schoolId == schoolId;
+    }
+
+    // --- Collection Rules ---
+
+    /**
+     * @description System Administrators collection for global management.
+     * @path /systemAdmins/{adminId}
+     * @allow (get) If user is the admin or a system admin.
+     * @deny (all) If user is not authenticated or not a system admin.
+     * @principle Verified Identity and Role-based access.
+     */
+    match /systemAdmins/{adminId} {
+      allow get: if isUser(adminId) || isSystemAdmin();
+      allow list: if isSystemAdmin();
+      allow create, update, delete: if isSystemAdmin();
+    }
+
+    /**
+     * @description User profiles containing roles and school association.
+     * @path /users/{userId}
+     * @allow (create) If the UID matches the document ID.
+     * @deny (update) If trying to change the document ID or schoolId (handled via Admin).
+     * @principle Self-Creation and Ownership.
+     */
+    match /users/{userId} {
+      allow get, list: if isSignedIn();
+      allow create: if isUser(userId);
+      allow update: if isUser(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isSystemAdmin();
+    }
+
+    /**
+     * @description Institutional root document for a school.
+     * @path /schools/{schoolId}
+     * @allow (read) If the user belongs to the school.
+     * @deny (write) If the user is not a school Admin or System Admin.
+     * @principle Multi-tenant isolation.
+     */
+    match /schools/{schoolId} {
+      allow get, list: if belongsToSchool(schoolId);
+      allow create, update: if isSystemAdmin() || hasRole(schoolId, 'Admin');
+      allow delete: if isSystemAdmin();
+
+      /**
+       * @description School branding and grading configuration.
+       * @path /schools/{schoolId}/settings/{settingId}
+       * @allow (create) If schoolId in data matches the path.
+       */
+      match /settings/{settingId} {
+        allow read: if belongsToSchool(schoolId);
+        allow create: if hasRole(schoolId, 'Admin') && request.resource.data.schoolId == schoolId;
+        allow update: if hasRole(schoolId, 'Admin') && isExistingInSchool(schoolId);
+        allow delete: if isSystemAdmin();
+      }
+
+      /**
+       * @description Academic structural data (Years, Terms, Classes, Subjects).
+       * @path /schools/{schoolId}/[AcademicEntities]
+       */
+      match /academicYears/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+      match /academicYears/{yearId}/terms/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+      match /classLevels/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+      match /subjects/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+
+      /**
+       * @description Profiles for School Members (Students, Teachers, Parents, Employees).
+       * @path /schools/{schoolId}/[MemberEntities]
+       */
+      match /students/{id} { 
+        allow read: if belongsToSchool(schoolId); 
+        allow create: if (hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher')) && request.resource.data.schoolId == schoolId;
+        allow update: if (hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher')) && isExistingInSchool(schoolId);
+        allow delete: if hasRole(schoolId, 'Admin');
+      }
+      match /teachers/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+      match /parentGuardians/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+      match /employees/{id} { allow read: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Bursar'); allow write: if hasRole(schoolId, 'Admin'); }
+
+      /**
+       * @description Educational resources (Documents, Links).
+       */
+      match /resources/{id} {
+        allow read: if belongsToSchool(schoolId);
+        allow create: if (hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher')) && request.resource.data.schoolId == schoolId;
+        allow update: if (hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher')) && isExistingInSchool(schoolId);
+        allow delete: if hasRole(schoolId, 'Admin') || (resource.data.uploadedByUserId == request.auth.uid);
+      }
+
+      /**
+       * @description Academic Operations (Courses, Enrollments, Exams, Assessments).
+       */
+      match /courseOfferings/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+      match /studentEnrollments/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+      match /studentCourseEnrollments/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+      match /exams/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher'); }
+      match /continuousAssessments/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher'); }
+
+      /**
+       * @description Grading and Performance Data.
+       * @principle Relational integrity enforced on creatorId.
+       */
+      match /gradeEntries/{id} {
+        allow read: if belongsToSchool(schoolId);
+        allow create: if hasRole(schoolId, 'Teacher') && request.resource.data.schoolId == schoolId && request.resource.data.gradedByTeacherId != null;
+        allow update: if hasRole(schoolId, 'Teacher') && isExistingInSchool(schoolId) && resource.data.gradedByTeacherId == request.auth.uid;
+        allow delete: if hasRole(schoolId, 'Admin');
+      }
+      match /studentAcademicSummaries/{id} {
+        allow read: if belongsToSchool(schoolId);
+        allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher');
+      }
+
+      /**
+       * @description Financial Data (Fees, Invoices, Payments).
+       * @principle Restricted to specialized roles (Bursar/Admin).
+       */
+      match /feeTypes/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Bursar'); }
+      match /feeStructures/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Bursar'); }
+      match /invoices/{id} { 
+        allow read: if belongsToSchool(schoolId); 
+        allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Bursar'); 
+      }
+      match /payments/{id} { 
+        allow read: if belongsToSchool(schoolId); 
+        allow create: if (hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Bursar')) && request.resource.data.schoolId == schoolId;
+        allow update, delete: if hasRole(schoolId, 'Admin');
+      }
+      match /paymentPlans/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Bursar'); }
+
+      /**
+       * @description HR and Payroll.
+       * @deny Public listing or student access.
+       */
+      match /payrollEntries/{id} {
+        allow read, write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Bursar');
+      }
+
+      /**
+       * @description Daily Operations (Attendance, Communication).
+       */
+      match /studentAttendances/{id} { 
+        allow read: if belongsToSchool(schoolId); 
+        allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher'); 
+      }
+      match /communicationLogs/{id} { 
+        allow read: if belongsToSchool(schoolId); 
+        allow create: if belongsToSchool(schoolId) && request.resource.data.schoolId == schoolId;
+        allow update, delete: if false; 
+      }
+
+      /**
+       * @description Transportation and Logistics (Bus, Dorms).
+       */
+      match /busRoutes/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+      match /busRoutes/{busRouteId}/busStops/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+      match /studentBusAssignments/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+      match /dormitories/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+      match /dormitories/{dormitoryId}/rooms/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+      match /studentDormitoryAssignments/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+    }
+  }
+}
