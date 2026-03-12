@@ -4,7 +4,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "School",
       "type": "object",
-      "description": "Represents a single school instance (tenant) within the system, holding core institutional details and acting as the root for multi-tenancy.",
+      "description": "Represents a single school, which acts as a tenant in the multi-tenant system. It holds core institutional information.",
       "properties": {
         "id": {
           "type": "string",
@@ -12,344 +12,142 @@
         },
         "name": {
           "type": "string",
-          "description": "The official name of the school."
+          "description": "The official, full name of the school."
+        },
+        "motto": {
+          "type": "string",
+          "description": "The inspirational motto or slogan of the school."
         },
         "address": {
           "type": "string",
           "description": "The physical address of the school."
         },
-        "contactEmail": {
+        "phoneNumber": {
           "type": "string",
-          "description": "The primary contact email for the school.",
+          "description": "The primary contact phone number for administrative purposes at the school."
+        },
+        "email": {
+          "type": "string",
+          "description": "The primary contact email address for the school.",
           "format": "email"
         },
-        "contactPhone": {
+        "createdAt": {
           "type": "string",
-          "description": "The primary contact phone number for the school."
+          "description": "Timestamp indicating when the school record was first created.",
+          "format": "date-time"
         },
-        "currency": {
+        "updatedAt": {
           "type": "string",
-          "description": "The primary currency used by the school for financial transactions (e.g., TZS for Tanzanian Shilling)."
-        },
-        "language": {
-          "type": "string",
-          "description": "The primary language for administrative use within the school (e.g., 'sw' for Swahili, 'en' for English)."
-        },
-        "isActive": {
-          "type": "boolean",
-          "description": "Indicates if the school's account is currently active in the system."
+          "description": "Timestamp indicating when the school record was last updated.",
+          "format": "date-time"
         }
       },
       "required": [
         "id",
         "name",
-        "contactEmail",
-        "contactPhone",
-        "currency",
-        "language",
-        "isActive"
+        "address",
+        "phoneNumber",
+        "email",
+        "createdAt",
+        "updatedAt"
       ]
     },
-    "SchoolSettings": {
+    "UserProfile": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "SchoolSettings",
+      "title": "UserProfile",
       "type": "object",
-      "description": "Stores school-specific customization options and configuration details, such as branding elements and default NECTA grading rules.",
+      "description": "Represents an individual user account with access to the system, linked to a specific school and associated with various roles (e.g., teacher, parent, admin).",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the SchoolSettings entity."
+          "description": "Unique identifier for the UserProfile entity."
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School this setting belongs to. (Relationship: School 1:1 SchoolSettings)"
-        },
-        "logoUrl": {
-          "type": "string",
-          "description": "URL to the school's official logo, used for branding across the application and reports.",
-          "format": "uri"
-        },
-        "primaryColor": {
-          "type": "string",
-          "description": "The hex code for the school's primary branding color (e.g., #1F5BA6)."
-        },
-        "accentColor": {
-          "type": "string",
-          "description": "The hex code for the school's accent branding color (e.g., #945CE6)."
-        },
-        "backgroundColor": {
-          "type": "string",
-          "description": "The hex code for the school's background color (e.g., #ECF0F6)."
-        },
-        "defaultAcademicYearId": {
-          "type": "string",
-          "description": "Reference to the default active AcademicYear for the school. (Relationship: AcademicYear 1:1 SchoolSettings)"
-        },
-        "nectaOLearningLevelGradingRules": {
-          "type": "string",
-          "description": "JSON string representing the NECTA O-Level grading rules (e.g., grade point ranges for A, B, C, D, F and overall division calculations). This field stores a structured configuration."
-        },
-        "nectaALearningLevelGradingRules": {
-          "type": "string",
-          "description": "JSON string representing the NECTA A-Level grading rules (e.g., grade point ranges for A*, A, B, C, D, E). This field stores a structured configuration."
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "logoUrl",
-        "primaryColor",
-        "accentColor",
-        "backgroundColor",
-        "defaultAcademicYearId"
-      ]
-    },
-    "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
-      "type": "object",
-      "description": "Represents a user account in the system, used for authentication and defining roles (e.g., Admin, Teacher, Parent, Student).",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the User entity."
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School the user is associated with. (Relationship: School 1:N User)"
-        },
-        "email": {
-          "type": "string",
-          "description": "The user's email address, used for login and notifications.",
-          "format": "email"
+          "description": "Reference to the School this user profile belongs to. (Relationship: School 1:N UserProfile)"
         },
         "firstName": {
           "type": "string",
-          "description": "The user's first name."
+          "description": "The first name of the user."
         },
         "lastName": {
           "type": "string",
-          "description": "The user's last name."
+          "description": "The last name of the user."
         },
-        "phone": {
+        "email": {
           "type": "string",
-          "description": "The user's primary phone number."
+          "description": "The email address of the user, used for communication and system access. This is distinct from authentication credentials.",
+          "format": "email"
         },
-        "roles": {
+        "phoneNumber": {
+          "type": "string",
+          "description": "The phone number of the user, used for SMS notifications and contact."
+        },
+        "roleIds": {
           "type": "array",
-          "description": "An array of roles assigned to the user (e.g., 'Admin', 'Teacher', 'Bursar', 'Parent', 'Student').",
+          "description": "An array of IDs referencing the roles assigned to this user profile. (Relationship: UserProfile N:N Role)",
           "items": {
             "type": "string"
           }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was last updated.",
+          "format": "date-time"
         },
         "isActive": {
           "type": "boolean",
-          "description": "Indicates if the user account is currently active."
+          "description": "Indicates whether the user account is currently active in the system."
         }
       },
       "required": [
         "id",
         "schoolId",
-        "email",
         "firstName",
         "lastName",
-        "roles",
+        "email",
+        "phoneNumber",
+        "roleIds",
+        "createdAt",
+        "updatedAt",
         "isActive"
       ]
     },
-    "Student": {
+    "Role": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Student",
+      "title": "Role",
       "type": "object",
-      "description": "Detailed profile for a student enrolled in the school.",
+      "description": "Defines a predefined system role with specific permissions and access levels (e.g., School Owner, Teacher, Parent).",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Student entity."
+          "description": "Unique identifier for the Role entity."
         },
-        "schoolId": {
+        "name": {
           "type": "string",
-          "description": "Reference to the School the student is enrolled in. (Relationship: School 1:N Student)"
+          "description": "The descriptive name of the role (e.g., 'School Owner', 'Headmaster', 'Teacher', 'Bursar', 'Parent')."
         },
-        "userId": {
+        "description": {
           "type": "string",
-          "description": "Optional reference to the User account if the student has a system login. (Relationship: User 1:1 Student)"
-        },
-        "firstName": {
-          "type": "string",
-          "description": "The student's first name."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "The student's last name."
-        },
-        "middleName": {
-          "type": "string",
-          "description": "The student's middle name (optional)."
-        },
-        "dateOfBirth": {
-          "type": "string",
-          "description": "The student's date of birth.",
-          "format": "date"
-        },
-        "gender": {
-          "type": "string",
-          "description": "The student's gender."
-        },
-        "admissionNumber": {
-          "type": "string",
-          "description": "The student's unique admission number within the school."
-        },
-        "admissionDate": {
-          "type": "string",
-          "description": "The date the student was admitted to the school.",
-          "format": "date"
-        },
-        "isBoardingStudent": {
-          "type": "boolean",
-          "description": "Indicates if the student is a boarding student."
+          "description": "A detailed explanation of the responsibilities and permissions associated with this role."
         }
       },
       "required": [
         "id",
-        "schoolId",
-        "firstName",
-        "lastName",
-        "dateOfBirth",
-        "gender",
-        "admissionNumber",
-        "admissionDate",
-        "isBoardingStudent"
-      ]
-    },
-    "Teacher": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Teacher",
-      "type": "object",
-      "description": "Detailed profile for a teacher employed by the school.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Teacher entity."
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School the teacher is employed by. (Relationship: School 1:N Teacher)"
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the User account for this teacher. (Relationship: User 1:1 Teacher)"
-        },
-        "firstName": {
-          "type": "string",
-          "description": "The teacher's first name."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "The teacher's last name."
-        },
-        "employeeId": {
-          "type": "string",
-          "description": "The teacher's unique employee ID within the school."
-        },
-        "dateOfJoining": {
-          "type": "string",
-          "description": "The date the teacher joined the school.",
-          "format": "date"
-        },
-        "qualifications": {
-          "type": "array",
-          "description": "A list of academic or professional qualifications held by the teacher.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "subjectIds": {
-          "type": "array",
-          "description": "References to Subjects the teacher is qualified and assigned to teach. (Relationship: Subject N:N Teacher)",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "userId",
-        "firstName",
-        "lastName",
-        "employeeId",
-        "dateOfJoining",
-        "qualifications",
-        "subjectIds"
-      ]
-    },
-    "ParentGuardian": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ParentGuardian",
-      "type": "object",
-      "description": "Detailed profile for a parent or guardian associated with students.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the ParentGuardian entity."
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School the parent/guardian's student is enrolled in. (Relationship: School 1:N ParentGuardian)"
-        },
-        "userId": {
-          "type": "string",
-          "description": "Optional reference to the User account if the parent/guardian has a system login. (Relationship: User 1:1 ParentGuardian)"
-        },
-        "firstName": {
-          "type": "string",
-          "description": "The parent/guardian's first name."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "The parent/guardian's last name."
-        },
-        "relationToStudent": {
-          "type": "string",
-          "description": "The relationship of the person to the student (e.g., 'Mother', 'Father', 'Legal Guardian')."
-        },
-        "email": {
-          "type": "string",
-          "description": "The parent/guardian's email address.",
-          "format": "email"
-        },
-        "phone": {
-          "type": "string",
-          "description": "The parent/guardian's primary phone number for communication."
-        },
-        "address": {
-          "type": "string",
-          "description": "The residential address of the parent/guardian."
-        },
-        "studentIds": {
-          "type": "array",
-          "description": "References to students associated with this parent/guardian. (Relationship: Student N:N ParentGuardian)",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "firstName",
-        "lastName",
-        "relationToStudent",
-        "phone",
-        "studentIds"
+        "name",
+        "description"
       ]
     },
     "AcademicYear": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "AcademicYear",
       "type": "object",
-      "description": "Defines an academic year, including its start and end dates, for scheduling and reporting.",
+      "description": "Represents a specific academic year, defining the overarching period for school operations.",
       "properties": {
         "id": {
           "type": "string",
@@ -357,41 +155,53 @@
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School this academic year belongs to. (Relationship: School 1:N AcademicYear)"
+          "description": "Reference to the School to which this academic year pertains. (Relationship: School 1:N AcademicYear)"
         },
-        "year": {
+        "name": {
           "type": "string",
-          "description": "The name or period of the academic year (e.g., '2023/2024')."
+          "description": "The name of the academic year (e.g., '2023/2024')."
         },
         "startDate": {
           "type": "string",
-          "description": "The start date of the academic year.",
+          "description": "The official start date of the academic year.",
           "format": "date"
         },
         "endDate": {
           "type": "string",
-          "description": "The end date of the academic year.",
+          "description": "The official end date of the academic year.",
           "format": "date"
         },
         "isCurrent": {
           "type": "boolean",
-          "description": "Indicates if this is the currently active academic year for the school."
+          "description": "Indicates whether this academic year is the currently active one for the school."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the academic year record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the academic year record was last updated.",
+          "format": "date-time"
         }
       },
       "required": [
         "id",
         "schoolId",
-        "year",
+        "name",
         "startDate",
         "endDate",
-        "isCurrent"
+        "isCurrent",
+        "createdAt",
+        "updatedAt"
       ]
     },
     "Term": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Term",
       "type": "object",
-      "description": "Defines an academic term or semester within a specific academic year.",
+      "description": "Represents an academic term or semester, a subdivision within an AcademicYear.",
       "properties": {
         "id": {
           "type": "string",
@@ -407,21 +217,31 @@
         },
         "name": {
           "type": "string",
-          "description": "The name of the term (e.g., 'Term 1', 'Semester 2')."
+          "description": "The name of the term (e.g., 'Term 1', 'First Semester')."
         },
         "startDate": {
           "type": "string",
-          "description": "The start date of the term.",
+          "description": "The start date of the academic term.",
           "format": "date"
         },
         "endDate": {
           "type": "string",
-          "description": "The end date of the term.",
+          "description": "The end date of the academic term.",
           "format": "date"
         },
         "isCurrent": {
           "type": "boolean",
-          "description": "Indicates if this is the currently active term for the school."
+          "description": "Indicates whether this term is the currently active one for the school."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the term record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the term record was last updated.",
+          "format": "date-time"
         }
       },
       "required": [
@@ -431,49 +251,16 @@
         "name",
         "startDate",
         "endDate",
-        "isCurrent"
-      ]
-    },
-    "ClassLevel": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ClassLevel",
-      "type": "object",
-      "description": "Represents an academic class level (e.g., 'Form 1', 'Standard 7', 'Advanced Level') within the school.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the ClassLevel entity."
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School this class level belongs to. (Relationship: School 1:N ClassLevel)"
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the class level (e.g., 'Form 4', 'Standard 7', 'Lower Six')."
-        },
-        "levelOrder": {
-          "type": "number",
-          "description": "A numerical order for sorting class levels sequentially (e.g., Form 1 = 1, Form 2 = 2)."
-        },
-        "educationStage": {
-          "type": "string",
-          "description": "The educational stage this class level belongs to (e.g., 'Primary', 'Secondary', 'Advanced')."
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "name",
-        "levelOrder",
-        "educationStage"
+        "isCurrent",
+        "createdAt",
+        "updatedAt"
       ]
     },
     "Subject": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Subject",
       "type": "object",
-      "description": "Defines an academic subject offered by the school.",
+      "description": "Represents an academic subject offered and taught at the school (e.g., Mathematics, History).",
       "properties": {
         "id": {
           "type": "string",
@@ -481,23 +268,33 @@
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School this subject belongs to. (Relationship: School 1:N Subject)"
+          "description": "Reference to the School that offers this subject. (Relationship: School 1:N Subject)"
         },
         "name": {
           "type": "string",
-          "description": "The name of the subject (e.g., 'Mathematics', 'Biology', 'History')."
+          "description": "The official name of the subject (e.g., 'Physics', 'Kiswahili')."
         },
         "code": {
           "type": "string",
-          "description": "An abbreviated code for the subject (e.g., 'MATH101', 'BIO200')."
+          "description": "A short, unique alphanumeric code for the subject (e.g., 'PHY101', 'KSW203')."
         },
         "description": {
           "type": "string",
-          "description": "A brief description of the subject."
+          "description": "A brief textual description of the subject's curriculum or content."
         },
-        "isCoreSubject": {
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the subject record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the subject record was last updated.",
+          "format": "date-time"
+        },
+        "isActive": {
           "type": "boolean",
-          "description": "Indicates if this is a core (mandatory) subject."
+          "description": "Indicates whether the subject is currently being offered or taught at the school."
         }
       },
       "required": [
@@ -506,146 +303,287 @@
         "name",
         "code",
         "description",
-        "isCoreSubject"
+        "createdAt",
+        "updatedAt",
+        "isActive"
       ]
     },
-    "CourseOffering": {
+    "Classroom": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "CourseOffering",
+      "title": "Classroom",
       "type": "object",
-      "description": "Represents a specific instance of a subject being taught to a class level in a given academic year, typically with an assigned teacher.",
+      "description": "Represents a distinct academic class or stream (e.g., 'Form 1A', 'Primary 5 Science').",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the CourseOffering entity."
+          "description": "Unique identifier for the Classroom entity."
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School this course offering belongs to. (Relationship: School 1:N CourseOffering)"
-        },
-        "academicYearId": {
-          "type": "string",
-          "description": "Reference to the AcademicYear this course offering is part of. (Relationship: AcademicYear 1:N CourseOffering)"
-        },
-        "classLevelId": {
-          "type": "string",
-          "description": "Reference to the ClassLevel for which this course is offered. (Relationship: ClassLevel 1:N CourseOffering)"
-        },
-        "subjectId": {
-          "type": "string",
-          "description": "Reference to the Subject being offered. (Relationship: Subject 1:N CourseOffering)"
-        },
-        "teacherId": {
-          "type": "string",
-          "description": "Reference to the Teacher assigned to teach this course offering. (Relationship: Teacher 1:N CourseOffering)"
+          "description": "Reference to the School this classroom belongs to. (Relationship: School 1:N Classroom)"
         },
         "name": {
           "type": "string",
-          "description": "A descriptive name for the course offering (e.g., '2023/2024 Form 4 Mathematics')."
+          "description": "The unique name or identifier for the classroom (e.g., 'Form 1A', 'Standard 7')."
+        },
+        "academicLevel": {
+          "type": "string",
+          "description": "The academic level or grade associated with this classroom (e.g., 'Primary', 'O-Level', 'A-Level')."
+        },
+        "capacity": {
+          "type": "number",
+          "description": "The maximum number of students that can be enrolled in this classroom."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description or notes about the classroom."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the classroom record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the classroom record was last updated.",
+          "format": "date-time"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether this classroom is currently active and can have students assigned to it."
         }
       },
       "required": [
         "id",
         "schoolId",
-        "academicYearId",
-        "classLevelId",
-        "subjectId",
-        "teacherId",
-        "name"
+        "name",
+        "academicLevel",
+        "capacity",
+        "description",
+        "createdAt",
+        "updatedAt",
+        "isActive"
       ]
     },
-    "StudentEnrollment": {
+    "Student": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "StudentEnrollment",
+      "title": "Student",
       "type": "object",
-      "description": "Records a student's enrollment in the school for a specific academic year and class level.",
+      "description": "Represents a student currently or previously enrolled in the school.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the StudentEnrollment entity."
+          "description": "Unique identifier for the Student entity."
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School this enrollment belongs to. (Relationship: School 1:N StudentEnrollment)"
+          "description": "Reference to the School where this student is enrolled. (Relationship: School 1:N Student)"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the student."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the student."
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "description": "The student's date of birth.",
+          "format": "date"
+        },
+        "gender": {
+          "type": "string",
+          "description": "The gender of the student (e.g., 'Male', 'Female')."
+        },
+        "admissionNumber": {
+          "type": "string",
+          "description": "The unique admission number assigned to the student upon joining the school."
+        },
+        "admissionDate": {
+          "type": "string",
+          "description": "The date when the student was first admitted to the school.",
+          "format": "date"
+        },
+        "parentUserIds": {
+          "type": "array",
+          "description": "An array of IDs referencing UserProfiles identified as parents or guardians of this student. (Relationship: Student N:N UserProfile)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the student record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the student record was last updated.",
+          "format": "date-time"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether the student is currently active (enrolled) in the school."
+        }
+      },
+      "required": [
+        "id",
+        "schoolId",
+        "firstName",
+        "lastName",
+        "dateOfBirth",
+        "gender",
+        "admissionNumber",
+        "admissionDate",
+        "parentUserIds",
+        "createdAt",
+        "updatedAt",
+        "isActive"
+      ]
+    },
+    "Enrollment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Enrollment",
+      "type": "object",
+      "description": "Records a student's enrollment in a specific classroom for a defined academic year and term.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Enrollment entity."
+        },
+        "schoolId": {
+          "type": "string",
+          "description": "Reference to the School where this enrollment is active. (Relationship: School 1:N Enrollment)"
         },
         "studentId": {
           "type": "string",
-          "description": "Reference to the Student being enrolled. (Relationship: Student 1:N StudentEnrollment)"
+          "description": "Reference to the Student who is enrolled. (Relationship: Student 1:N Enrollment)"
+        },
+        "classroomId": {
+          "type": "string",
+          "description": "Reference to the Classroom the student is enrolled in. (Relationship: Classroom 1:N Enrollment)"
         },
         "academicYearId": {
           "type": "string",
-          "description": "Reference to the AcademicYear of enrollment. (Relationship: AcademicYear 1:N StudentEnrollment)"
+          "description": "Reference to the AcademicYear of this enrollment. (Relationship: AcademicYear 1:N Enrollment)"
         },
-        "classLevelId": {
+        "termId": {
           "type": "string",
-          "description": "Reference to the ClassLevel the student is enrolled in for this academic year. (Relationship: ClassLevel 1:N StudentEnrollment)"
+          "description": "Reference to the Term of this enrollment. (Relationship: Term 1:N Enrollment)"
         },
         "enrollmentDate": {
           "type": "string",
-          "description": "The date the student was enrolled for this academic year/class level.",
+          "description": "The date on which the student was officially enrolled in this class for the period.",
           "format": "date"
         },
-        "status": {
+        "createdAt": {
           "type": "string",
-          "description": "The current status of the enrollment (e.g., 'Active', 'Transferred', 'Withdrawn')."
+          "description": "Timestamp indicating when the enrollment record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the enrollment record was last updated.",
+          "format": "date-time"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether this enrollment is currently active."
         }
       },
       "required": [
         "id",
         "schoolId",
         "studentId",
+        "classroomId",
         "academicYearId",
-        "classLevelId",
+        "termId",
         "enrollmentDate",
-        "status"
+        "createdAt",
+        "updatedAt",
+        "isActive"
       ]
     },
-    "StudentCourseEnrollment": {
+    "TeacherAssignment": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "StudentCourseEnrollment",
+      "title": "TeacherAssignment",
       "type": "object",
-      "description": "Records a student's enrollment in a specific course offering.",
+      "description": "Links a specific teacher (UserProfile) to a subject and a classroom for an academic period.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the StudentCourseEnrollment entity."
+          "description": "Unique identifier for the TeacherAssignment entity."
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School this enrollment belongs to. (Relationship: School 1:N StudentCourseEnrollment)"
+          "description": "Reference to the School where this assignment is made. (Relationship: School 1:N TeacherAssignment)"
         },
-        "studentId": {
+        "teacherUserId": {
           "type": "string",
-          "description": "Reference to the Student enrolled in the course. (Relationship: Student 1:N StudentCourseEnrollment)"
+          "description": "Reference to the UserProfile of the teacher assigned to this teaching role. (Relationship: UserProfile 1:N TeacherAssignment)"
         },
-        "courseOfferingId": {
+        "classroomId": {
           "type": "string",
-          "description": "Reference to the CourseOffering the student is enrolled in. (Relationship: CourseOffering 1:N StudentCourseEnrollment)"
+          "description": "Reference to the Classroom where the subject is being taught. (Relationship: Classroom 1:N TeacherAssignment)"
         },
-        "enrollmentDate": {
+        "subjectId": {
           "type": "string",
-          "description": "The date the student enrolled in this specific course.",
+          "description": "Reference to the Subject that is assigned to be taught. (Relationship: Subject 1:N TeacherAssignment)"
+        },
+        "academicYearId": {
+          "type": "string",
+          "description": "Reference to the AcademicYear during which this assignment is valid. (Relationship: AcademicYear 1:N TeacherAssignment)"
+        },
+        "termId": {
+          "type": "string",
+          "description": "Reference to the Term during which this assignment is valid. (Relationship: Term 1:N TeacherAssignment)"
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The start date of this teacher's assignment.",
           "format": "date"
         },
-        "status": {
+        "endDate": {
           "type": "string",
-          "description": "The status of the student in this course (e.g., 'Enrolled', 'Completed', 'Dropped')."
+          "description": "The end date of this teacher's assignment.",
+          "format": "date"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the assignment record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the assignment record was last updated.",
+          "format": "date-time"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether the teacher's assignment is currently active."
         }
       },
       "required": [
         "id",
         "schoolId",
-        "studentId",
-        "courseOfferingId",
-        "enrollmentDate",
-        "status"
+        "teacherUserId",
+        "classroomId",
+        "subjectId",
+        "academicYearId",
+        "termId",
+        "startDate",
+        "endDate",
+        "createdAt",
+        "updatedAt",
+        "isActive"
       ]
     },
     "Exam": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Exam",
       "type": "object",
-      "description": "Defines an examination event for a specific course offering and term.",
+      "description": "Defines an exam or continuous assessment (CAT) for a specific subject and classroom.",
       "properties": {
         "id": {
           "type": "string",
@@ -653,211 +591,113 @@
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School this exam belongs to. (Relationship: School 1:N Exam)"
-        },
-        "academicYearId": {
-          "type": "string",
-          "description": "Reference to the AcademicYear the exam is held in. (Relationship: AcademicYear 1:N Exam)"
-        },
-        "termId": {
-          "type": "string",
-          "description": "Reference to the Term the exam is held in. (Relationship: Term 1:N Exam)"
-        },
-        "courseOfferingId": {
-          "type": "string",
-          "description": "Reference to the CourseOffering for which this exam is conducted. (Relationship: CourseOffering 1:N Exam)"
+          "description": "Reference to the School where this exam is conducted. (Relationship: School 1:N Exam)"
         },
         "name": {
           "type": "string",
-          "description": "The name of the exam (e.g., 'Mid-Term Exam', 'Final Exam')."
+          "description": "The descriptive name of the exam (e.g., 'Mid-Term Physics Exam', 'Biology CAT 1')."
         },
-        "maxScore": {
-          "type": "number",
-          "description": "The maximum possible score for this exam."
-        },
-        "date": {
+        "subjectId": {
           "type": "string",
-          "description": "The date the exam was conducted.",
-          "format": "date"
+          "description": "Reference to the Subject that this exam is testing. (Relationship: Subject 1:N Exam)"
         },
-        "weightPercentage": {
-          "type": "number",
-          "description": "The percentage weight this exam contributes to the overall grade for the course/term."
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "academicYearId",
-        "termId",
-        "courseOfferingId",
-        "name",
-        "maxScore",
-        "date",
-        "weightPercentage"
-      ]
-    },
-    "ContinuousAssessment": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ContinuousAssessment",
-      "type": "object",
-      "description": "Defines a continuous assessment (e.g., quiz, homework, project) for a specific course offering and term.",
-      "properties": {
-        "id": {
+        "classroomId": {
           "type": "string",
-          "description": "Unique identifier for the ContinuousAssessment entity."
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School this assessment belongs to. (Relationship: School 1:N ContinuousAssessment)"
+          "description": "Reference to the Classroom for which this exam is intended. (Relationship: Classroom 1:N Exam)"
         },
         "academicYearId": {
           "type": "string",
-          "description": "Reference to the AcademicYear the assessment is held in. (Relationship: AcademicYear 1:N ContinuousAssessment)"
+          "description": "Reference to the AcademicYear in which the exam is conducted. (Relationship: AcademicYear 1:N Exam)"
         },
         "termId": {
           "type": "string",
-          "description": "Reference to the Term the assessment is held in. (Relationship: Term 1:N ContinuousAssessment)"
-        },
-        "courseOfferingId": {
-          "type": "string",
-          "description": "Reference to the CourseOffering for which this assessment is conducted. (Relationship: CourseOffering 1:N ContinuousAssessment)"
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the assessment (e.g., 'Assignment 1', 'Weekly Quiz 3')."
+          "description": "Reference to the Term in which the exam is conducted. (Relationship: Term 1:N Exam)"
         },
         "maxScore": {
           "type": "number",
-          "description": "The maximum possible score for this assessment."
+          "description": "The maximum possible score a student can achieve on this exam."
         },
-        "date": {
+        "examDate": {
           "type": "string",
-          "description": "The date the assessment was given or was due.",
+          "description": "The date when the exam was administered.",
           "format": "date"
         },
-        "weightPercentage": {
-          "type": "number",
-          "description": "The percentage weight this assessment contributes to the overall continuous assessment grade for the course/term."
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "academicYearId",
-        "termId",
-        "courseOfferingId",
-        "name",
-        "maxScore",
-        "date",
-        "weightPercentage"
-      ]
-    },
-    "GradeEntry": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "GradeEntry",
-      "type": "object",
-      "description": "Records an individual student's score for a specific exam or continuous assessment.",
-      "properties": {
-        "id": {
+        "createdByUserId": {
           "type": "string",
-          "description": "Unique identifier for the GradeEntry entity."
+          "description": "Reference to the UserProfile (typically a teacher or academic admin) who created this exam definition. (Relationship: UserProfile 1:N Exam)"
         },
-        "schoolId": {
+        "createdAt": {
           "type": "string",
-          "description": "Reference to the School this grade entry belongs to. (Relationship: School 1:N GradeEntry)"
+          "description": "Timestamp indicating when the exam record was created.",
+          "format": "date-time"
         },
-        "studentCourseEnrollmentId": {
+        "updatedAt": {
           "type": "string",
-          "description": "Reference to the StudentCourseEnrollment this grade is for. (Relationship: StudentCourseEnrollment 1:N GradeEntry)"
-        },
-        "examId": {
-          "type": "string",
-          "description": "Reference to the Exam (if applicable). Null if it's a ContinuousAssessment. (Relationship: Exam 1:N GradeEntry)"
-        },
-        "continuousAssessmentId": {
-          "type": "string",
-          "description": "Reference to the ContinuousAssessment (if applicable). Null if it's an Exam. (Relationship: ContinuousAssessment 1:N GradeEntry)"
-        },
-        "score": {
-          "type": "number",
-          "description": "The actual score obtained by the student for this assessment/exam."
-        },
-        "gradedByTeacherId": {
-          "type": "string",
-          "description": "Reference to the Teacher who recorded this grade. (Relationship: Teacher 1:N GradeEntry)"
-        },
-        "dateRecorded": {
-          "type": "string",
-          "description": "The date the score was recorded in the system.",
+          "description": "Timestamp indicating when the exam record was last updated.",
           "format": "date-time"
         }
       },
       "required": [
         "id",
         "schoolId",
-        "studentCourseEnrollmentId",
-        "score",
-        "gradedByTeacherId",
-        "dateRecorded"
+        "name",
+        "subjectId",
+        "classroomId",
+        "academicYearId",
+        "termId",
+        "maxScore",
+        "examDate",
+        "createdByUserId",
+        "createdAt",
+        "updatedAt"
       ]
     },
-    "StudentAcademicSummary": {
+    "ExamResult": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "StudentAcademicSummary",
+      "title": "ExamResult",
       "type": "object",
-      "description": "Stores the computed NECTA-compliant academic summary (grades, points, divisions) for a student for a specific academic year or term.",
+      "description": "Records a student's performance on a specific exam, including raw score and NECTA-compliant grading.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the StudentAcademicSummary entity."
+          "description": "Unique identifier for the ExamResult entity."
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School this summary belongs to. (Relationship: School 1:N StudentAcademicSummary)"
+          "description": "Reference to the School where this exam result was recorded. (Relationship: School 1:N ExamResult)"
         },
         "studentId": {
           "type": "string",
-          "description": "Reference to the Student this summary is for. (Relationship: Student 1:N StudentAcademicSummary)"
+          "description": "Reference to the Student who received this result. (Relationship: Student 1:N ExamResult)"
         },
-        "academicYearId": {
+        "examId": {
           "type": "string",
-          "description": "Reference to the AcademicYear this summary pertains to. (Relationship: AcademicYear 1:N StudentAcademicSummary)"
+          "description": "Reference to the Exam this result pertains to. (Relationship: Exam 1:N ExamResult)"
         },
-        "termId": {
-          "type": "string",
-          "description": "Optional reference to the Term this summary pertains to (if reporting term-wise). (Relationship: Term 1:N StudentAcademicSummary)"
-        },
-        "classLevelId": {
-          "type": "string",
-          "description": "Reference to the ClassLevel the student was in. (Relationship: ClassLevel 1:N StudentAcademicSummary)"
-        },
-        "subjectGradeDetails": {
-          "type": "array",
-          "description": "An array of objects containing detailed grades for each subject (e.g., {subjectId, rawPercentage, letterGrade, gradePoint}).",
-          "items": {
-            "type": "string"
-          }
-        },
-        "overallGradePoints": {
+        "rawScore": {
           "type": "number",
-          "description": "The aggregated NECTA grade points for the student (e.g., sum of top 7 subjects for O-Level)."
+          "description": "The unadjusted numerical score obtained by the student in the exam."
         },
-        "overallDivision": {
-          "type": "string",
-          "description": "The NECTA-compliant overall division classification (e.g., 'Division I', 'Division Zero')."
-        },
-        "positionInClass": {
+        "nectaGradePoint": {
           "type": "number",
-          "description": "The student's rank within their specific class (e.g., '1' for first position)."
+          "description": "The NECTA-compliant grade point assigned based on the raw score and academic level (e.g., 1 for 'A', 5 for 'F' in O-Level)."
         },
-        "positionInLevel": {
-          "type": "number",
-          "description": "The student's rank among all students in their academic level (e.g., '1' for first position in Form 4)."
-        },
-        "reportGeneratedDate": {
+        "nectaGradeLetter": {
           "type": "string",
-          "description": "The date when this academic summary report was generated.",
+          "description": "The NECTA-compliant letter grade (e.g., 'A', 'B', 'C', 'D', 'E', 'F') derived from the raw score."
+        },
+        "gradedByUserId": {
+          "type": "string",
+          "description": "Reference to the UserProfile (typically the subject teacher) who recorded this result. (Relationship: UserProfile 1:N ExamResult)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the exam result record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the exam result record was last updated.",
           "format": "date-time"
         }
       },
@@ -865,126 +705,92 @@
         "id",
         "schoolId",
         "studentId",
-        "academicYearId",
-        "classLevelId",
-        "overallGradePoints",
-        "overallDivision",
-        "reportGeneratedDate"
+        "examId",
+        "rawScore",
+        "nectaGradePoint",
+        "nectaGradeLetter",
+        "gradedByUserId",
+        "createdAt",
+        "updatedAt"
       ]
     },
-    "Resource": {
+    "AttendanceRecord": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Resource",
+      "title": "AttendanceRecord",
       "type": "object",
-      "description": "Represents an educational resource (e.g., document, link, video) uploaded for students or teachers.",
+      "description": "Tracks a student's attendance status for a specific date and classroom session.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Resource entity."
+          "description": "Unique identifier for the AttendanceRecord entity."
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School this resource belongs to. (Relationship: School 1:N Resource)"
+          "description": "Reference to the School where this attendance was recorded. (Relationship: School 1:N AttendanceRecord)"
         },
-        "uploadedByUserId": {
+        "studentId": {
           "type": "string",
-          "description": "Reference to the User who uploaded the resource. (Relationship: User 1:N Resource)"
+          "description": "Reference to the Student whose attendance is being recorded. (Relationship: Student 1:N AttendanceRecord)"
         },
-        "title": {
+        "classroomId": {
           "type": "string",
-          "description": "The title of the resource."
+          "description": "Reference to the Classroom for which attendance is recorded. (Relationship: Classroom 1:N AttendanceRecord)"
         },
-        "description": {
+        "academicYearId": {
           "type": "string",
-          "description": "A brief description of the resource's content."
+          "description": "Reference to the AcademicYear of this attendance record. (Relationship: AcademicYear 1:N AttendanceRecord)"
         },
-        "fileUrl": {
+        "termId": {
           "type": "string",
-          "description": "The URL or path to the stored resource file.",
-          "format": "uri"
+          "description": "Reference to the Term of this attendance record. (Relationship: Term 1:N AttendanceRecord)"
         },
-        "fileType": {
+        "attendanceDate": {
           "type": "string",
-          "description": "The type of the resource file (e.g., 'PDF', 'DOCX', 'Video', 'Link')."
+          "description": "The specific date for which the attendance is recorded.",
+          "format": "date"
         },
-        "uploadedDate": {
+        "status": {
           "type": "string",
-          "description": "The date and time the resource was uploaded.",
+          "description": "The attendance status (e.g., 'Present', 'Absent', 'Late', 'Excused Absence')."
+        },
+        "recordedByUserId": {
+          "type": "string",
+          "description": "Reference to the UserProfile (typically a teacher or admin) who recorded this attendance. (Relationship: UserProfile 1:N AttendanceRecord)"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any additional notes or remarks regarding the attendance."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the attendance record was created.",
           "format": "date-time"
         },
-        "academicYearIds": {
-          "type": "array",
-          "description": "Optional references to AcademicYears this resource is relevant for. (Relationship: AcademicYear N:N Resource)",
-          "items": {
-            "type": "string"
-          }
-        },
-        "classLevelIds": {
-          "type": "array",
-          "description": "Optional references to ClassLevels for which this resource is intended. (Relationship: ClassLevel N:N Resource)",
-          "items": {
-            "type": "string"
-          }
-        },
-        "subjectIds": {
-          "type": "array",
-          "description": "Optional references to Subjects this resource is related to. (Relationship: Subject N:N Resource)",
-          "items": {
-            "type": "string"
-          }
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the attendance record was last updated.",
+          "format": "date-time"
         }
       },
       "required": [
         "id",
         "schoolId",
-        "uploadedByUserId",
-        "title",
-        "description",
-        "fileUrl",
-        "fileType",
-        "uploadedDate"
-      ]
-    },
-    "FeeType": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "FeeType",
-      "type": "object",
-      "description": "Categorizes different types of fees charged by the school (e.g., Tuition, Boarding, Transport).",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the FeeType entity."
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School this fee type belongs to. (Relationship: School 1:N FeeType)"
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the fee type (e.g., 'Tuition Fee', 'Boarding Fee', 'Examination Fee')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A description of what this fee type covers."
-        },
-        "isRecurrent": {
-          "type": "boolean",
-          "description": "Indicates if this fee type is charged recurrently (e.g., per term, per year)."
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "name",
-        "description",
-        "isRecurrent"
+        "studentId",
+        "classroomId",
+        "academicYearId",
+        "termId",
+        "attendanceDate",
+        "status",
+        "recordedByUserId",
+        "createdAt",
+        "updatedAt"
       ]
     },
     "FeeStructure": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "FeeStructure",
       "type": "object",
-      "description": "Defines the specific amount for a FeeType based on academic year, class level, and other criteria.",
+      "description": "Defines different categories of fees and their associated rules and amounts, applicable for specific academic levels and periods.",
       "properties": {
         "id": {
           "type": "string",
@@ -994,44 +800,68 @@
           "type": "string",
           "description": "Reference to the School this fee structure belongs to. (Relationship: School 1:N FeeStructure)"
         },
-        "academicYearId": {
+        "name": {
           "type": "string",
-          "description": "Reference to the AcademicYear this fee structure is valid for. (Relationship: AcademicYear 1:N FeeStructure)"
+          "description": "A descriptive name for the fee (e.g., 'Form 1 Tuition Fee - Full Board', 'Exam Fee - NECTA O-Level')."
         },
-        "feeTypeId": {
+        "feeType": {
           "type": "string",
-          "description": "Reference to the FeeType this structure defines. (Relationship: FeeType 1:N FeeStructure)"
-        },
-        "classLevelId": {
-          "type": "string",
-          "description": "Optional reference to the ClassLevel this fee applies to. (Relationship: ClassLevel 1:N FeeStructure)"
+          "description": "The category of the fee (e.g., 'Tuition', 'Boarding', 'Transport', 'Exam', 'Uniform', 'Other Services')."
         },
         "amount": {
           "type": "number",
-          "description": "The standard amount for this fee structure."
+          "description": "The standard monetary amount for this fee component."
         },
-        "appliesToBoardingStudentsOnly": {
-          "type": "boolean",
-          "description": "Indicates if this fee structure only applies to boarding students."
+        "academicLevel": {
+          "type": "string",
+          "description": "The academic level (e.g., 'Primary', 'O-Level', 'A-Level') to which this fee applies. Can be 'All' if universal."
         },
-        "appliesToDayScholarsOnly": {
+        "academicYearId": {
+          "type": "string",
+          "description": "Reference to the AcademicYear during which this fee structure is valid. (Relationship: AcademicYear 1:N FeeStructure)"
+        },
+        "termId": {
+          "type": "string",
+          "description": "Reference to the Term during which this fee structure is valid (optional, if term-specific). (Relationship: Term 1:N FeeStructure)"
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed explanation of what the fee covers and any conditions."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the fee structure record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the fee structure record was last updated.",
+          "format": "date-time"
+        },
+        "isActive": {
           "type": "boolean",
-          "description": "Indicates if this fee structure only applies to day scholars."
+          "description": "Indicates whether this fee structure is currently active and applicable for billing."
         }
       },
       "required": [
         "id",
         "schoolId",
+        "name",
+        "feeType",
+        "amount",
+        "academicLevel",
         "academicYearId",
-        "feeTypeId",
-        "amount"
+        "description",
+        "createdAt",
+        "updatedAt",
+        "isActive"
       ]
     },
     "Invoice": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Invoice",
       "type": "object",
-      "description": "Represents a financial invoice issued to a student for fees, covering multiple fee structures if applicable.",
+      "description": "Represents a generated bill for a student, detailing amounts due based on applied fee structures.",
       "properties": {
         "id": {
           "type": "string",
@@ -1039,371 +869,63 @@
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School this invoice belongs to. (Relationship: School 1:N Invoice)"
+          "description": "Reference to the School that issued this invoice. (Relationship: School 1:N Invoice)"
         },
         "studentId": {
           "type": "string",
-          "description": "Reference to the Student to whom the invoice is issued. (Relationship: Student 1:N Invoice)"
+          "description": "Reference to the Student for whom this invoice is generated. (Relationship: Student 1:N Invoice)"
         },
-        "invoiceNumber": {
+        "academicYearId": {
           "type": "string",
-          "description": "A unique, human-readable invoice number generated by the system."
+          "description": "Reference to the AcademicYear this invoice pertains to. (Relationship: AcademicYear 1:N Invoice)"
+        },
+        "termId": {
+          "type": "string",
+          "description": "Reference to the Term this invoice pertains to. (Relationship: Term 1:N Invoice)"
         },
         "issueDate": {
           "type": "string",
-          "description": "The date the invoice was issued.",
+          "description": "The date when the invoice was officially issued.",
           "format": "date"
         },
         "dueDate": {
           "type": "string",
-          "description": "The date by which the invoice is due.",
+          "description": "The date by which the payment for this invoice is expected.",
           "format": "date"
         },
-        "academicYearId": {
-          "type": "string",
-          "description": "Reference to the AcademicYear this invoice covers. (Relationship: AcademicYear 1:N Invoice)"
-        },
-        "termId": {
-          "type": "string",
-          "description": "Optional reference to the Term this invoice covers. (Relationship: Term 1:N Invoice)"
-        },
-        "totalAmount": {
+        "totalAmountDue": {
           "type": "number",
-          "description": "The total amount due on this invoice."
+          "description": "The total monetary amount expected from this invoice."
         },
-        "amountPaid": {
+        "totalAmountPaid": {
           "type": "number",
-          "description": "The total amount paid against this invoice so far."
+          "description": "The cumulative amount of money already paid against this invoice."
         },
-        "balanceDue": {
+        "balance": {
           "type": "number",
-          "description": "The remaining balance due on this invoice."
+          "description": "The outstanding balance remaining to be paid on this invoice."
         },
         "status": {
           "type": "string",
-          "description": "The current status of the invoice (e.g., 'Pending', 'Paid', 'Partially Paid', 'Overdue')."
+          "description": "The current payment status of the invoice (e.g., 'Pending', 'Paid', 'Partially Paid', 'Overdue', 'Cancelled')."
         },
         "controlNumber": {
           "type": "string",
-          "description": "A unique control number used for mobile money payment integration for this invoice."
+          "description": "A unique control number generated for external payment gateway reconciliation, particularly for mobile money payments."
         },
-        "feeStructureIds": {
-          "type": "array",
-          "description": "References to FeeStructures included in this invoice. (Relationship: FeeStructure N:N Invoice)",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "studentId",
-        "invoiceNumber",
-        "issueDate",
-        "dueDate",
-        "academicYearId",
-        "totalAmount",
-        "amountPaid",
-        "balanceDue",
-        "status",
-        "controlNumber"
-      ]
-    },
-    "Payment": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Payment",
-      "type": "object",
-      "description": "Records a payment made by or on behalf of a student against an invoice.",
-      "properties": {
-        "id": {
+        "description": {
           "type": "string",
-          "description": "Unique identifier for the Payment entity."
+          "description": "A brief textual description or notes about the invoice's contents or purpose."
         },
-        "schoolId": {
+        "createdAt": {
           "type": "string",
-          "description": "Reference to the School this payment belongs to. (Relationship: School 1:N Payment)"
-        },
-        "invoiceId": {
-          "type": "string",
-          "description": "Reference to the Invoice this payment is for. (Relationship: Invoice 1:N Payment)"
-        },
-        "studentId": {
-          "type": "string",
-          "description": "Reference to the Student associated with this payment. (Relationship: Student 1:N Payment)"
-        },
-        "amount": {
-          "type": "number",
-          "description": "The amount of the payment."
-        },
-        "paymentDate": {
-          "type": "string",
-          "description": "The date and time the payment was made.",
+          "description": "Timestamp indicating when the invoice record was created.",
           "format": "date-time"
         },
-        "paymentMethod": {
+        "updatedAt": {
           "type": "string",
-          "description": "The method of payment (e.g., 'Mobile Money M-Pesa', 'Bank Transfer', 'Cash')."
-        },
-        "transactionReference": {
-          "type": "string",
-          "description": "A unique reference ID provided by the payment gateway or bank for the transaction."
-        },
-        "recordedByUserId": {
-          "type": "string",
-          "description": "Optional reference to the User who manually recorded this payment, if not automated. (Relationship: User 1:N Payment)"
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "invoiceId",
-        "studentId",
-        "amount",
-        "paymentDate",
-        "paymentMethod",
-        "transactionReference"
-      ]
-    },
-    "PaymentPlan": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "PaymentPlan",
-      "type": "object",
-      "description": "Defines a customized installment plan for a student's fees, allowing payments over time.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the PaymentPlan entity."
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School this payment plan belongs to. (Relationship: School 1:N PaymentPlan)"
-        },
-        "studentId": {
-          "type": "string",
-          "description": "Reference to the Student for whom the payment plan is created. (Relationship: Student 1:N PaymentPlan)"
-        },
-        "invoiceId": {
-          "type": "string",
-          "description": "Reference to the Invoice this payment plan is associated with. (Relationship: Invoice 1:N PaymentPlan)"
-        },
-        "name": {
-          "type": "string",
-          "description": "A descriptive name for the payment plan (e.g., '3 Installments Plan')."
-        },
-        "totalAmountAgreed": {
-          "type": "number",
-          "description": "The total amount agreed upon for this payment plan."
-        },
-        "academicYearId": {
-          "type": "string",
-          "description": "Reference to the AcademicYear this payment plan applies to. (Relationship: AcademicYear 1:N PaymentPlan)"
-        },
-        "installments": {
-          "type": "array",
-          "description": "An array of objects, each representing an installment with amount, due date, and status.",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "studentId",
-        "invoiceId",
-        "name",
-        "totalAmountAgreed",
-        "academicYearId",
-        "installments"
-      ]
-    },
-    "Employee": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Employee",
-      "type": "object",
-      "description": "Represents a staff member of the school, including teachers, administrators, and other personnel, for payroll and HR purposes.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Employee entity."
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School this employee works for. (Relationship: School 1:N Employee)"
-        },
-        "userId": {
-          "type": "string",
-          "description": "Optional reference to the User account if the employee has a system login. (Relationship: User 1:1 Employee)"
-        },
-        "firstName": {
-          "type": "string",
-          "description": "The employee's first name."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "The employee's last name."
-        },
-        "employeeId": {
-          "type": "string",
-          "description": "The employee's unique identification number within the school."
-        },
-        "jobTitle": {
-          "type": "string",
-          "description": "The employee's job title (e.g., 'Bursar', 'Administrator', 'Driver', 'Teacher')."
-        },
-        "salaryAmount": {
-          "type": "number",
-          "description": "The employee's gross monthly salary."
-        },
-        "bankAccountNumber": {
-          "type": "string",
-          "description": "The employee's bank account number for salary payments."
-        },
-        "nssfNumber": {
-          "type": "string",
-          "description": "The employee's National Social Security Fund (NSSF) number."
-        },
-        "nhifNumber": {
-          "type": "string",
-          "description": "The employee's National Health Insurance Fund (NHIF) number."
-        },
-        "tinNumber": {
-          "type": "string",
-          "description": "The employee's Tax Identification Number (TIN)."
-        },
-        "isTeacher": {
-          "type": "boolean",
-          "description": "Indicates if this employee also holds a teaching role."
-        },
-        "teacherProfileId": {
-          "type": "string",
-          "description": "Optional reference to the Teacher profile if this employee is also a teacher. (Relationship: Teacher 1:1 Employee)"
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "firstName",
-        "lastName",
-        "employeeId",
-        "jobTitle",
-        "salaryAmount",
-        "bankAccountNumber"
-      ]
-    },
-    "PayrollEntry": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "PayrollEntry",
-      "type": "object",
-      "description": "Records a single payroll entry for an employee for a specific month, including deductions and net pay.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the PayrollEntry entity."
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School this payroll entry belongs to. (Relationship: School 1:N PayrollEntry)"
-        },
-        "employeeId": {
-          "type": "string",
-          "description": "Reference to the Employee for whom this payroll entry is recorded. (Relationship: Employee 1:N PayrollEntry)"
-        },
-        "paymentMonth": {
-          "type": "string",
-          "description": "The month and year this payroll entry pertains to (e.g., '2024-03')."
-        },
-        "grossSalary": {
-          "type": "number",
-          "description": "The employee's gross salary before any deductions."
-        },
-        "nssfDeduction": {
-          "type": "number",
-          "description": "The amount deducted for National Social Security Fund (NSSF)."
-        },
-        "nhifDeduction": {
-          "type": "number",
-          "description": "The amount deducted for National Health Insurance Fund (NHIF)."
-        },
-        "payeDeduction": {
-          "type": "number",
-          "description": "The amount deducted for Pay As You Earn (PAYE) income tax."
-        },
-        "netSalary": {
-          "type": "number",
-          "description": "The employee's net salary after all deductions."
-        },
-        "paymentDate": {
-          "type": "string",
-          "description": "The date the salary payment was processed.",
-          "format": "date"
-        },
-        "status": {
-          "type": "string",
-          "description": "The status of the payroll entry (e.g., 'Paid', 'Pending', 'Processed')."
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "employeeId",
-        "paymentMonth",
-        "grossSalary",
-        "nssfDeduction",
-        "nhifDeduction",
-        "payeDeduction",
-        "netSalary",
-        "paymentDate",
-        "status"
-      ]
-    },
-    "StudentAttendance": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "StudentAttendance",
-      "type": "object",
-      "description": "Records the daily attendance status of a student for a specific date.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the StudentAttendance entity."
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School this attendance record belongs to. (Relationship: School 1:N StudentAttendance)"
-        },
-        "studentId": {
-          "type": "string",
-          "description": "Reference to the Student whose attendance is recorded. (Relationship: Student 1:N StudentAttendance)"
-        },
-        "academicYearId": {
-          "type": "string",
-          "description": "Reference to the AcademicYear this attendance falls under. (Relationship: AcademicYear 1:N StudentAttendance)"
-        },
-        "termId": {
-          "type": "string",
-          "description": "Reference to the Term this attendance falls under. (Relationship: Term 1:N StudentAttendance)"
-        },
-        "classLevelId": {
-          "type": "string",
-          "description": "Reference to the ClassLevel the student was in on the attendance date. (Relationship: ClassLevel 1:N StudentAttendance)"
-        },
-        "date": {
-          "type": "string",
-          "description": "The date for which the attendance is recorded.",
-          "format": "date"
-        },
-        "status": {
-          "type": "string",
-          "description": "The attendance status (e.g., 'Present', 'Absent', 'Late', 'Excused')."
-        },
-        "recordedByUserId": {
-          "type": "string",
-          "description": "Reference to the User (e.g., Teacher or Admin) who recorded the attendance. (Relationship: User 1:N StudentAttendance)"
-        },
-        "notes": {
-          "type": "string",
-          "description": "Optional notes regarding the attendance (e.g., reason for absence)."
+          "description": "Timestamp indicating when the invoice record was last updated.",
+          "format": "date-time"
         }
       },
       "required": [
@@ -1412,187 +934,223 @@
         "studentId",
         "academicYearId",
         "termId",
-        "classLevelId",
-        "date",
+        "issueDate",
+        "dueDate",
+        "totalAmountDue",
+        "totalAmountPaid",
+        "balance",
         "status",
-        "recordedByUserId"
+        "controlNumber",
+        "createdAt",
+        "updatedAt"
       ]
     },
-    "BusRoute": {
+    "Payment": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "BusRoute",
+      "title": "Payment",
       "type": "object",
-      "description": "Defines a transportation route operated by the school for student pickup/drop-off.",
+      "description": "Records a specific payment transaction made against an invoice by a student or parent.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the BusRoute entity."
+          "description": "Unique identifier for the Payment entity."
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School this bus route belongs to. (Relationship: School 1:N BusRoute)"
+          "description": "Reference to the School that received this payment. (Relationship: School 1:N Payment)"
         },
-        "name": {
+        "invoiceId": {
           "type": "string",
-          "description": "The name of the bus route (e.g., 'Route A - City Center')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A description of the bus route, including areas covered."
-        },
-        "fareAmount": {
-          "type": "number",
-          "description": "The standard fare amount charged for this bus route per term/month."
-        },
-        "driverEmployeeId": {
-          "type": "string",
-          "description": "Reference to the Employee who is the primary driver for this route. (Relationship: Employee 1:N BusRoute)"
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "name",
-        "fareAmount"
-      ]
-    },
-    "BusStop": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "BusStop",
-      "type": "object",
-      "description": "Represents a specific stop point along a bus route.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the BusStop entity."
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School this bus stop belongs to. (Relationship: School 1:N BusStop)"
-        },
-        "busRouteId": {
-          "type": "string",
-          "description": "Reference to the BusRoute this stop is part of. (Relationship: BusRoute 1:N BusStop)"
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the bus stop (e.g., 'Mbezi Beach Roundabout')."
-        },
-        "arrivalTime": {
-          "type": "string",
-          "description": "The scheduled arrival time at this stop (e.g., '07:00')."
-        },
-        "latitude": {
-          "type": "number",
-          "description": "Optional geographical latitude of the bus stop for mapping."
-        },
-        "longitude": {
-          "type": "number",
-          "description": "Optional geographical longitude of the bus stop for mapping."
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "busRouteId",
-        "name",
-        "arrivalTime"
-      ]
-    },
-    "StudentBusAssignment": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "StudentBusAssignment",
-      "type": "object",
-      "description": "Assigns a student to a specific bus route and stop for a given academic year.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the StudentBusAssignment entity."
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School this assignment belongs to. (Relationship: School 1:N StudentBusAssignment)"
+          "description": "Reference to the Invoice to which this payment is applied. (Relationship: Invoice 1:N Payment)"
         },
         "studentId": {
           "type": "string",
-          "description": "Reference to the Student being assigned. (Relationship: Student 1:N StudentBusAssignment)"
+          "description": "Reference to the Student associated with this payment. (Relationship: Student 1:N Payment)"
         },
-        "busRouteId": {
+        "paymentDate": {
           "type": "string",
-          "description": "Reference to the BusRoute the student is assigned to. (Relationship: BusRoute 1:N StudentBusAssignment)"
+          "description": "The date and time when the payment was received or processed.",
+          "format": "date-time"
         },
-        "busStopId": {
-          "type": "string",
-          "description": "Optional reference to the specific BusStop for pickup/drop-off. (Relationship: BusStop 1:N StudentBusAssignment)"
-        },
-        "academicYearId": {
-          "type": "string",
-          "description": "Reference to the AcademicYear this assignment is valid for. (Relationship: AcademicYear 1:N StudentBusAssignment)"
-        },
-        "assignedDate": {
-          "type": "string",
-          "description": "The date the student was assigned to this bus route.",
-          "format": "date"
-        },
-        "fareAmountOverride": {
+        "amount": {
           "type": "number",
-          "description": "An optional overridden fare amount for this student, if different from the route's default."
+          "description": "The monetary amount of the payment made."
         },
-        "isActive": {
-          "type": "boolean",
-          "description": "Indicates if this bus assignment is currently active."
+        "paymentMethod": {
+          "type": "string",
+          "description": "The method used for this payment (e.g., 'Mobile Money', 'Bank Transfer', 'Cash')."
+        },
+        "transactionReference": {
+          "type": "string",
+          "description": "A unique reference number from the payment method or internal system for tracking."
+        },
+        "gatewayTransactionId": {
+          "type": "string",
+          "description": "The transaction ID provided by the payment gateway (e.g., M-Pesa, ClickPesa), if applicable."
+        },
+        "recordedByUserId": {
+          "type": "string",
+          "description": "Reference to the UserProfile (bursar/admin) who recorded this payment, or system if automated. (Relationship: UserProfile 1:N Payment)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the payment record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the payment record was last updated.",
+          "format": "date-time"
         }
       },
       "required": [
         "id",
         "schoolId",
+        "invoiceId",
         "studentId",
-        "busRouteId",
-        "academicYearId",
-        "assignedDate",
-        "isActive"
+        "paymentDate",
+        "amount",
+        "paymentMethod",
+        "transactionReference",
+        "recordedByUserId",
+        "createdAt",
+        "updatedAt"
       ]
     },
-    "Dormitory": {
+    "Resource": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Dormitory",
+      "title": "Resource",
       "type": "object",
-      "description": "Represents a dormitory or hostel building at the school.",
+      "description": "Represents an educational resource (e.g., document, video link) uploaded and shared within the school community.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Dormitory entity."
+          "description": "Unique identifier for the Resource entity."
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School this dormitory belongs to. (Relationship: School 1:N Dormitory)"
+          "description": "Reference to the School that owns this resource. (Relationship: School 1:N Resource)"
+        },
+        "uploaderUserId": {
+          "type": "string",
+          "description": "Reference to the UserProfile of the individual who uploaded this resource. (Relationship: UserProfile 1:N Resource)"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title or name of the educational resource."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief textual description of the resource's content or purpose."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "The URL or path where the resource file is stored (e.g., cloud storage, internal server).",
+          "format": "uri"
+        },
+        "resourceType": {
+          "type": "string",
+          "description": "The type or format of the resource (e.g., 'Document', 'Video', 'Image', 'External Link', 'Audio')."
+        },
+        "subjectId": {
+          "type": "string",
+          "description": "Reference to the Subject this resource is primarily related to (optional). (Relationship: Subject 1:N Resource)"
+        },
+        "classroomId": {
+          "type": "string",
+          "description": "Reference to the Classroom this resource is specifically intended for (optional). (Relationship: Classroom 1:N Resource)"
+        },
+        "uploadDate": {
+          "type": "string",
+          "description": "The date when the resource was originally uploaded.",
+          "format": "date"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the resource record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the resource record was last updated.",
+          "format": "date-time"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether the resource is currently active and accessible to users."
+        }
+      },
+      "required": [
+        "id",
+        "schoolId",
+        "uploaderUserId",
+        "title",
+        "description",
+        "fileUrl",
+        "resourceType",
+        "uploadDate",
+        "createdAt",
+        "updatedAt",
+        "isActive"
+      ]
+    },
+    "Hostel": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Hostel",
+      "type": "object",
+      "description": "Represents a physical hostel building or dormitory provided by the school for boarding students.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Hostel entity."
+        },
+        "schoolId": {
+          "type": "string",
+          "description": "Reference to the School that operates this hostel. (Relationship: School 1:N Hostel)"
         },
         "name": {
           "type": "string",
-          "description": "The name of the dormitory (e.g., 'Serengeti Hall', 'Mount Kilimanjaro House')."
-        },
-        "genderAllowed": {
-          "type": "string",
-          "description": "Specifies the gender allowed in the dormitory ('Male', 'Female', 'Mixed')."
+          "description": "The name of the hostel (e.g., 'Boys' Dormitory A', 'Girls' Hostel Block')."
         },
         "capacity": {
           "type": "number",
-          "description": "The total student capacity of the dormitory."
+          "description": "The total maximum student capacity of the entire hostel building."
+        },
+        "genderAccommodation": {
+          "type": "string",
+          "description": "Specifies the gender of students accommodated in the hostel (e.g., 'Male', 'Female', 'Mixed')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the hostel record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the hostel record was last updated.",
+          "format": "date-time"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether the hostel is currently operational and accepting students."
         }
       },
       "required": [
         "id",
         "schoolId",
         "name",
-        "genderAllowed",
-        "capacity"
+        "capacity",
+        "genderAccommodation",
+        "createdAt",
+        "updatedAt",
+        "isActive"
       ]
     },
     "Room": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Room",
       "type": "object",
-      "description": "Represents a specific room within a dormitory.",
+      "description": "Represents an individual room within a hostel, where students are assigned.",
       "properties": {
         "id": {
           "type": "string",
@@ -1602,151 +1160,555 @@
           "type": "string",
           "description": "Reference to the School this room belongs to. (Relationship: School 1:N Room)"
         },
-        "dormitoryId": {
+        "hostelId": {
           "type": "string",
-          "description": "Reference to the Dormitory this room is part of. (Relationship: Dormitory 1:N Room)"
+          "description": "Reference to the Hostel this room is part of. (Relationship: Hostel 1:N Room)"
         },
         "roomNumber": {
           "type": "string",
-          "description": "The unique number or identifier for the room (e.g., '101', 'A-5')."
+          "description": "The unique number or identifier for the room within its hostel (e.g., '101', 'A-2B')."
         },
         "capacity": {
           "type": "number",
-          "description": "The maximum number of students that can occupy this room."
+          "description": "The maximum number of students that can be accommodated in this specific room."
         },
         "currentOccupancy": {
           "type": "number",
-          "description": "The current number of students occupying the room."
+          "description": "The current number of students assigned to this room."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the room record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the room record was last updated.",
+          "format": "date-time"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether the room is currently active and available for student assignments."
         }
       },
       "required": [
         "id",
         "schoolId",
-        "dormitoryId",
+        "hostelId",
         "roomNumber",
         "capacity",
-        "currentOccupancy"
+        "currentOccupancy",
+        "createdAt",
+        "updatedAt",
+        "isActive"
       ]
     },
-    "StudentDormitoryAssignment": {
+    "StudentHostelAssignment": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "StudentDormitoryAssignment",
+      "title": "StudentHostelAssignment",
       "type": "object",
-      "description": "Assigns a boarding student to a specific dormitory room for an academic year.",
+      "description": "Records a student's assignment to a particular room within a hostel for a specific academic period.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the StudentDormitoryAssignment entity."
+          "description": "Unique identifier for the StudentHostelAssignment entity."
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School this assignment belongs to. (Relationship: School 1:N StudentDormitoryAssignment)"
+          "description": "Reference to the School managing this hostel assignment. (Relationship: School 1:N StudentHostelAssignment)"
         },
         "studentId": {
           "type": "string",
-          "description": "Reference to the Student being assigned to a dormitory. (Relationship: Student 1:N StudentDormitoryAssignment)"
-        },
-        "dormitoryId": {
-          "type": "string",
-          "description": "Reference to the Dormitory the student is assigned to. (Relationship: Dormitory 1:N StudentDormitoryAssignment)"
+          "description": "Reference to the Student who is assigned to the hostel room. (Relationship: Student 1:N StudentHostelAssignment)"
         },
         "roomId": {
           "type": "string",
-          "description": "Reference to the specific Room within the dormitory the student is assigned to. (Relationship: Room 1:N StudentDormitoryAssignment)"
+          "description": "Reference to the Room the student is assigned to. (Relationship: Room 1:N StudentHostelAssignment)"
         },
         "academicYearId": {
           "type": "string",
-          "description": "Reference to the AcademicYear this assignment is valid for. (Relationship: AcademicYear 1:N StudentDormitoryAssignment)"
+          "description": "Reference to the AcademicYear of this hostel assignment. (Relationship: AcademicYear 1:N StudentHostelAssignment)"
         },
-        "assignedDate": {
+        "startDate": {
           "type": "string",
-          "description": "The date the student was assigned to this room.",
+          "description": "The effective start date of the student's hostel assignment.",
           "format": "date"
         },
-        "isCurrent": {
-          "type": "boolean",
-          "description": "Indicates if this is the student's current dormitory assignment."
+        "endDate": {
+          "type": "string",
+          "description": "The effective end date of the student's hostel assignment.",
+          "format": "date"
         },
-        "boardingFeeAmountOverride": {
-          "type": "number",
-          "description": "An optional overridden boarding fee amount for this student, if different from the standard."
+        "feeStructureId": {
+          "type": "string",
+          "description": "Reference to the FeeStructure that governs the boarding fees for this assignment. (Relationship: FeeStructure 1:N StudentHostelAssignment)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the assignment record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the assignment record was last updated.",
+          "format": "date-time"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether the student's hostel assignment is currently active."
         }
       },
       "required": [
         "id",
         "schoolId",
         "studentId",
-        "dormitoryId",
         "roomId",
         "academicYearId",
-        "assignedDate",
-        "isCurrent"
+        "startDate",
+        "endDate",
+        "feeStructureId",
+        "createdAt",
+        "updatedAt",
+        "isActive"
       ]
     },
-    "CommunicationLog": {
+    "BusRoute": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "CommunicationLog",
+      "title": "BusRoute",
       "type": "object",
-      "description": "Logs all outgoing communications (SMS, Email) sent from the system.",
+      "description": "Defines a transportation route for school buses, including details like name, description, and fare.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the CommunicationLog entity."
+          "description": "Unique identifier for the BusRoute entity."
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School this communication log entry belongs to. (Relationship: School 1:N CommunicationLog)"
+          "description": "Reference to the School that operates this bus route. (Relationship: School 1:N BusRoute)"
         },
-        "senderUserId": {
+        "name": {
           "type": "string",
-          "description": "Reference to the User (staff member) who initiated the communication. (Relationship: User 1:N CommunicationLog)"
+          "description": "The descriptive name of the bus route (e.g., 'Route A - City Center', 'Northern Express')."
         },
-        "recipientUserId": {
+        "description": {
           "type": "string",
-          "description": "Optional reference to the User account of the recipient. (Relationship: User 1:N CommunicationLog)"
+          "description": "A detailed description of the bus route, including major stops or geographical coverage."
         },
-        "recipientStudentId": {
-          "type": "string",
-          "description": "Optional reference to the Student recipient. (Relationship: Student 1:N CommunicationLog)"
+        "fareAmount": {
+          "type": "number",
+          "description": "The standard fare amount associated with using this bus route. This can be superseded by FeeStructure."
         },
-        "recipientParentGuardianId": {
+        "createdAt": {
           "type": "string",
-          "description": "Optional reference to the ParentGuardian recipient. (Relationship: ParentGuardian 1:N CommunicationLog)"
-        },
-        "messageType": {
-          "type": "string",
-          "description": "The type of communication (e.g., 'SMS', 'Email')."
-        },
-        "subject": {
-          "type": "string",
-          "description": "The subject line for email communications."
-        },
-        "messageContent": {
-          "type": "string",
-          "description": "The full content of the message sent."
-        },
-        "sentDateTime": {
-          "type": "string",
-          "description": "The date and time the message was sent.",
+          "description": "Timestamp indicating when the bus route record was created.",
           "format": "date-time"
         },
-        "status": {
+        "updatedAt": {
           "type": "string",
-          "description": "The delivery status of the message (e.g., 'Sent', 'Delivered', 'Failed')."
+          "description": "Timestamp indicating when the bus route record was last updated.",
+          "format": "date-time"
         },
-        "externalReferenceId": {
-          "type": "string",
-          "description": "An optional reference ID from the external SMS/Email gateway."
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether the bus route is currently active and operational."
         }
       },
       "required": [
         "id",
         "schoolId",
-        "senderUserId",
-        "messageType",
-        "messageContent",
-        "sentDateTime",
-        "status"
+        "name",
+        "description",
+        "fareAmount",
+        "createdAt",
+        "updatedAt",
+        "isActive"
+      ]
+    },
+    "StudentTransportAssignment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StudentTransportAssignment",
+      "type": "object",
+      "description": "Records a student's assignment to a specific bus route for a given academic period.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the StudentTransportAssignment entity."
+        },
+        "schoolId": {
+          "type": "string",
+          "description": "Reference to the School managing this transport assignment. (Relationship: School 1:N StudentTransportAssignment)"
+        },
+        "studentId": {
+          "type": "string",
+          "description": "Reference to the Student who is assigned to the bus route. (Relationship: Student 1:N StudentTransportAssignment)"
+        },
+        "busRouteId": {
+          "type": "string",
+          "description": "Reference to the BusRoute the student is assigned to. (Relationship: BusRoute 1:N StudentTransportAssignment)"
+        },
+        "academicYearId": {
+          "type": "string",
+          "description": "Reference to the AcademicYear of this transport assignment. (Relationship: AcademicYear 1:N StudentTransportAssignment)"
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The effective start date of the student's transport assignment.",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The effective end date of the student's transport assignment.",
+          "format": "date"
+        },
+        "feeStructureId": {
+          "type": "string",
+          "description": "Reference to the FeeStructure that governs the transport fees for this assignment. (Relationship: FeeStructure 1:N StudentTransportAssignment)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the assignment record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the assignment record was last updated.",
+          "format": "date-time"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether the student's transport assignment is currently active."
+        }
+      },
+      "required": [
+        "id",
+        "schoolId",
+        "studentId",
+        "busRouteId",
+        "academicYearId",
+        "startDate",
+        "endDate",
+        "feeStructureId",
+        "createdAt",
+        "updatedAt",
+        "isActive"
+      ]
+    },
+    "Employee": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Employee",
+      "type": "object",
+      "description": "Represents a staff member of the school, encompassing details for HR, payroll, and statutory compliance. May be linked to a UserProfile if they have system access.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Employee entity."
+        },
+        "schoolId": {
+          "type": "string",
+          "description": "Reference to the School this employee works for. (Relationship: School 1:N Employee)"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the employee."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the employee."
+        },
+        "employeeIdNumber": {
+          "type": "string",
+          "description": "A unique employee ID number assigned by the school for internal identification."
+        },
+        "nationalIdNumber": {
+          "type": "string",
+          "description": "The employee's national identification number, used for statutory deductions and reporting."
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "description": "The employee's date of birth.",
+          "format": "date"
+        },
+        "gender": {
+          "type": "string",
+          "description": "The gender of the employee (e.g., 'Male', 'Female')."
+        },
+        "email": {
+          "type": "string",
+          "description": "The employee's primary email address for communication.",
+          "format": "email"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The employee's primary phone number for contact."
+        },
+        "position": {
+          "type": "string",
+          "description": "The employee's job title or position within the school (e.g., 'Teacher', 'Bursar', 'Head of Department')."
+        },
+        "hireDate": {
+          "type": "string",
+          "description": "The date when the employee commenced employment at the school.",
+          "format": "date"
+        },
+        "terminationDate": {
+          "type": "string",
+          "description": "The date when the employee's employment was terminated (optional, for historical records).",
+          "format": "date"
+        },
+        "bankAccountName": {
+          "type": "string",
+          "description": "The name of the account holder for salary payments. (Sensitive PII, stored securely)."
+        },
+        "bankName": {
+          "type": "string",
+          "description": "The name of the bank where the employee's salary account is held. (Sensitive PII, stored securely)."
+        },
+        "bankAccountNumber": {
+          "type": "string",
+          "description": "The employee's bank account number for salary payments. (Sensitive PII, stored securely and potentially encrypted)."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to the UserProfile if this employee also has a system login. (Relationship: UserProfile 1:N Employee)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the employee record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the employee record was last updated.",
+          "format": "date-time"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether the employee is currently actively employed by the school."
+        }
+      },
+      "required": [
+        "id",
+        "schoolId",
+        "firstName",
+        "lastName",
+        "employeeIdNumber",
+        "nationalIdNumber",
+        "dateOfBirth",
+        "gender",
+        "email",
+        "phoneNumber",
+        "position",
+        "hireDate",
+        "bankAccountName",
+        "bankName",
+        "bankAccountNumber",
+        "createdAt",
+        "updatedAt",
+        "isActive"
+      ]
+    },
+    "SalaryComponent": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SalaryComponent",
+      "type": "object",
+      "description": "Defines a constituent part of an employee's salary, such as basic pay, allowances, or statutory deductions.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the SalaryComponent entity."
+        },
+        "schoolId": {
+          "type": "string",
+          "description": "Reference to the School that defines this salary component. (Relationship: School 1:N SalaryComponent)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the salary component (e.g., 'Basic Salary', 'Housing Allowance', 'PAYE Tax')."
+        },
+        "componentType": {
+          "type": "string",
+          "description": "The category of the component, either 'Earning' (adds to gross pay) or 'Deduction' (subtracts from gross pay)."
+        },
+        "isStatutory": {
+          "type": "boolean",
+          "description": "Indicates whether this component is a mandatory statutory deduction (e.g., NSSF, PAYE) imposed by government regulations."
+        },
+        "amountOrRate": {
+          "type": "number",
+          "description": "The default fixed amount or a percentage rate for this component. The actual value for payroll may be dynamically calculated."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of what the salary component represents or how it is applied."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the salary component record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the salary component record was last updated.",
+          "format": "date-time"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether the salary component is currently active and can be applied in payroll calculations."
+        }
+      },
+      "required": [
+        "id",
+        "schoolId",
+        "name",
+        "componentType",
+        "isStatutory",
+        "amountOrRate",
+        "description",
+        "createdAt",
+        "updatedAt",
+        "isActive"
+      ]
+    },
+    "PayrollRecord": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PayrollRecord",
+      "type": "object",
+      "description": "Stores a complete payroll entry for an individual employee for a specific pay period, including gross pay, deductions, and net pay.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the PayrollRecord entity."
+        },
+        "schoolId": {
+          "type": "string",
+          "description": "Reference to the School that generated this payroll record. (Relationship: School 1:N PayrollRecord)"
+        },
+        "employeeId": {
+          "type": "string",
+          "description": "Reference to the Employee for whom this payroll record is generated. (Relationship: Employee 1:N PayrollRecord)"
+        },
+        "academicYearId": {
+          "type": "string",
+          "description": "Reference to the AcademicYear this payroll record pertains to. (Relationship: AcademicYear 1:N PayrollRecord)"
+        },
+        "payPeriodStartDate": {
+          "type": "string",
+          "description": "The start date of the pay period covered by this payroll record.",
+          "format": "date"
+        },
+        "payPeriodEndDate": {
+          "type": "string",
+          "description": "The end date of the pay period covered by this payroll record.",
+          "format": "date"
+        },
+        "grossPay": {
+          "type": "number",
+          "description": "The total gross salary amount earned by the employee before any deductions."
+        },
+        "totalDeductions": {
+          "type": "number",
+          "description": "The aggregate sum of all deductions applied to the employee's gross pay."
+        },
+        "netPay": {
+          "type": "number",
+          "description": "The net salary amount paid to the employee after all deductions."
+        },
+        "status": {
+          "type": "string",
+          "description": "The processing status of the payroll record (e.g., 'Processed', 'Paid', 'Pending Approval', 'Draft')."
+        },
+        "processedByUserId": {
+          "type": "string",
+          "description": "Reference to the UserProfile (typically a bursar or HR admin) who processed this payroll record. (Relationship: UserProfile 1:N PayrollRecord)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the payroll record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the payroll record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "schoolId",
+        "employeeId",
+        "academicYearId",
+        "payPeriodStartDate",
+        "payPeriodEndDate",
+        "grossPay",
+        "totalDeductions",
+        "netPay",
+        "status",
+        "processedByUserId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SchoolCustomization": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SchoolCustomization",
+      "type": "object",
+      "description": "Stores school-specific customization settings, such as visual theme (colors, fonts) and uploaded logo.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the SchoolCustomization entity."
+        },
+        "schoolId": {
+          "type": "string",
+          "description": "Reference to the School to which these customization settings apply. (Relationship: School 1:1 SchoolCustomization)"
+        },
+        "logoUrl": {
+          "type": "string",
+          "description": "The URL to the school's logo image file, used for branding across the application and reports.",
+          "format": "uri"
+        },
+        "primaryColor": {
+          "type": "string",
+          "description": "The hexadecimal code for the school's primary branding color (e.g., '#1F5BA6')."
+        },
+        "backgroundColor": {
+          "type": "string",
+          "description": "The hexadecimal code for the primary background color used in the school's custom theme (e.g., '#ECF0F6')."
+        },
+        "accentColor": {
+          "type": "string",
+          "description": "The hexadecimal code for the school's accent color, used for interactive elements and highlights (e.g., '#945CE6')."
+        },
+        "headlineFont": {
+          "type": "string",
+          "description": "The name of the font selected for headlines and prominent text (e.g., 'Space Grotesk')."
+        },
+        "bodyFont": {
+          "type": "string",
+          "description": "The name of the font selected for general body text (e.g., 'Inter')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the customization record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the customization record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "schoolId",
+        "logoUrl",
+        "primaryColor",
+        "backgroundColor",
+        "accentColor",
+        "headlineFont",
+        "bodyFont",
+        "createdAt",
+        "updatedAt"
       ]
     }
   },
@@ -1759,69 +1721,59 @@
   "firestore": {
     "structure": [
       {
-        "path": "/systemAdmins/{adminId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Top-level collection for system administrators, where `adminId` is the Firebase Auth UID. These users have super-admin privileges across the entire system. Access is path-based on UID, enforcing strict, explicit roles for system-wide management.",
-          "params": [
-            {
-              "name": "adminId",
-              "description": "The unique identifier of the system administrator (Firebase Auth UID)."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Top-level collection for all authenticated users in the system, where `userId` is the Firebase Auth UID. Each user document contains general profile information, associated schoolId, and assigned roles (e.g., 'Admin', 'Teacher', 'Parent', 'Student'). This is crucial for retrieving the user's context (schoolId, roles) for authorization checks without deep gets into application data.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user (Firebase Auth UID)."
-            }
-          ]
-        }
-      },
-      {
         "path": "/schools/{schoolId}",
         "definition": {
           "entityName": "School",
           "schema": {
             "$ref": "#/backend/entities/School"
           },
-          "description": "Root collection for all school instances, representing individual tenants. Each document holds core institutional details. All other school-specific data is organized as subcollections under this path, ensuring multi-tenancy and data isolation. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Top-level collection for each school tenant. Documents here represent core school information. Includes denormalized 'ownerUserId' and 'members' map for school-level authorization."
+        }
+      },
+      {
+        "path": "/userProfiles/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Global collection for all user profiles. Each document contains the user's `schoolId` and `roleIds` for direct authorization checks based on `request.auth.uid` without hierarchical dependencies.",
           "params": [
             {
-              "name": "schoolId",
-              "description": "The unique identifier for the school."
+              "name": "userId",
+              "description": "The unique identifier of the user, matching `request.auth.uid`."
             }
           ]
         }
       },
       {
-        "path": "/schools/{schoolId}/settings/{schoolSettingsId}",
+        "path": "/roles/{roleId}",
         "definition": {
-          "entityName": "SchoolSettings",
+          "entityName": "Role",
           "schema": {
-            "$ref": "#/backend/entities/SchoolSettings"
+            "$ref": "#/backend/entities/Role"
           },
-          "description": "Subcollection under a specific school to store its customization options, branding (logo, colors), and default academic rules (e.g., NECTA grading rules). This document is 1:1 with the School. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Global collection defining system-wide roles. These are typically read-only for most users.",
+          "params": [
+            {
+              "name": "roleId",
+              "description": "The unique identifier for the role."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/schools/{schoolId}/customization",
+        "definition": {
+          "entityName": "SchoolCustomization",
+          "schema": {
+            "$ref": "#/backend/entities/SchoolCustomization"
+          },
+          "description": "Subcollection storing school-specific customization settings like branding, colors, and logo. This is a single document for a 1:1 relationship with the school. Includes denormalized 'schoolId' from the path.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
-            },
-            {
-              "name": "schoolSettingsId",
-              "description": "The unique identifier for the school's settings. Could be a static ID like 'current'."
+              "description": "The unique identifier of the school."
             }
           ]
         }
@@ -1833,11 +1785,11 @@
           "schema": {
             "$ref": "#/backend/entities/AcademicYear"
           },
-          "description": "Subcollection for academic years within a specific school. Defines periods for scheduling and reporting. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for academic years specific to a school. Includes denormalized 'schoolId' from the path.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
               "name": "academicYearId",
@@ -1853,39 +1805,19 @@
           "schema": {
             "$ref": "#/backend/entities/Term"
           },
-          "description": "Subcollection for academic terms within a specific academic year. Organizes the academic calendar more granularly. Includes denormalized 'schoolId' and 'academicYearId' for authorization independence.",
+          "description": "Subcollection for academic terms within a specific academic year for a school. Includes denormalized 'schoolId' and 'academicYearId' from the path.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
               "name": "academicYearId",
-              "description": "The unique identifier for the parent academic year."
+              "description": "The unique identifier for the academic year."
             },
             {
               "name": "termId",
               "description": "The unique identifier for the term."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/schools/{schoolId}/classLevels/{classLevelId}",
-        "definition": {
-          "entityName": "ClassLevel",
-          "schema": {
-            "$ref": "#/backend/entities/ClassLevel"
-          },
-          "description": "Subcollection for academic class levels (e.g., Form 1, Standard 7) offered by a specific school. Includes denormalized 'schoolId' for authorization independence.",
-          "params": [
-            {
-              "name": "schoolId",
-              "description": "The unique identifier for the parent school."
-            },
-            {
-              "name": "classLevelId",
-              "description": "The unique identifier for the class level."
             }
           ]
         }
@@ -1897,15 +1829,35 @@
           "schema": {
             "$ref": "#/backend/entities/Subject"
           },
-          "description": "Subcollection for academic subjects offered by a specific school. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for academic subjects offered by a school. Includes denormalized 'schoolId' from the path.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
               "name": "subjectId",
               "description": "The unique identifier for the subject."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/schools/{schoolId}/classrooms/{classroomId}",
+        "definition": {
+          "entityName": "Classroom",
+          "schema": {
+            "$ref": "#/backend/entities/Classroom"
+          },
+          "description": "Subcollection for academic classrooms/streams within a school. Includes denormalized 'schoolId' from the path.",
+          "params": [
+            {
+              "name": "schoolId",
+              "description": "The unique identifier of the school."
+            },
+            {
+              "name": "classroomId",
+              "description": "The unique identifier for the classroom."
             }
           ]
         }
@@ -1917,11 +1869,11 @@
           "schema": {
             "$ref": "#/backend/entities/Student"
           },
-          "description": "Subcollection for detailed student profiles within a specific school. This path-based ownership ensures that student data is directly tied to their school context. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for student records belonging to a school. Includes denormalized 'schoolId' from the path, and 'parentUserIds' for direct parental access authorization.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
               "name": "studentId",
@@ -1931,121 +1883,41 @@
         }
       },
       {
-        "path": "/schools/{schoolId}/teachers/{teacherId}",
+        "path": "/schools/{schoolId}/enrollments/{enrollmentId}",
         "definition": {
-          "entityName": "Teacher",
+          "entityName": "Enrollment",
           "schema": {
-            "$ref": "#/backend/entities/Teacher"
+            "$ref": "#/backend/entities/Enrollment"
           },
-          "description": "Subcollection for detailed teacher profiles within a specific school. Links to a `User` account. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for student enrollment records. Includes denormalized 'schoolId' from the path and 'parentUserIds' for direct parental access authorization without lookup dependencies.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
-              "name": "teacherId",
-              "description": "The unique identifier for the teacher."
+              "name": "enrollmentId",
+              "description": "The unique identifier for the enrollment record."
             }
           ]
         }
       },
       {
-        "path": "/schools/{schoolId}/parentGuardians/{parentGuardianId}",
+        "path": "/schools/{schoolId}/teacherAssignments/{teacherAssignmentId}",
         "definition": {
-          "entityName": "ParentGuardian",
+          "entityName": "TeacherAssignment",
           "schema": {
-            "$ref": "#/backend/entities/ParentGuardian"
+            "$ref": "#/backend/entities/TeacherAssignment"
           },
-          "description": "Subcollection for parent/guardian profiles associated with students in a specific school. Links to a `User` account. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection linking teachers to subjects and classrooms. Includes denormalized 'schoolId' from the path and 'teacherUserId' for direct teacher access authorization.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
-              "name": "parentGuardianId",
-              "description": "The unique identifier for the parent or guardian."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/schools/{schoolId}/employees/{employeeId}",
-        "definition": {
-          "entityName": "Employee",
-          "schema": {
-            "$ref": "#/backend/entities/Employee"
-          },
-          "description": "Subcollection for all staff members (including teachers, bursars, etc.) within a specific school, for HR and payroll. Links to a `User` account. Includes denormalized 'schoolId' for authorization independence.",
-          "params": [
-            {
-              "name": "schoolId",
-              "description": "The unique identifier for the parent school."
-            },
-            {
-              "name": "employeeId",
-              "description": "The unique identifier for the employee."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/schools/{schoolId}/courseOfferings/{courseOfferingId}",
-        "definition": {
-          "entityName": "CourseOffering",
-          "schema": {
-            "$ref": "#/backend/entities/CourseOffering"
-          },
-          "description": "Subcollection for specific course instances (e.g., 'Form 4 Mathematics 2023/2024') within a school. Links subjects, class levels, academic years, and teachers. Includes denormalized 'schoolId' for authorization independence.",
-          "params": [
-            {
-              "name": "schoolId",
-              "description": "The unique identifier for the parent school."
-            },
-            {
-              "name": "courseOfferingId",
-              "description": "The unique identifier for the course offering."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/schools/{schoolId}/studentEnrollments/{studentEnrollmentId}",
-        "definition": {
-          "entityName": "StudentEnrollment",
-          "schema": {
-            "$ref": "#/backend/entities/StudentEnrollment"
-          },
-          "description": "Subcollection for recording a student's enrollment in the school for a specific academic year and class level. Includes denormalized 'schoolId' for authorization independence.",
-          "params": [
-            {
-              "name": "schoolId",
-              "description": "The unique identifier for the parent school."
-            },
-            {
-              "name": "studentEnrollmentId",
-              "description": "The unique identifier for the student's enrollment record."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/schools/{schoolId}/studentCourseEnrollments/{studentCourseEnrollmentId}",
-        "definition": {
-          "entityName": "StudentCourseEnrollment",
-          "schema": {
-            "$ref": "#/backend/entities/StudentCourseEnrollment"
-          },
-          "description": "Subcollection for recording a student's enrollment in a specific course offering. Links a student to a course instance. Includes denormalized 'schoolId' for authorization independence.",
-          "params": [
-            {
-              "name": "schoolId",
-              "description": "The unique identifier for the parent school."
-            },
-            {
-              "name": "studentCourseEnrollmentId",
-              "description": "The unique identifier for the student's course enrollment record."
+              "name": "teacherAssignmentId",
+              "description": "The unique identifier for the teacher assignment."
             }
           ]
         }
@@ -2057,11 +1929,11 @@
           "schema": {
             "$ref": "#/backend/entities/Exam"
           },
-          "description": "Subcollection for defining examination events within a school for specific course offerings and terms. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for exam definitions within a school. Includes denormalized 'schoolId' from the path and 'createdByUserId' for direct creator authorization.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
               "name": "examId",
@@ -2071,101 +1943,41 @@
         }
       },
       {
-        "path": "/schools/{schoolId}/continuousAssessments/{continuousAssessmentId}",
+        "path": "/schools/{schoolId}/examResults/{examResultId}",
         "definition": {
-          "entityName": "ContinuousAssessment",
+          "entityName": "ExamResult",
           "schema": {
-            "$ref": "#/backend/entities/ContinuousAssessment"
+            "$ref": "#/backend/entities/ExamResult"
           },
-          "description": "Subcollection for defining continuous assessments (quizzes, homework) within a school for specific course offerings and terms. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for student exam results. Includes denormalized 'schoolId' from the path, 'gradedByUserId' for teacher access, and 'parentUserIds' for direct parental access authorization.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
-              "name": "continuousAssessmentId",
-              "description": "The unique identifier for the continuous assessment."
+              "name": "examResultId",
+              "description": "The unique identifier for the exam result."
             }
           ]
         }
       },
       {
-        "path": "/schools/{schoolId}/gradeEntries/{gradeEntryId}",
+        "path": "/schools/{schoolId}/attendanceRecords/{attendanceRecordId}",
         "definition": {
-          "entityName": "GradeEntry",
+          "entityName": "AttendanceRecord",
           "schema": {
-            "$ref": "#/backend/entities/GradeEntry"
+            "$ref": "#/backend/entities/AttendanceRecord"
           },
-          "description": "Subcollection for individual student scores for exams or continuous assessments. Links to student course enrollment and the graded teacher. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for student attendance records. Includes denormalized 'schoolId' from the path, 'recordedByUserId' for teacher/admin access, and 'parentUserIds' for direct parental access authorization.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
-              "name": "gradeEntryId",
-              "description": "The unique identifier for the grade entry."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/schools/{schoolId}/studentAcademicSummaries/{studentAcademicSummaryId}",
-        "definition": {
-          "entityName": "StudentAcademicSummary",
-          "schema": {
-            "$ref": "#/backend/entities/StudentAcademicSummary"
-          },
-          "description": "Subcollection for computed NECTA-compliant academic summaries for students for an academic year or term. This denormalizes aggregated results for easy reporting. Includes denormalized 'schoolId' for authorization independence.",
-          "params": [
-            {
-              "name": "schoolId",
-              "description": "The unique identifier for the parent school."
-            },
-            {
-              "name": "studentAcademicSummaryId",
-              "description": "The unique identifier for the student's academic summary."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/schools/{schoolId}/resources/{resourceId}",
-        "definition": {
-          "entityName": "Resource",
-          "schema": {
-            "$ref": "#/backend/entities/Resource"
-          },
-          "description": "Subcollection for educational resources (documents, links) uploaded within a school. Includes denormalized 'schoolId' for authorization independence.",
-          "params": [
-            {
-              "name": "schoolId",
-              "description": "The unique identifier for the parent school."
-            },
-            {
-              "name": "resourceId",
-              "description": "The unique identifier for the resource."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/schools/{schoolId}/feeTypes/{feeTypeId}",
-        "definition": {
-          "entityName": "FeeType",
-          "schema": {
-            "$ref": "#/backend/entities/FeeType"
-          },
-          "description": "Subcollection for categorizing different types of fees charged by a school. Includes denormalized 'schoolId' for authorization independence.",
-          "params": [
-            {
-              "name": "schoolId",
-              "description": "The unique identifier for the parent school."
-            },
-            {
-              "name": "feeTypeId",
-              "description": "The unique identifier for the fee type."
+              "name": "attendanceRecordId",
+              "description": "The unique identifier for the attendance record."
             }
           ]
         }
@@ -2177,11 +1989,11 @@
           "schema": {
             "$ref": "#/backend/entities/FeeStructure"
           },
-          "description": "Subcollection for defining specific fee amounts for FeeTypes based on academic year, class level, etc. within a school. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for fee structure definitions specific to a school. Includes denormalized 'schoolId' from the path.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
               "name": "feeStructureId",
@@ -2197,11 +2009,11 @@
           "schema": {
             "$ref": "#/backend/entities/Invoice"
           },
-          "description": "Subcollection for financial invoices issued to students for fees within a school. Essential for tracking financial obligations. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for student invoices. Includes denormalized 'schoolId' from the path and 'parentUserIds' for direct parental access authorization.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
               "name": "invoiceId",
@@ -2217,75 +2029,99 @@
           "schema": {
             "$ref": "#/backend/entities/Payment"
           },
-          "description": "Subcollection for recording payments made against invoices within a school. Integrates with mobile money for automated reconciliation. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for payment records against invoices. Includes denormalized 'schoolId' from the path and 'parentUserIds' for direct parental access authorization.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
               "name": "paymentId",
-              "description": "The unique identifier for the payment record."
+              "description": "The unique identifier for the payment."
             }
           ]
         }
       },
       {
-        "path": "/schools/{schoolId}/paymentPlans/{paymentPlanId}",
+        "path": "/schools/{schoolId}/resources/{resourceId}",
         "definition": {
-          "entityName": "PaymentPlan",
+          "entityName": "Resource",
           "schema": {
-            "$ref": "#/backend/entities/PaymentPlan"
+            "$ref": "#/backend/entities/Resource"
           },
-          "description": "Subcollection for customized installment plans for student fees within a school. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for educational resources uploaded within a school. Includes denormalized 'schoolId' from the path and 'uploaderUserId' for direct uploader authorization.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
-              "name": "paymentPlanId",
-              "description": "The unique identifier for the payment plan."
+              "name": "resourceId",
+              "description": "The unique identifier for the resource."
             }
           ]
         }
       },
       {
-        "path": "/schools/{schoolId}/payrollEntries/{payrollEntryId}",
+        "path": "/schools/{schoolId}/hostels/{hostelId}",
         "definition": {
-          "entityName": "PayrollEntry",
+          "entityName": "Hostel",
           "schema": {
-            "$ref": "#/backend/entities/PayrollEntry"
+            "$ref": "#/backend/entities/Hostel"
           },
-          "description": "Subcollection for individual payroll entries for employees within a school, including deductions and net pay. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for hostel definitions within a school. Includes denormalized 'schoolId' from the path.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
-              "name": "payrollEntryId",
-              "description": "The unique identifier for the payroll entry."
+              "name": "hostelId",
+              "description": "The unique identifier for the hostel."
             }
           ]
         }
       },
       {
-        "path": "/schools/{schoolId}/studentAttendances/{studentAttendanceId}",
+        "path": "/schools/{schoolId}/hostels/{hostelId}/rooms/{roomId}",
         "definition": {
-          "entityName": "StudentAttendance",
+          "entityName": "Room",
           "schema": {
-            "$ref": "#/backend/entities/StudentAttendance"
+            "$ref": "#/backend/entities/Room"
           },
-          "description": "Subcollection for daily attendance records of students within a school. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for individual rooms within a specific hostel. Includes denormalized 'schoolId' and 'hostelId' from the path.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
-              "name": "studentAttendanceId",
-              "description": "The unique identifier for the student attendance record."
+              "name": "hostelId",
+              "description": "The unique identifier for the hostel."
+            },
+            {
+              "name": "roomId",
+              "description": "The unique identifier for the room."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/schools/{schoolId}/studentHostelAssignments/{assignmentId}",
+        "definition": {
+          "entityName": "StudentHostelAssignment",
+          "schema": {
+            "$ref": "#/backend/entities/StudentHostelAssignment"
+          },
+          "description": "Subcollection for student hostel assignments. Includes denormalized 'schoolId' from the path and 'parentUserIds' for direct parental access authorization.",
+          "params": [
+            {
+              "name": "schoolId",
+              "description": "The unique identifier of the school."
+            },
+            {
+              "name": "assignmentId",
+              "description": "The unique identifier for the student hostel assignment."
             }
           ]
         }
@@ -2297,11 +2133,11 @@
           "schema": {
             "$ref": "#/backend/entities/BusRoute"
           },
-          "description": "Subcollection for defining transportation routes operated by a school. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for bus route definitions specific to a school. Includes denormalized 'schoolId' from the path.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
               "name": "busRouteId",
@@ -2311,134 +2147,86 @@
         }
       },
       {
-        "path": "/schools/{schoolId}/busRoutes/{busRouteId}/busStops/{busStopId}",
+        "path": "/schools/{schoolId}/studentTransportAssignments/{assignmentId}",
         "definition": {
-          "entityName": "BusStop",
+          "entityName": "StudentTransportAssignment",
           "schema": {
-            "$ref": "#/backend/entities/BusStop"
+            "$ref": "#/backend/entities/StudentTransportAssignment"
           },
-          "description": "Subcollection for specific stop points along a bus route. Hierarchically nested under a `BusRoute`. Includes denormalized 'schoolId' and 'busRouteId' for authorization independence.",
+          "description": "Subcollection for student transport assignments. Includes denormalized 'schoolId' from the path and 'parentUserIds' for direct parental access authorization.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
-              "name": "busRouteId",
-              "description": "The unique identifier for the parent bus route."
-            },
-            {
-              "name": "busStopId",
-              "description": "The unique identifier for the bus stop."
+              "name": "assignmentId",
+              "description": "The unique identifier for the student transport assignment."
             }
           ]
         }
       },
       {
-        "path": "/schools/{schoolId}/studentBusAssignments/{studentBusAssignmentId}",
+        "path": "/schools/{schoolId}/employees/{employeeId}",
         "definition": {
-          "entityName": "StudentBusAssignment",
+          "entityName": "Employee",
           "schema": {
-            "$ref": "#/backend/entities/StudentBusAssignment"
+            "$ref": "#/backend/entities/Employee"
           },
-          "description": "Subcollection for assigning students to specific bus routes and stops for an academic year. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for employee records within a school. Includes denormalized 'schoolId' from the path and 'userProfileId' to link to a system user for self-access authorization.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
-              "name": "studentBusAssignmentId",
-              "description": "The unique identifier for the student's bus assignment."
+              "name": "employeeId",
+              "description": "The unique identifier for the employee."
             }
           ]
         }
       },
       {
-        "path": "/schools/{schoolId}/dormitories/{dormitoryId}",
+        "path": "/schools/{schoolId}/salaryComponents/{componentId}",
         "definition": {
-          "entityName": "Dormitory",
+          "entityName": "SalaryComponent",
           "schema": {
-            "$ref": "#/backend/entities/Dormitory"
+            "$ref": "#/backend/entities/SalaryComponent"
           },
-          "description": "Subcollection for dormitory buildings at a school. Includes denormalized 'schoolId' for authorization independence.",
+          "description": "Subcollection for salary component definitions within a school. Includes denormalized 'schoolId' from the path.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
-              "name": "dormitoryId",
-              "description": "The unique identifier for the dormitory."
+              "name": "componentId",
+              "description": "The unique identifier for the salary component."
             }
           ]
         }
       },
       {
-        "path": "/schools/{schoolId}/dormitories/{dormitoryId}/rooms/{roomId}",
+        "path": "/schools/{schoolId}/payrollRecords/{payrollRecordId}",
         "definition": {
-          "entityName": "Room",
+          "entityName": "PayrollRecord",
           "schema": {
-            "$ref": "#/backend/entities/Room"
+            "$ref": "#/backend/entities/PayrollRecord"
           },
-          "description": "Subcollection for specific rooms within a dormitory. Hierarchically nested under a `Dormitory`. Includes denormalized 'schoolId' and 'dormitoryId' for authorization independence.",
+          "description": "Subcollection for employee payroll entries. Includes denormalized 'schoolId' from the path, 'processedByUserId' for bursar/admin access, and 'employeeUserId' (UserProfile ID if linked) for direct employee access authorization.",
           "params": [
             {
               "name": "schoolId",
-              "description": "The unique identifier for the parent school."
+              "description": "The unique identifier of the school."
             },
             {
-              "name": "dormitoryId",
-              "description": "The unique identifier for the parent dormitory."
-            },
-            {
-              "name": "roomId",
-              "description": "The unique identifier for the room."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/schools/{schoolId}/studentDormitoryAssignments/{studentDormitoryAssignmentId}",
-        "definition": {
-          "entityName": "StudentDormitoryAssignment",
-          "schema": {
-            "$ref": "#/backend/entities/StudentDormitoryAssignment"
-          },
-          "description": "Subcollection for assigning boarding students to dormitory rooms for an academic year. Includes denormalized 'schoolId' for authorization independence.",
-          "params": [
-            {
-              "name": "schoolId",
-              "description": "The unique identifier for the parent school."
-            },
-            {
-              "name": "studentDormitoryAssignmentId",
-              "description": "The unique identifier for the student's dormitory assignment."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/schools/{schoolId}/communicationLogs/{communicationLogId}",
-        "definition": {
-          "entityName": "CommunicationLog",
-          "schema": {
-            "$ref": "#/backend/entities/CommunicationLog"
-          },
-          "description": "Subcollection for logging all outgoing communications (SMS, Email) sent from the system for a school. Includes denormalized 'schoolId' for authorization independence.",
-          "params": [
-            {
-              "name": "schoolId",
-              "description": "The unique identifier for the parent school."
-            },
-            {
-              "name": "communicationLogId",
-              "description": "The unique identifier for the communication log entry."
+              "name": "payrollRecordId",
+              "description": "The unique identifier for the payroll record."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore data structure for ShuleDirect Pro is designed to be multi-tenant, with each school operating as an isolated tenant. This is achieved by making `/schools/{schoolId}` the root for all school-specific data. Every document related to a specific school (e.g., students, teachers, academic years, invoices) is stored in a subcollection directly under its respective `/schools/{schoolId}` document. This adheres to the Structural Segregation mandate, ensuring that all documents within a given subcollection share the same security posture relative to their parent school.\n\n**Authorization Independence (CRITICAL):** A core principle applied here is Authorization Independence. This means that security rules avoid expensive and complex `get()` calls to parent documents for authorization checks. This is primarily achieved through **denormalization**: every document within a school's hierarchy (e.g., `Student`, `Teacher`, `Invoice`, `AcademicYear`) explicitly includes the `schoolId` field. When a user attempts to access any document within `/schools/{schoolId}/...`, the Firestore security rules can check `request.auth.uid` against the user's *own* profile in the top-level `/users/{userId}` collection to verify their `schoolId` and `roles`. Subsequently, rules can directly compare this validated `schoolId` with the `schoolId` present in the `resource.data` of the document being accessed, without needing to traverse up the path or fetch ancestor documents. This makes rule evaluation atomic, faster, and significantly easier to debug.\n\nFor example, to check if a teacher can grade an exam, the rule would first verify `request.auth.uid`'s `schoolId` and `roles` from `/users/$(request.auth.uid)`. Then, it would check if the `GradeEntry.schoolId` matches the authenticated user's `schoolId`, and potentially `GradeEntry.gradedByTeacherId` matches the `teacherId` linked to `request.auth.uid`. No `get()` calls to `academicYears` or `courses` or even the parent `school` document are needed for every specific `GradeEntry` access.\n\n**QAPs (Rules are not Filters):** The structure inherently supports Querying for Authorized Data Patterns (QAPs) by design. Since all school-specific data is rooted under `/schools/{schoolId}`, `list` operations (queries) are naturally constrained by the `{schoolId}` wildcard in the path. A user authenticated for `schoolId_A` can only query data within `/schools/schoolId_A/...`. The rules will ensure that `request.auth.uid` is associated with `schoolId_A` and possesses the necessary roles. For instance, a student requesting their grades (`studentAcademicSummaries`) would have a query like `/schools/{schoolId}/studentAcademicSummaries?studentId={request.auth.uid}`. The rule would permit this `list` operation because `request.auth.uid` is explicitly used in the query and can be verified against `resource.data.studentId` in the rule, ensuring the user only retrieves their own data without the rule having to 'filter' results after retrieval. For administrative staff, their role-based access for the specific `schoolId` would allow them to list all documents in relevant collections without client-side filtering being necessary for security."
+    "reasoning": "The Firestore structure is designed as a multi-tenant system, with each school serving as a top-level tenant. This is achieved by placing all school-specific data under a `/schools/{schoolId}` top-level collection, ensuring strong data isolation and simplifying security rules. User authentication is handled via a global `/userProfiles/{userId}` collection, which stores the user's associated `schoolId` and `roleIds`. This centralized `UserProfile` acts as the primary source for a user's identity and permissions across the system. The `roles/{roleId}` collection holds system-wide role definitions, which are read-only for most users.\n\n**Authorization Independence via Denormalization:**\n\nTo ensure authorization independence and eliminate complex `get()` calls in security rules, critical authorization contexts have been denormalized across related documents. The core principle here is to embed the necessary authorization metadata directly within the document being accessed, rather than relying on lookups to parent documents or other related entities.\n\n1.  **School-level access:** The `School` entity itself will include `ownerUserId` and a `members` map (`members: {uid: \"role\"}`) for direct authorization checks for managing school-level settings. This prevents a `get()` call to a separate 'school_members' collection for basic school administration.\n2.  **User Profiles:** The `userProfiles/{userId}` document directly contains `schoolId` and `roleIds`. While accessing this document is a `get()` operation, it is always on a *known* document (`/userProfiles/$(request.auth.uid)`) and serves as the primary source for the authenticated user's global context. This is generally accepted as a base for authorization and avoids complex hierarchical lookups.\n3.  **Parental Access to Student Data (QAPs):** For secure `list` operations (QAPs) and `get` operations for parents accessing their children's data, all student-centric subcollections (`Enrollment`, `ExamResult`, `AttendanceRecord`, `Invoice`, `Payment`, `StudentHostelAssignment`, `StudentTransportAssignment`) will denormalize the `parentUserIds` array directly from the `Student` document. This allows a rule like `allow read: if request.auth.uid in resource.data.parentUserIds;` without any `get()` calls, enabling efficient and secure querying of all data related to a parent's children.\n4.  **Employee Access to Personal Data (QAPs):** Similarly, for an employee to access their `PayrollRecord`, the `PayrollRecord` document will include an `employeeUserId` field, which stores the `UserProfile.id` of the linked employee. This enables a direct check like `allow read: if request.auth.uid == resource.data.employeeUserId;` for personal payroll records, facilitating secure and independent access.\n5.  **Teacher Access to Assignments/Exams:** `TeacherAssignment` documents include `teacherUserId` and `Exam` documents include `createdByUserId`. This allows teachers to access and manage their specific assignments or exams directly, using `request.auth.uid == resource.data.teacherUserId` or `request.auth.uid == resource.data.createdByUserId` respectively.\n\n**Querying for Access Patterns (QAPs):**\n\nThe structure directly supports QAPs:\n\n*   **School Administration:** All school-level entities are nested under `/schools/{schoolId}/`, allowing school administrators to query all data for their `schoolId` using a `where('schoolId', '==', getUserProfile(request.auth.uid).schoolId)` clause (with `schoolId` also denormalized in each document for easy filtering). Firebase security rules can then enforce role-based access based on `getUserProfile(request.auth.uid).roleIds`.\n*   **Parental View:** Parents can efficiently query all records related to their children (e.g., invoices, exam results, attendance) by filtering on the denormalized `parentUserIds` field, such as `db.collectionGroup('invoices').where('parentUserIds', 'array-contains', request.auth.uid)`. The security rule would then permit `list` and `get` operations if `request.auth.uid in resource.data.parentUserIds`.\n*   **Teacher/Employee View:** Teachers can query their assigned subjects or classes, or view results they graded, by filtering on `teacherUserId` or `createdByUserId`. Employees can query their payroll records using `employeeUserId`. These fields are present in the respective documents, supporting `list` operations.\n\n**Structural Segregation:**\n\nAll documents within a given collection (`e.g., /schools/{schoolId}/students`, `/schools/{schoolId}/invoices`) inherently share the same security posture because they all belong to a single school and are accessed by users with roles defined for that school. There are no mixed-security-posture documents (like public vs. private posts) within the same collection, simplifying rule writing. The multi-tenant design ensures logical segregation at the highest level, and consistent denormalization further solidifies security predictability."
   }
 }

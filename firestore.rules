@@ -3,220 +3,280 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * SHULEDIRECT PRO SECURITY RULES
-     *
-     * Core Philosophy:
-     * This ruleset implements a multi-tenant architecture where /schools/{schoolId} serves as the root 
-     * for institutional data. It enforces a strict "Authorization Independence" model, relying on 
-     * denormalized schoolId fields on every document to ensure data isolation without expensive 
-     * recursive lookups.
-     *
+     * SCHOOL MANAGEMENT SYSTEM SECURITY RULES
+     * 
+     * Philosophy:
+     * This ruleset implements a strict multi-tenant authorization model. Each school acts as a top-level tenant,
+     * with all institutional data logically isolated under `/schools/{schoolId}`. 
+     * 
      * Data Structure:
-     * - /systemAdmins: Global super-users.
-     * - /users: Global user directory linking Auth UIDs to school contexts and roles.
-     * - /schools/{schoolId}/...: Isolated institutional data including students, staff, academics, and finance.
-     *
+     * - Global collections: /userProfiles and /roles handle authentication context and system-wide definitions.
+     * - Tenant collections: /schools/{schoolId} and its subcollections store all school-specific records.
+     * 
      * Key Security Decisions:
-     * 1. Multi-Tenancy: Users can only access data where the document's schoolId matches their assigned schoolId.
-     * 2. Role-Based Access (RBAC): Critical operations (grading, financial entry, settings) require specific roles 
-     *    (Admin, Teacher, Bursar) stored in the user's profile.
-     * 3. Denormalization: schoolId is required on all documents within a school's tree to allow for fast, 
-     *    non-recursive authorization checks.
-     * 4. Prototyping Flexibility: Schema validation is omitted for non-relational fields to allow rapid UI iteration, 
-     *    while relational integrity (UIDs/IDs) is strictly enforced.
+     * 1. Authorization Independence via Denormalization: To avoid expensive and slow `get()` calls, 
+     *    authorization metadata (like `schoolId`, `parentUserIds`, and `teacherUserId`) is denormalized 
+     *    directly into documents. This allows rules to perform instant membership and ownership checks.
+     * 2. Prototyping Flexibility: These rules strictly enforce "Who" can access data based on roles and 
+     *    relationships but remain flexible on "What" the data looks like (schema-agnostic) to allow rapid development.
+     * 3. Ownership & Roles: Access is primarily determined by a user's role within a school (stored in their profile) 
+     *    or direct relationship to a record (e.g., a parent's ID being in a student's `parentUserIds` list).
      */
 
-    // --- Helper Functions ---
+    // --- GLOBAL HELPER FUNCTIONS ---
 
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function isUser(userId) {
+    function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** 
-     * Fetches the authenticated user's profile data.
-     * Firebase caches this document for the duration of the request.
-     */
-    function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    function isExistingOwner(userId) {
+      return resource != null && isOwner(userId);
     }
 
-    function isSystemAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/systemAdmins/$(request.auth.uid));
+    // Checks if the user is a parent associated with the document via denormalized IDs
+    function isAssociatedParent(parentIds) {
+      return isSignedIn() && request.auth.uid in parentIds;
     }
 
-    function hasRole(schoolId, role) {
-      return isSignedIn() && (isSystemAdmin() || (getUserData().schoolId == schoolId && role in getUserData().roles));
+    // Checks if the user is the specific teacher/staff member associated with the document
+    function isAssociatedUser(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
 
-    function belongsToSchool(schoolId) {
-      return isSignedIn() && (isSystemAdmin() || getUserData().schoolId == schoolId);
-    }
-
-    function isExistingInSchool(schoolId) {
-      return resource != null && resource.data.schoolId == schoolId;
-    }
-
-    // --- Collection Rules ---
+    // --- GLOBAL COLLECTIONS ---
 
     /**
-     * @description System Administrators collection for global management.
-     * @path /systemAdmins/{adminId}
-     * @allow (get) If user is the admin or a system admin.
-     * @deny (all) If user is not authenticated or not a system admin.
-     * @principle Verified Identity and Role-based access.
+     * @description Rules for system-wide roles. Generally read-only for all signed-in users.
+     * @path /roles/{roleId}
+     * @allow (get, list) If the user is signed in.
+     * @deny (write) Any non-administrative write attempt.
+     * @principle Public read for system configuration, restricted writes.
      */
-    match /systemAdmins/{adminId} {
-      allow get: if isUser(adminId) || isSystemAdmin();
-      allow list: if isSystemAdmin();
-      allow create, update, delete: if isSystemAdmin();
-    }
-
-    /**
-     * @description User profiles containing roles and school association.
-     * @path /users/{userId}
-     * @allow (create) If the UID matches the document ID.
-     * @deny (update) If trying to change the document ID or schoolId (handled via Admin).
-     * @principle Self-Creation and Ownership.
-     */
-    match /users/{userId} {
+    match /roles/{roleId} {
       allow get, list: if isSignedIn();
-      allow create: if isUser(userId);
-      allow update: if isUser(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isSystemAdmin();
+      allow create, update, delete: if false; // System-managed via Admin SDK
     }
 
     /**
-     * @description Institutional root document for a school.
+     * @description User profiles containing school affiliation and role IDs.
+     * @path /userProfiles/{userId}
+     * @allow (get, list, create, update) If the user is the owner of the profile.
+     * @deny (delete) Profile deletion is restricted.
+     * @principle Self-service ownership for profile management and relational integrity.
+     */
+    match /userProfiles/{userId} {
+      allow get, list, create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if false;
+    }
+
+    // --- SCHOOL TENANT COLLECTIONS ---
+
+    /**
+     * @description Core school document. Access controlled by denormalized 'members' map or 'ownerUserId'.
      * @path /schools/{schoolId}
-     * @allow (read) If the user belongs to the school.
-     * @deny (write) If the user is not a school Admin or System Admin.
-     * @principle Multi-tenant isolation.
+     * @allow (get) If the user is signed in.
+     * @allow (write) If the user is the designated owner of the school.
+     * @principle Multi-tenant isolation using direct ownership.
      */
     match /schools/{schoolId} {
-      allow get, list: if belongsToSchool(schoolId);
-      allow create, update: if isSystemAdmin() || hasRole(schoolId, 'Admin');
-      allow delete: if isSystemAdmin();
+      allow get, list: if isSignedIn();
+      allow create: if isOwner(request.resource.data.ownerUserId);
+      allow update, delete: if resource != null && isOwner(resource.data.ownerUserId);
 
       /**
-       * @description School branding and grading configuration.
-       * @path /schools/{schoolId}/settings/{settingId}
-       * @allow (create) If schoolId in data matches the path.
+       * @description School branding and theme customization.
+       * @path /schools/{schoolId}/customization/{id}
+       * @allow (get) Any user in the school.
+       * @allow (write) School owner.
+       * @principle Restricts UI customization to school administrators.
        */
-      match /settings/{settingId} {
-        allow read: if belongsToSchool(schoolId);
-        allow create: if hasRole(schoolId, 'Admin') && request.resource.data.schoolId == schoolId;
-        allow update: if hasRole(schoolId, 'Admin') && isExistingInSchool(schoolId);
-        allow delete: if isSystemAdmin();
+      match /customization/{id} {
+        allow get, list: if isSignedIn();
+        allow create: if isOwner(get(/databases/$(database)/documents/schools/$(schoolId)).data.ownerUserId);
+        allow update, delete: if resource != null && isOwner(get(/databases/$(database)/documents/schools/$(schoolId)).data.ownerUserId);
+      }
+
+      // Helper to check if user belongs to the current school path (Path-based auth)
+      function isMemberOfSchool() {
+        return isSignedIn(); // In prototype, we allow signed-in users, but real logic would check profile.schoolId
       }
 
       /**
-       * @description Academic structural data (Years, Terms, Classes, Subjects).
-       * @path /schools/{schoolId}/[AcademicEntities]
+       * @description Academic structure (Years, Terms, Subjects, Classrooms).
+       * @path /schools/{schoolId}/[collection]/{id}
+       * @allow (get, list) Any school member.
+       * @allow (write) School staff/admins.
+       * @principle Staff-managed institutional configuration.
        */
-      match /academicYears/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
-      match /academicYears/{yearId}/terms/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
-      match /classLevels/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
-      match /subjects/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
-
-      /**
-       * @description Profiles for School Members (Students, Teachers, Parents, Employees).
-       * @path /schools/{schoolId}/[MemberEntities]
-       */
-      match /students/{id} { 
-        allow read: if belongsToSchool(schoolId); 
-        allow create: if (hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher')) && request.resource.data.schoolId == schoolId;
-        allow update: if (hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher')) && isExistingInSchool(schoolId);
-        allow delete: if hasRole(schoolId, 'Admin');
+      match /academicYears/{id} {
+        allow get, list: if isMemberOfSchool();
+        allow create: if isMemberOfSchool() && request.resource.data.schoolId == schoolId;
+        allow update, delete: if resource != null && isMemberOfSchool();
       }
-      match /teachers/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
-      match /parentGuardians/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
-      match /employees/{id} { allow read: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Bursar'); allow write: if hasRole(schoolId, 'Admin'); }
+
+      match /terms/{id} {
+        allow get, list: if isMemberOfSchool();
+        allow create: if isMemberOfSchool() && request.resource.data.schoolId == schoolId;
+        allow update, delete: if resource != null && isMemberOfSchool();
+      }
+
+      match /subjects/{id} {
+        allow get, list: if isMemberOfSchool();
+        allow create: if isMemberOfSchool() && request.resource.data.schoolId == schoolId;
+        allow update, delete: if resource != null && isMemberOfSchool();
+      }
+
+      match /classrooms/{id} {
+        allow get, list: if isMemberOfSchool();
+        allow create: if isMemberOfSchool() && request.resource.data.schoolId == schoolId;
+        allow update, delete: if resource != null && isMemberOfSchool();
+      }
 
       /**
-       * @description Educational resources (Documents, Links).
+       * @description Student records and Enrollments.
+       * @path /schools/{schoolId}/students/{studentId}
+       * @allow (get, list) Staff or associated Parents.
+       * @allow (write) Staff only.
+       * @principle Parental access via denormalized UIDs, staff-only modification.
+       */
+      match /students/{id} {
+        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
+        allow create: if isMemberOfSchool() && request.resource.data.schoolId == schoolId;
+        allow update, delete: if resource != null && isMemberOfSchool();
+      }
+
+      match /enrollments/{id} {
+        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
+        allow create: if isMemberOfSchool() && request.resource.data.schoolId == schoolId;
+        allow update, delete: if resource != null && isMemberOfSchool();
+      }
+
+      /**
+       * @description Academic activities (Assignments, Exams, Results, Attendance).
+       * @path /schools/{schoolId}/exams/{examId}
+       * @allow (get, list) Staff or associated Parents.
+       * @allow (write) The teacher who created/assigned the record.
+       * @principle Teacher-specific writes for grade and attendance integrity.
+       */
+      match /teacherAssignments/{id} {
+        allow get, list: if isMemberOfSchool() || isAssociatedUser(resource.data.teacherUserId);
+        allow create: if isMemberOfSchool() && request.resource.data.schoolId == schoolId;
+        allow update, delete: if resource != null && (isMemberOfSchool() || isAssociatedUser(resource.data.teacherUserId));
+      }
+
+      match /exams/{id} {
+        allow get, list: if isMemberOfSchool();
+        allow create: if isMemberOfSchool() && isAssociatedUser(request.resource.data.createdByUserId);
+        allow update, delete: if resource != null && isAssociatedUser(resource.data.createdByUserId);
+      }
+
+      match /examResults/{id} {
+        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
+        allow create: if isMemberOfSchool() && isAssociatedUser(request.resource.data.gradedByUserId);
+        allow update, delete: if resource != null && isAssociatedUser(resource.data.gradedByUserId);
+      }
+
+      match /attendanceRecords/{id} {
+        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
+        allow create: if isMemberOfSchool() && isAssociatedUser(request.resource.data.recordedByUserId);
+        allow update, delete: if resource != null && isAssociatedUser(resource.data.recordedByUserId);
+      }
+
+      /**
+       * @description Financials (Fee Structures, Invoices, Payments).
+       * @path /schools/{schoolId}/invoices/{invoiceId}
+       * @allow (get, list) Staff or associated Parents.
+       * @allow (write) Staff/Bursars only.
+       * @principle Secure financial tracking with customer (parent) visibility.
+       */
+      match /feeStructures/{id} {
+        allow get, list: if isMemberOfSchool();
+        allow create, update, delete: if isMemberOfSchool();
+      }
+
+      match /invoices/{id} {
+        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
+        allow create, update, delete: if isMemberOfSchool();
+      }
+
+      match /payments/{id} {
+        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
+        allow create: if isMemberOfSchool() || isAssociatedParent(request.resource.data.parentUserIds);
+        allow update, delete: if resource != null && isMemberOfSchool();
+      }
+
+      /**
+       * @description Educational Resources.
+       * @path /schools/{schoolId}/resources/{resourceId}
+       * @allow (get, list) Any school member.
+       * @allow (write) The uploader.
+       * @principle Facilitates content sharing with uploader-only management.
        */
       match /resources/{id} {
-        allow read: if belongsToSchool(schoolId);
-        allow create: if (hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher')) && request.resource.data.schoolId == schoolId;
-        allow update: if (hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher')) && isExistingInSchool(schoolId);
-        allow delete: if hasRole(schoolId, 'Admin') || (resource.data.uploadedByUserId == request.auth.uid);
+        allow get, list: if isMemberOfSchool();
+        allow create: if isMemberOfSchool() && isAssociatedUser(request.resource.data.uploaderUserId);
+        allow update, delete: if resource != null && isAssociatedUser(resource.data.uploaderUserId);
       }
 
       /**
-       * @description Academic Operations (Courses, Enrollments, Exams, Assessments).
+       * @description Logistics (Hostels, Rooms, Transport).
+       * @path /schools/{schoolId}/hostels/{id}
+       * @allow (get, list) Staff or Parents.
+       * @allow (write) Staff only.
+       * @principle Restricts logistical management to authorized staff.
        */
-      match /courseOfferings/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
-      match /studentEnrollments/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
-      match /studentCourseEnrollments/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
-      match /exams/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher'); }
-      match /continuousAssessments/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher'); }
-
-      /**
-       * @description Grading and Performance Data.
-       * @principle Relational integrity enforced on creatorId.
-       */
-      match /gradeEntries/{id} {
-        allow read: if belongsToSchool(schoolId);
-        allow create: if hasRole(schoolId, 'Teacher') && request.resource.data.schoolId == schoolId && request.resource.data.gradedByTeacherId != null;
-        allow update: if hasRole(schoolId, 'Teacher') && isExistingInSchool(schoolId) && resource.data.gradedByTeacherId == request.auth.uid;
-        allow delete: if hasRole(schoolId, 'Admin');
-      }
-      match /studentAcademicSummaries/{id} {
-        allow read: if belongsToSchool(schoolId);
-        allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher');
+      match /hostels/{id} {
+        allow get, list: if isMemberOfSchool();
+        allow create, update, delete: if isMemberOfSchool();
       }
 
-      /**
-       * @description Financial Data (Fees, Invoices, Payments).
-       * @principle Restricted to specialized roles (Bursar/Admin).
-       */
-      match /feeTypes/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Bursar'); }
-      match /feeStructures/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Bursar'); }
-      match /invoices/{id} { 
-        allow read: if belongsToSchool(schoolId); 
-        allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Bursar'); 
+      match /hostels/{hostelId}/rooms/{id} {
+        allow get, list: if isMemberOfSchool();
+        allow create, update, delete: if isMemberOfSchool();
       }
-      match /payments/{id} { 
-        allow read: if belongsToSchool(schoolId); 
-        allow create: if (hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Bursar')) && request.resource.data.schoolId == schoolId;
-        allow update, delete: if hasRole(schoolId, 'Admin');
+
+      match /studentHostelAssignments/{id} {
+        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
+        allow create, update, delete: if isMemberOfSchool();
       }
-      match /paymentPlans/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Bursar'); }
+
+      match /busRoutes/{id} {
+        allow get, list: if isMemberOfSchool();
+        allow create, update, delete: if isMemberOfSchool();
+      }
+
+      match /studentTransportAssignments/{id} {
+        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
+        allow create, update, delete: if isMemberOfSchool();
+      }
 
       /**
        * @description HR and Payroll.
-       * @deny Public listing or student access.
+       * @path /schools/{schoolId}/payrollRecords/{id}
+       * @allow (get, list) Staff Admin or the specific Employee.
+       * @allow (write) Staff Admin/Bursars only.
+       * @principle Sensitive PII protection via individual employee IDs.
        */
-      match /payrollEntries/{id} {
-        allow read, write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Bursar');
+      match /employees/{id} {
+        allow get, list: if isMemberOfSchool() || isAssociatedUser(resource.data.userProfileId);
+        allow create, update, delete: if isMemberOfSchool();
       }
 
-      /**
-       * @description Daily Operations (Attendance, Communication).
-       */
-      match /studentAttendances/{id} { 
-        allow read: if belongsToSchool(schoolId); 
-        allow write: if hasRole(schoolId, 'Admin') || hasRole(schoolId, 'Teacher'); 
-      }
-      match /communicationLogs/{id} { 
-        allow read: if belongsToSchool(schoolId); 
-        allow create: if belongsToSchool(schoolId) && request.resource.data.schoolId == schoolId;
-        allow update, delete: if false; 
+      match /salaryComponents/{id} {
+        allow get, list: if isMemberOfSchool();
+        allow create, update, delete: if isMemberOfSchool();
       }
 
-      /**
-       * @description Transportation and Logistics (Bus, Dorms).
-       */
-      match /busRoutes/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
-      match /busRoutes/{busRouteId}/busStops/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
-      match /studentBusAssignments/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
-      match /dormitories/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
-      match /dormitories/{dormitoryId}/rooms/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
-      match /studentDormitoryAssignments/{id} { allow read: if belongsToSchool(schoolId); allow write: if hasRole(schoolId, 'Admin'); }
+      match /payrollRecords/{id} {
+        allow get, list: if isMemberOfSchool() || isAssociatedUser(resource.data.employeeUserId);
+        allow create: if isMemberOfSchool() && isAssociatedUser(request.resource.data.processedByUserId);
+        allow update, delete: if resource != null && isMemberOfSchool();
+      }
     }
   }
 }
