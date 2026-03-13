@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -14,25 +13,22 @@ import {
   Banknote,
   Smartphone,
   Zap,
-  MessageCircle,
-  Globe,
   Star,
   Instagram,
   Linkedin,
   Twitter,
   Github,
-  ChevronRight,
   Calculator,
-  BookOpen,
-  PieChart,
   Shield,
-  Layout
+  Layout,
+  PieChart,
+  ChevronRight
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { cn } from "@/lib/utils"
+import { StaggeredMenu } from "@/components/ui/staggered-menu"
 import {
   Dialog,
   DialogContent,
@@ -45,26 +41,24 @@ import {
 export default function LandingPage() {
   const heroImage = PlaceHolderImages.find(img => img.id === "school-hero")
   
+  const navItems = [
+    { label: "Staff Portal", link: "/login" },
+    { label: "Academic Hub", link: "/dashboard/academics" },
+    { label: "Finance Hub", link: "/dashboard/finance" },
+    { label: "Help Center", link: "/dashboard/help" },
+  ]
+
+  const socialItems = [
+    { label: "Instagram", link: "https://instagram.com/mwijay.davie" },
+    { label: "X / Twitter", link: "https://x.com/mwijay.davie" },
+    { label: "LinkedIn", link: "https://linkedin.com/in/davie-mwijage" },
+    { label: "WhatsApp", link: "https://wa.me/255620641695" },
+  ]
+
   return (
     <div className="min-h-screen bg-background font-body selection:bg-primary/20 overflow-x-hidden">
-      {/* Navigation - Minimal & High End */}
-      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="h-10 w-10 rounded-2xl colorful-gradient flex items-center justify-center text-white shadow-lg group-hover:rotate-12 transition-transform duration-500">
-              <ShieldCheck className="h-6 w-6" />
-            </div>
-            <span className="font-headline font-black text-2xl text-primary tracking-tighter">ShuleDirect <span className="text-accent">Pro</span></span>
-          </div>
-          <div className="flex items-center gap-8 text-xs font-black uppercase tracking-widest">
-            <Link href="/login">
-              <Button className="rounded-full px-8 font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all h-11">
-                Enter Staff Portal <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
+      {/* High-End Staggered Navigation */}
+      <StaggeredMenu items={navItems} socialItems={socialItems} />
 
       {/* Hero Section - Editorial Layout */}
       <section className="pt-40 pb-32 px-6 relative">
