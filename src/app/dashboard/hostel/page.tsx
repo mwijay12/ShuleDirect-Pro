@@ -13,7 +13,12 @@ import {
   Zap,
   Thermometer,
   Stethoscope,
-  ClipboardList
+  ClipboardList,
+  Lightbulb,
+  Droplets,
+  MoreVertical,
+  Activity,
+  AlertCircle
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -30,201 +35,262 @@ import {
   SheetTrigger 
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 const hostels = [
-  { name: "Mt. Kilimanjaro Wing", type: "Boys", capacity: 200, occupied: 185, warden: "Mwl. Juma", rooms: 50, safetyScore: 98 },
-  { name: "Lake Victoria Wing", type: "Girls", capacity: 200, occupied: 198, warden: "Mwl. Neema", rooms: 50, safetyScore: 100 },
-  { name: "Serengeti Annex", type: "Boys", capacity: 100, occupied: 45, warden: "Mwl. Peter", rooms: 25, safetyScore: 94 },
-  { name: "Zanzibar House", type: "Girls", capacity: 150, occupied: 142, warden: "Mwl. Sarah", rooms: 38, safetyScore: 96 },
+  { id: "W-01", name: "Mt. Kilimanjaro Wing", type: "Boys", capacity: 200, occupied: 185, warden: "Mwl. Juma", rooms: 50, safetyScore: 98, block: "Block A" },
+  { id: "W-02", name: "Lake Victoria Wing", type: "Girls", capacity: 200, occupied: 198, warden: "Mwl. Neema", rooms: 50, safetyScore: 100, block: "Block B" },
+  { id: "W-03", name: "Serengeti Annex", type: "Boys", capacity: 100, occupied: 45, warden: "Mwl. Peter", rooms: 25, safetyScore: 94, block: "Block C" },
+  { id: "W-04", name: "Zanzibar House", type: "Girls", capacity: 150, occupied: 142, warden: "Mwl. Sarah", rooms: 38, safetyScore: 96, block: "Block D" },
 ]
 
 export default function HostelPage() {
+  const { toast } = useToast()
   const [selectedWing, setSelectedWing] = useState<typeof hostels[0] | null>(null)
 
+  const handleNewRegistration = () => {
+    toast({
+      title: "Registration Initialized",
+      description: "Allocating bed space in 2026 Housing Node.",
+    })
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-headline font-bold text-primary">Hostel Management</h1>
-          <p className="text-muted-foreground">Oversee boarding facilities, room allocations, and student safety.</p>
+    <div className="space-y-8 max-w-full mx-auto pb-24 overflow-x-hidden">
+      {/* Editorial Header */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 px-1">
+        <div className="space-y-2">
+          <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary px-4 py-1 h-6 text-[9px] font-black tracking-widest rounded-full uppercase">
+            Logistics & Housing Node
+          </Badge>
+          <h1 className="text-3xl sm:text-4xl font-headline font-black text-primary tracking-tight">Hostel Management</h1>
+          <p className="text-muted-foreground font-medium text-sm">Institutional boarding infrastructure, room allocations, and safety audits.</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto shrink-0">
+          <Button variant="outline" className="flex-1 sm:flex-none rounded-full h-12 px-6 border-primary/20 text-primary font-black text-[10px] uppercase tracking-widest bg-white shadow-sm">
             Allocation Map
           </Button>
-          <Button>
+          <Button onClick={handleNewRegistration} className="flex-1 sm:flex-none rounded-full h-12 px-6 colorful-gradient shadow-lg font-black text-[10px] uppercase tracking-widest">
             <Plus className="mr-2 h-4 w-4" /> New Registration
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="border-none shadow-sm">
-          <CardHeader className="pb-2">
-            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Total Boarders</CardDescription>
-            <CardTitle className="text-3xl">570 Students</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 mt-2">
-              <Progress value={85} className="h-2" />
-              <span className="text-xs font-bold">85% Full</span>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-sm">
-          <CardHeader className="pb-2">
-            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Available Beds</CardDescription>
-            <CardTitle className="text-3xl text-accent">80</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">Across all 4 hostel wings</p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-sm">
-          <CardHeader className="pb-2">
-            <CardDescription className="uppercase text-[10px] font-bold tracking-widest">Incident Reports</CardDescription>
-            <CardTitle className="text-3xl text-destructive">0</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-green-600 font-bold">Clean record for 14 days</p>
-          </CardContent>
-        </Card>
+      {/* Pulse Stats Grid */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: "Total Boarders", value: "570", sub: "85% Capacity", icon: Users, color: "text-primary" },
+          { label: "Empty Beds", value: "80", sub: "Across all Wings", icon: Bed, color: "text-accent" },
+          { label: "Avg Safety", value: "97%", sub: "Audit Score", icon: ShieldCheck, color: "text-green-600" },
+          { label: "Alerts", value: "0", sub: "All Clear Today", icon: Activity, color: "text-orange-600" },
+        ].map((stat) => (
+          <Card key={stat.label} className="border-none shadow-xl bg-white/60 backdrop-blur-md rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all">
+             <CardContent className="p-5 sm:p-6 relative">
+                <div className="absolute -right-4 -top-4 opacity-5 group-hover:rotate-12 transition-transform">
+                  <stat.icon className="h-16 w-16 sm:h-20 sm:w-20" />
+                </div>
+                <p className="text-[8px] sm:text-[10px] uppercase font-black text-muted-foreground tracking-widest">{stat.label}</p>
+                <p className={cn("text-xl sm:text-3xl font-black mt-2 tracking-tighter", stat.color)}>{stat.value}</p>
+                <p className="text-[8px] text-muted-foreground font-black mt-1 uppercase tracking-widest">{stat.sub}</p>
+             </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <Tabs defaultValue="wings" className="space-y-6">
-        <TabsList className="bg-muted/50 p-1 h-11 rounded-xl">
-          <TabsTrigger value="wings" className="font-bold rounded-lg">Hostel Wings</TabsTrigger>
-          <TabsTrigger value="students" className="font-bold rounded-lg">Student List</TabsTrigger>
-          <TabsTrigger value="maintenance" className="font-bold rounded-lg">Maintenance</TabsTrigger>
+      <Tabs defaultValue="wings" className="space-y-8">
+        <TabsList className="bg-muted/40 p-1 rounded-2xl h-14 flex w-full sm:w-fit overflow-x-auto shadow-inner">
+          <TabsTrigger value="wings" className="rounded-xl font-black px-8 py-2 text-xs uppercase tracking-widest">Hostel Wings</TabsTrigger>
+          <TabsTrigger value="students" className="rounded-xl font-black px-8 py-2 text-xs uppercase tracking-widest">Boarding Register</TabsTrigger>
+          <TabsTrigger value="maintenance" className="rounded-xl font-black px-8 py-2 text-xs uppercase tracking-widest">Facility Audit</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="wings" className="grid gap-6 md:grid-cols-2">
+        <TabsContent value="wings" className="grid gap-6 md:grid-cols-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {hostels.map((hostel) => (
-            <Card key={hostel.name} className="border-none shadow-sm overflow-hidden group">
-              <div className={`h-1.5 w-full ${hostel.type === "Boys" ? "bg-primary" : "bg-accent"}`} />
-              <CardHeader className="pb-2">
+            <Card key={hostel.id} className="border-none shadow-xl overflow-hidden group rounded-[2.5rem] bg-white/60 backdrop-blur-md">
+              <div className={`h-2 w-full ${hostel.type === "Boys" ? "bg-primary" : "bg-accent"}`} />
+              <CardHeader className="pb-4 pt-8 px-8">
                 <div className="flex justify-between items-start">
                   <div>
-                    <CardTitle className="text-lg group-hover:text-primary transition-colors">{hostel.name}</CardTitle>
-                    <CardDescription>{hostel.type} Accommodation</CardDescription>
+                    <Badge variant="secondary" className="mb-2 font-black text-[8px] uppercase tracking-widest">{hostel.block}</Badge>
+                    <CardTitle className="text-xl sm:text-2xl font-black group-hover:text-primary transition-colors">{hostel.name}</CardTitle>
+                    <CardDescription className="text-xs font-bold">{hostel.type} Accommodation</CardDescription>
                   </div>
-                  <Badge variant="outline" className="font-mono text-xs font-bold">{hostel.occupied}/{hostel.capacity}</Badge>
+                  <div className="text-right">
+                    <div className="text-2xl font-black text-foreground/80">{hostel.occupied}</div>
+                    <div className="text-[10px] font-black text-muted-foreground uppercase tracking-tighter">Students Enrolled</div>
+                  </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <CardContent className="px-8 pb-8 space-y-6">
+                <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-1">
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Warden</p>
-                    <p className="text-sm font-semibold">{hostel.warden}</p>
+                    <p className="text-[10px] uppercase font-black text-muted-foreground tracking-[0.2em]">Lead Warden</p>
+                    <p className="text-sm font-bold text-foreground/70">{hostel.warden}</p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Rooms</p>
-                    <p className="text-sm font-semibold">{hostel.rooms} Fully Setup</p>
+                  <div className="space-y-1 text-right">
+                    <p className="text-[10px] uppercase font-black text-muted-foreground tracking-[0.2em]">Efficiency</p>
+                    <p className="text-sm font-bold text-green-600">Healthy Node</p>
                   </div>
                 </div>
-                <div className="pt-2 border-t flex justify-between items-center">
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    <span>Capacity Load</span>
+                    <span>{Math.round((hostel.occupied / hostel.capacity) * 100)}%</span>
+                  </div>
+                  <Progress value={(hostel.occupied / hostel.capacity) * 100} className="h-2 bg-muted/50" />
+                </div>
+
+                <div className="pt-4 border-t flex justify-between items-center">
                   <div className="flex gap-2">
-                    <Badge variant="secondary" className="h-5 px-1.5 text-[9px] font-bold">WI-FI</Badge>
-                    <Badge variant="secondary" className="h-5 px-1.5 text-[9px] font-bold">CCTV</Badge>
+                    <Badge variant="outline" className="h-6 px-3 text-[9px] font-black uppercase border-primary/10 bg-primary/5 text-primary">CCTV LIVE</Badge>
+                    <Badge variant="outline" className="h-6 px-3 text-[9px] font-black uppercase border-accent/10 bg-accent/5 text-accent">WI-FI ACTIVE</Badge>
                   </div>
                   <Sheet>
                     <SheetTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 font-bold text-xs text-primary rounded-full hover:bg-primary/5" onClick={() => setSelectedWing(hostel)}>
-                        Manage <ArrowRight className="ml-1 h-3 w-3" />
+                      <Button variant="ghost" size="sm" className="h-10 px-6 font-black text-[10px] uppercase tracking-widest text-primary rounded-full hover:bg-primary/5 transition-all group" onClick={() => setSelectedWing(hostel)}>
+                        Inspect Block <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     </SheetTrigger>
-                    <SheetContent className="sm:max-w-xl">
-                      <SheetHeader className="mb-6">
-                        <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 rounded-2xl bg-accent/10 flex items-center justify-center">
-                            <Home className="h-6 w-6 text-accent" />
-                          </div>
-                          <div>
-                            <SheetTitle className="text-2xl font-headline font-bold">{selectedWing?.name}</SheetTitle>
-                            <SheetDescription className="text-xs uppercase font-bold tracking-tighter">{selectedWing?.type} Wing • {selectedWing?.warden}</SheetDescription>
-                          </div>
+                    <SheetContent className="w-full sm:max-w-2xl overflow-y-auto border-l-0 shadow-2xl p-0 font-body">
+                      <div className="bg-primary/5 p-8 sm:p-10 border-b relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-10 opacity-5">
+                          <Home className="h-48 sm:h-64 w-48 sm:w-64 rotate-12" />
                         </div>
-                      </SheetHeader>
-
-                      <Tabs defaultValue="overview" className="space-y-6">
-                        <TabsList className="grid w-full grid-cols-3 bg-muted/40 p-1 h-10 rounded-xl">
-                          <TabsTrigger value="overview" className="text-xs font-bold">Overview</TabsTrigger>
-                          <TabsTrigger value="health" className="text-xs font-bold">Health</TabsTrigger>
-                          <TabsTrigger value="utilities" className="text-xs font-bold">Utilities</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="overview" className="space-y-6">
-                          <div className="grid grid-cols-2 gap-4">
-                             <div className="p-4 rounded-2xl bg-muted/20 text-center">
-                               <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1 tracking-widest">Safety Score</p>
-                               <p className="text-2xl font-black text-green-600">{selectedWing?.safetyScore}%</p>
-                             </div>
-                             <div className="p-4 rounded-2xl bg-muted/20 text-center">
-                               <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1 tracking-widest">Occupancy</p>
-                               <p className="text-2xl font-black text-primary">{Math.round((selectedWing?.occupied || 0) / (selectedWing?.capacity || 1) * 100)}%</p>
-                             </div>
+                        <SheetHeader className="text-left relative z-10">
+                          <div className="flex items-center gap-6">
+                            <div className="h-16 w-16 rounded-[1.5rem] bg-white shadow-xl flex items-center justify-center text-primary shrink-0">
+                              <Home className="h-8 w-8" />
+                            </div>
+                            <div className="space-y-1">
+                              <SheetTitle className="text-2xl sm:text-3xl font-black text-primary tracking-tight">{selectedWing?.name}</SheetTitle>
+                              <div className="flex items-center gap-3">
+                                <Badge className="rounded-full bg-white text-primary border-none shadow-md font-black px-4 py-1 text-[9px] uppercase">{selectedWing?.block}</Badge>
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Guardian: {selectedWing?.warden}</span>
+                              </div>
+                            </div>
                           </div>
+                        </SheetHeader>
+                      </div>
 
-                          <div className="space-y-4">
-                            <h3 className="text-sm font-bold flex items-center gap-2">
-                              <ClipboardList className="h-4 w-4 text-primary" /> Daily Inspection Checklist
-                            </h3>
-                            <div className="space-y-2">
+                      <div className="p-8 sm:p-10 space-y-10">
+                        <Tabs defaultValue="overview" className="space-y-10">
+                          <TabsList className="grid w-full grid-cols-3 bg-muted/40 p-1 rounded-2xl h-14 shadow-inner">
+                            <TabsTrigger value="overview" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Overview</TabsTrigger>
+                            <TabsTrigger value="inspection" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Inspection</TabsTrigger>
+                            <TabsTrigger value="utilities" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Utilities</TabsTrigger>
+                          </TabsList>
+
+                          <TabsContent value="overview" className="space-y-10">
+                            <div className="grid grid-cols-2 gap-4">
+                               <div className="p-6 rounded-[2rem] bg-muted/20 border border-transparent hover:border-primary/10 transition-all text-center shadow-inner group overflow-hidden">
+                                 <p className="text-[9px] font-black uppercase text-muted-foreground mb-2 tracking-widest group-hover:text-primary transition-colors">Safety Index</p>
+                                 <p className="text-3xl font-black text-green-600 tracking-tighter">{selectedWing?.safetyScore}%</p>
+                               </div>
+                               <div className="p-6 rounded-[2rem] bg-muted/20 border border-transparent hover:border-accent/10 transition-all text-center shadow-inner group overflow-hidden">
+                                 <p className="text-[9px] font-black uppercase text-muted-foreground mb-2 tracking-widest group-hover:text-accent transition-colors">Occupancy</p>
+                                 <p className="text-3xl font-black text-accent tracking-tighter">{Math.round((selectedWing?.occupied || 0) / (selectedWing?.capacity || 1) * 100)}%</p>
+                               </div>
+                            </div>
+
+                            <div className="space-y-6">
+                              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2 px-2">
+                                <Stethoscope className="h-4 w-4 text-destructive shrink-0" /> Health & Medical Node
+                              </h3>
+                              <Card className="border-none shadow-sm bg-destructive/5 p-6 rounded-[2rem] border border-destructive/10">
+                                <p className="text-xs text-destructive/80 font-medium leading-relaxed pr-4">
+                                  System Node: 3 students currently in the wing sickbay with minor symptoms. Warden has issued daily wellness logs.
+                                </p>
+                                <Button variant="outline" size="sm" className="mt-4 rounded-full font-black text-[9px] uppercase tracking-widest border-destructive/20 text-destructive hover:bg-destructive/5">
+                                  Access Health Logs
+                                </Button>
+                              </Card>
+                            </div>
+                          </TabsContent>
+
+                          <TabsContent value="inspection" className="space-y-8">
+                            <div className="flex justify-between items-center px-2">
+                              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2">
+                                <ClipboardList className="h-4 w-4 text-primary shrink-0" /> Audit Checklist
+                              </h3>
+                              <Badge className="bg-primary/10 text-primary border-none font-black text-[9px] px-4 py-1 rounded-full uppercase tracking-widest">Weekly Cycle</Badge>
+                            </div>
+                            
+                            <div className="space-y-3">
                               {[
-                                { task: "Room Hygiene Check", status: "Done" },
-                                { task: "Roll Call Completion", status: "Verified" },
-                                { task: "Common Area Sanitization", status: "Done" },
-                                { task: "Emergency Exit Check", status: "Pending" },
+                                { task: "Room Hygiene Audit", icon: Home, status: "Verified" },
+                                { task: "Lighting & Electrical Check", icon: Lightbulb, status: "Healthy" },
+                                { task: "Plumbing & Leak Detection", icon: Droplets, status: "Inspected" },
+                                { task: "Evening Roll Call Node", icon: Users, status: "Done" },
+                                { task: "Emergency Exit Clearance", icon: ShieldCheck, status: "Pending" },
                               ].map((item, i) => (
-                                <div key={i} className="flex justify-between items-center p-3 bg-muted/20 rounded-xl text-xs">
-                                  <span>{item.task}</span>
-                                  <Badge variant={item.status === "Pending" ? "outline" : "secondary"} className="text-[10px] font-bold">{item.status}</Badge>
+                                <div key={i} className="flex items-center justify-between p-5 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-muted/50 group hover:border-primary/20 transition-all cursor-pointer">
+                                  <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-muted/30 flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
+                                      <item.icon className="h-5 w-5" />
+                                    </div>
+                                    <span className="text-xs font-bold text-foreground/80">{item.task}</span>
+                                  </div>
+                                  <Badge 
+                                    variant={item.status === "Pending" ? "outline" : "secondary"} 
+                                    className={cn(
+                                      "text-[9px] font-black uppercase tracking-widest px-3 h-6 rounded-full border-none",
+                                      item.status === "Pending" ? "bg-orange-50 text-orange-600" : "bg-green-50 text-green-600"
+                                    )}
+                                  >
+                                    {item.status}
+                                  </Badge>
                                 </div>
                               ))}
                             </div>
-                          </div>
-                        </TabsContent>
+                            <Button className="w-full h-14 rounded-2xl colorful-gradient font-black uppercase text-xs tracking-[0.2em] shadow-xl group">
+                              Submit Wing Report <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                            </Button>
+                          </TabsContent>
 
-                        <TabsContent value="health" className="space-y-4">
-                           <div className="p-4 rounded-2xl bg-destructive/5 border border-destructive/10">
-                             <div className="flex items-center gap-3 mb-2">
-                               <Stethoscope className="h-5 w-5 text-destructive" />
-                               <span className="font-bold text-sm text-destructive">Medical Log</span>
+                          <TabsContent value="utilities" className="space-y-10">
+                             <div className="space-y-6 p-8 rounded-[2.5rem] bg-yellow-50/50 border border-yellow-100 shadow-inner">
+                               <div className="flex items-center justify-between mb-4">
+                                 <div className="flex items-center gap-3">
+                                   <div className="h-10 w-10 rounded-xl bg-yellow-100 flex items-center justify-center text-yellow-600">
+                                     <Zap className="h-5 w-5" />
+                                   </div>
+                                   <div>
+                                     <p className="text-[10px] font-black uppercase tracking-widest text-yellow-800/60">Electricity Hub</p>
+                                     <p className="text-sm font-black text-yellow-900">LUKU Control Node</p>
+                                   </div>
+                                 </div>
+                                 <span className="text-xs font-mono font-black text-yellow-900">TZS 450,200</span>
+                               </div>
+                               <div className="h-3 w-full bg-yellow-200/50 rounded-full overflow-hidden">
+                                 <div className="h-full bg-yellow-500 animate-pulse-soft" style={{ width: '45%' }} />
+                               </div>
+                               <p className="text-[9px] font-black uppercase text-yellow-800/40 text-center tracking-widest">Est. 12 Days remaining based on current load</p>
                              </div>
-                             <p className="text-xs text-muted-foreground">3 students currently in the wing sickbay with minor seasonal symptoms.</p>
-                           </div>
-                           <Button variant="outline" className="w-full rounded-full text-xs font-bold">
-                             View Health Records
-                           </Button>
-                        </TabsContent>
 
-                        <TabsContent value="utilities" className="space-y-6">
-                           <div className="space-y-4">
-                             <div className="flex items-center justify-between">
-                               <div className="flex items-center gap-2">
-                                 <Zap className="h-4 w-4 text-yellow-500" />
-                                 <span className="text-xs font-bold">Electricity (LUKU)</span>
+                             <div className="space-y-6 p-8 rounded-[2.5rem] bg-blue-50/50 border border-blue-100 shadow-inner">
+                               <div className="flex items-center justify-between mb-4">
+                                 <div className="flex items-center gap-3">
+                                   <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+                                     <Droplets className="h-5 w-5" />
+                                   </div>
+                                   <div>
+                                     <p className="text-[10px] font-black uppercase tracking-widest text-blue-800/60">Water Reserves</p>
+                                     <p className="text-sm font-black text-blue-900">Main Tank Node</p>
+                                   </div>
+                                 </div>
+                                 <span className="text-xs font-mono font-black text-blue-900">92% Capacity</span>
                                </div>
-                               <span className="text-xs font-mono font-bold">Balance: TZS 450,200</span>
-                             </div>
-                             <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                               <div className="h-full bg-yellow-500" style={{ width: '45%' }} />
-                             </div>
-                           </div>
-                           <div className="space-y-4">
-                             <div className="flex items-center justify-between">
-                               <div className="flex items-center gap-2">
-                                 <Thermometer className="h-4 w-4 text-blue-500" />
-                                 <span className="text-xs font-bold">Water Supply Level</span>
+                               <div className="h-3 w-full bg-blue-200/50 rounded-full overflow-hidden">
+                                 <div className="h-full bg-blue-500" style={{ width: '92%' }} />
                                </div>
-                               <span className="text-xs font-mono font-bold">92% Tank Full</span>
+                               <div className="flex justify-center items-center gap-2 text-blue-600 font-black text-[9px] uppercase tracking-widest">
+                                 <CheckCircle2 className="h-3 w-3" /> Supply Normal Flow
+                               </div>
                              </div>
-                             <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                               <div className="h-full bg-blue-500" style={{ width: '92%' }} />
-                             </div>
-                           </div>
-                        </TabsContent>
-                      </Tabs>
+                          </TabsContent>
+                        </Tabs>
+                      </div>
                     </SheetContent>
                   </Sheet>
                 </div>
@@ -233,25 +299,25 @@ export default function HostelPage() {
           ))}
         </TabsContent>
 
-        <TabsContent value="maintenance">
-          <Card className="border-none shadow-sm">
-            <CardHeader>
-              <CardTitle>System & Maintenance Health</CardTitle>
-              <CardDescription>Status of facility utilities</CardDescription>
+        <TabsContent value="maintenance" className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <Card className="border-none shadow-2xl rounded-[3rem] overflow-hidden bg-card/60 backdrop-blur-md">
+            <CardHeader className="bg-muted/30 p-8 border-b">
+              <CardTitle className="text-2xl font-black">Institutional Facility Audit</CardTitle>
+              <CardDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">General maintenance status across primary nodes</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-3">
+            <CardContent className="p-8 grid gap-6 md:grid-cols-3">
               {[
-                { label: "Electricity (LUKU)", value: "Healthy", icon: Zap, color: "text-yellow-500" },
-                { label: "Water Supply", value: "Normal Flow", icon: Home, color: "text-blue-500" },
-                { label: "Hygiene Status", value: "Inspected Today", icon: ShieldCheck, color: "text-green-500" },
+                { label: "Electricity (LUKU)", value: "Healthy", icon: Zap, color: "text-yellow-500", bg: "bg-yellow-50" },
+                { label: "Water Infrastructure", value: "Normal Flow", icon: Droplets, color: "text-blue-500", bg: "bg-blue-50" },
+                { label: "Hygiene Compliance", value: "Verified Today", icon: ShieldCheck, color: "text-green-500", bg: "bg-green-50" },
               ].map((item) => (
-                <div key={item.label} className="flex items-center gap-4 p-4 rounded-xl bg-muted/30">
-                  <div className={`p-2 rounded-lg bg-background shadow-sm ${item.color}`}>
-                    <item.icon className="h-5 w-5" />
+                <div key={item.label} className={cn("flex flex-col items-center text-center gap-4 p-8 rounded-[2.5rem] border border-transparent hover:border-muted transition-all", item.bg)}>
+                  <div className={`h-16 w-16 rounded-[1.5rem] bg-white shadow-xl flex items-center justify-center ${item.color} animate-float`}>
+                    <item.icon className="h-8 w-8" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{item.label}</p>
-                    <p className="text-sm font-semibold">{item.value}</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">{item.label}</p>
+                    <p className="text-lg font-black text-foreground/80">{item.value}</p>
                   </div>
                 </div>
               ))}
@@ -259,6 +325,19 @@ export default function HostelPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Audit Alert */}
+      <div className="p-10 rounded-[3rem] bg-primary/5 border-2 border-dashed border-primary/20 flex flex-col items-center text-center space-y-4 mx-1">
+         <div className="h-14 w-14 rounded-full bg-white flex items-center justify-center shadow-xl text-primary border border-primary/10">
+           <AlertCircle className="h-7 w-7" />
+         </div>
+         <div className="space-y-1">
+           <p className="text-sm font-black text-primary uppercase tracking-[0.3em]">Institutional Safety Protocol</p>
+           <p className="text-[11px] text-muted-foreground leading-relaxed max-w-sm font-medium">
+             All hostel wings are archived under the 2026 Housing Node. Monthly maintenance audits are mandated by the principal's office for national compliance.
+           </p>
+         </div>
+      </div>
     </div>
   )
 }
