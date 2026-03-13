@@ -1,24 +1,19 @@
-
 "use client"
 
 import * as React from "react"
 import { useState } from "react"
 import { 
-  ClipboardCheck, 
   Search, 
   Smartphone, 
   CheckCircle2, 
-  XCircle,
   Clock,
   CalendarDays,
   UserCheck,
   Filter,
-  Check,
   Database,
   CloudOff,
   MessageCircle,
   Zap,
-  Bell,
   AlertCircle,
   Globe
 } from "lucide-react"
@@ -26,22 +21,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
 const initialStudents = [
-  { id: "2024-001", name: "Amani Mwamba", class: "Form 4A", status: "Present", lastUpdated: "07:45 AM", parentContact: "+255712000001" },
-  { id: "2024-002", name: "Careen Mushi", class: "Form 4A", status: "Absent", lastUpdated: "N/A", parentContact: "+255754000002" },
-  { id: "2024-003", name: "Baraka Juma", class: "Form 4A", status: "Present", lastUpdated: "07:30 AM", parentContact: "+255621000003" },
-  { id: "2024-004", name: "Doreen Peter", class: "Form 4A", status: "Late", lastUpdated: "08:15 AM", parentContact: "+255788000004" },
-  { id: "2024-005", name: "Emanuel Lema", class: "Form 4A", status: "Present", lastUpdated: "07:50 AM", parentContact: "+255713000005" },
+  { id: "2024-001", name: "Amani Mwamba", class: "O-Level Stream A", status: "Present", lastUpdated: "07:45 AM", parentContact: "+255712000001" },
+  { id: "2024-002", name: "Careen Mushi", class: "Primary Node 7", status: "Absent", lastUpdated: "N/A", parentContact: "+255754000002" },
+  { id: "2024-003", name: "Baraka Juma", class: "A-Level PCM", status: "Present", lastUpdated: "07:30 AM", parentContact: "+255621000003" },
+  { id: "2024-004", name: "Doreen Peter", class: "O-Level Stream C", status: "Late", lastUpdated: "08:15 AM", parentContact: "+255788000004" },
+  { id: "2024-005", name: "Emanuel Lema", class: "A-Level HGL", status: "Present", lastUpdated: "07:50 AM", parentContact: "+255713000005" },
 ]
 
 export default function AttendancePage() {
   const { toast } = useToast()
   const [students, setStudents] = useState(initialStudents)
-  const [activeDate, setActiveDate] = useState(new Date().toLocaleDateString('en-GB'))
+  const [activeDate] = useState(new Date().toLocaleDateString('en-GB'))
 
   const handleStatusChange = (id: string, newStatus: string) => {
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -50,20 +44,9 @@ export default function AttendancePage() {
     if (newStatus === "Absent") {
       toast({
         title: "Absence Logged",
-        description: "Parent notification queued for dispatch.",
-        action: <Button variant="outline" size="sm" onClick={() => handleNotifyParent(id)}>Send Now</Button>
+        description: "Parent notification queued via Beem Gateway.",
       })
     }
-  }
-
-  const handleNotifyParent = (id: string) => {
-    const student = students.find(s => s.id === id)
-    if (!student) return
-    
-    toast({
-      title: "Notification Sent",
-      description: `SMS & WhatsApp alert dispatched to ${student.parentContact}`,
-    })
   }
 
   const handleMarkAllPresent = () => {
@@ -71,106 +54,104 @@ export default function AttendancePage() {
     setStudents(prev => prev.map(s => ({ ...s, status: "Present", lastUpdated: time })))
     toast({
       title: "Batch Completion",
-      description: "Class register updated successfully in local cache.",
+      description: "Institutional register updated successfully.",
     })
   }
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-24 px-4 font-body animate-in fade-in duration-700">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+    <div className="space-y-8 max-w-full mx-auto pb-24 overflow-x-hidden relative">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 px-1">
         <div className="space-y-2">
-          <div className="flex items-center gap-2 mb-1">
-             <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-600 px-4 py-1 h-6 text-[10px] font-black tracking-widest rounded-full shadow-sm animate-pulse-soft">
-               <Database className="h-3.5 w-3.5 mr-2" /> OMNICHANNEL SYNCING
-             </Badge>
-          </div>
+          <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-600 px-4 py-1 h-6 text-[9px] sm:text-[10px] font-black tracking-widest rounded-full shadow-sm">
+            <Database className="h-3.5 w-3.5 mr-2" /> OMNICHANNEL SYNC 2026
+          </Badge>
           <h1 className="text-3xl sm:text-4xl font-headline font-black text-primary tracking-tight">Daily Register</h1>
-          <p className="text-muted-foreground font-medium text-sm">2026 Academic Season • Form 4A • General Stream</p>
+          <p className="text-muted-foreground font-medium text-sm">Institutional Attendance Node • Secondary & Primary Levels</p>
         </div>
-        <div className="flex gap-3 w-full sm:w-auto">
-          <Button variant="outline" className="flex-1 sm:flex-none rounded-full h-14 px-8 border-primary/20 text-primary bg-white shadow-xl font-black text-xs uppercase tracking-widest group">
-            <MessageCircle className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" /> Notify All
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto shrink-0">
+          <Button variant="outline" className="flex-1 sm:flex-none rounded-full h-12 px-6 border-primary/20 text-primary bg-white shadow-md font-black text-[10px] uppercase tracking-widest group">
+            <MessageCircle className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" /> Notify All
           </Button>
-          <Button onClick={handleMarkAllPresent} className="flex-1 sm:flex-none rounded-full h-14 px-8 colorful-gradient shadow-[0_15px_30px_rgba(31,91,166,0.3)] font-black text-xs uppercase tracking-widest group">
-            <UserCheck className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" /> Mark All Present
+          <Button onClick={handleMarkAllPresent} className="flex-1 sm:flex-none rounded-full h-12 px-6 colorful-gradient shadow-lg font-black text-[10px] uppercase tracking-widest group">
+            <UserCheck className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" /> Mark All Present
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Attendance", value: "96.2%", sub: "High Performance", color: "text-green-600", icon: Zap },
-          { label: "Absentees", value: "12", sub: "Action Required", color: "text-destructive", icon: AlertCircle },
-          { label: "SMS Credits", value: "4,280", sub: "Beem Africa", color: "text-blue-600", icon: Smartphone },
-          { label: "Network", value: "Online", sub: "Johannesburg Node", color: "text-primary", icon: Globe },
+          { label: "Presence", value: "96.2%", sub: "High Perf", color: "text-green-600", icon: Zap },
+          { label: "Absent", value: "12", sub: "Action Req", color: "text-destructive", icon: AlertCircle },
+          { label: "SMS Node", value: "4,280", sub: "Beem Hub", color: "text-blue-600", icon: Smartphone },
+          { label: "Gateway", value: "Online", sub: "TZ Node", color: "text-primary", icon: Globe },
         ].map((stat) => (
           <Card key={stat.label} className="border-none shadow-xl bg-white/60 backdrop-blur-md rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all">
-             <CardContent className="p-6 relative">
+             <CardContent className="p-5 sm:p-6 relative overflow-hidden">
                 <div className="absolute -right-4 -top-4 opacity-5 group-hover:rotate-12 transition-transform">
-                  <stat.icon className="h-20 w-20" />
+                  <stat.icon className="h-16 w-16 sm:h-20 sm:w-20" />
                 </div>
-                <p className="text-[10px] uppercase font-black text-muted-foreground tracking-[0.2em]">{stat.label}</p>
-                <p className={cn("text-2xl sm:text-3xl font-black mt-2 tracking-tighter", stat.color)}>{stat.value}</p>
-                <p className="text-[9px] text-muted-foreground font-black mt-2 uppercase tracking-widest">{stat.sub}</p>
+                <p className="text-[8px] sm:text-[10px] uppercase font-black text-muted-foreground tracking-widest">{stat.label}</p>
+                <p className={cn("text-xl sm:text-3xl font-black mt-2 tracking-tighter truncate", stat.color)}>{stat.value}</p>
+                <p className="text-[8px] text-muted-foreground font-black mt-1 uppercase tracking-widest truncate">{stat.sub}</p>
              </CardContent>
           </Card>
         ))}
       </div>
 
       <Card className="border-none shadow-2xl overflow-hidden bg-white/60 backdrop-blur-md rounded-[2.5rem]">
-        <CardHeader className="bg-muted/30 pb-6 pt-8 px-8 border-b">
+        <CardHeader className="bg-muted/30 pb-6 pt-8 px-4 sm:px-8 border-b overflow-hidden">
           <div className="flex flex-col lg:flex-row justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="p-4 rounded-3xl bg-primary text-white shadow-[0_10px_20px_rgba(31,91,166,0.3)] animate-float">
-                <CalendarDays className="h-6 w-6" />
+              <div className="p-3 sm:p-4 rounded-3xl bg-primary text-white shadow-xl animate-float shrink-0">
+                <CalendarDays className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <div>
-                <CardTitle className="text-xl font-black tracking-tight">{activeDate}</CardTitle>
-                <CardDescription className="text-[10px] uppercase font-black tracking-[0.2em] text-primary/60">Class Record Matrix</CardDescription>
+              <div className="overflow-hidden">
+                <CardTitle className="text-lg sm:text-xl font-black tracking-tight">{activeDate}</CardTitle>
+                <CardDescription className="text-[9px] sm:text-[10px] uppercase font-black tracking-widest text-primary/60 truncate">Institutional Matrix Hub</CardDescription>
               </div>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex gap-2 shrink-0">
               <div className="relative flex-1 sm:min-w-[250px] group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors z-10" />
-                <Input placeholder="Search student name..." className="pl-12 h-12 rounded-full border-none bg-white shadow-inner font-bold text-sm" />
+                <Input placeholder="Find student..." className="pl-12 h-12 rounded-full border-none bg-white shadow-inner font-bold text-sm" />
               </div>
-              <Button variant="outline" size="icon" className="h-12 w-12 rounded-full bg-white border-none shadow-sm transition-all hover:bg-muted">
+              <Button variant="outline" size="icon" className="h-12 w-12 rounded-full bg-white border-none shadow-sm shrink-0">
                 <Filter className="h-5 w-5" />
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="divide-y divide-muted/50">
+        <CardContent className="p-0 overflow-x-auto">
+          <div className="divide-y divide-muted/50 min-w-[600px]">
             {students.map((student) => (
-              <div key={student.id} className="p-6 sm:px-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:bg-primary/[0.02] transition-all group">
-                <div className="flex items-center gap-6">
+              <div key={student.id} className="p-4 sm:p-6 lg:px-10 flex items-center justify-between gap-4 sm:gap-6 hover:bg-primary/[0.02] transition-all group">
+                <div className="flex items-center gap-4 sm:gap-6 min-w-0">
                   <div className={cn(
-                    "h-16 w-16 rounded-[2rem] flex items-center justify-center font-black text-white shadow-2xl transition-all group-hover:rotate-6",
+                    "h-12 w-12 sm:h-16 sm:w-16 rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center font-black text-white shadow-xl transition-all group-hover:rotate-6 shrink-0",
                     student.status === "Present" ? "bg-green-500 shadow-green-100" :
                     student.status === "Absent" ? "bg-destructive shadow-destructive/10" : "bg-orange-500 shadow-orange-100"
                   )}>
-                    <span className="text-2xl">{student.name.charAt(0)}</span>
+                    <span className="text-xl sm:text-2xl">{student.name.charAt(0)}</span>
                   </div>
-                  <div className="space-y-1">
-                    <h3 className="font-black text-lg text-foreground/80 tracking-tight group-hover:text-primary transition-colors">{student.name}</h3>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] text-muted-foreground font-mono font-black uppercase tracking-widest bg-muted/40 px-2 py-0.5 rounded-lg shadow-inner">{student.id}</span>
-                      <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-black uppercase tracking-widest">
-                        <Clock className="h-3.5 w-3.5 text-primary" />
+                  <div className="space-y-1 min-w-0 overflow-hidden">
+                    <h3 className="font-black text-base sm:text-lg text-foreground/80 tracking-tight group-hover:text-primary transition-colors truncate">{student.name}</h3>
+                    <div className="flex items-center gap-2 sm:gap-3 overflow-hidden">
+                      <span className="text-[8px] sm:text-[10px] text-muted-foreground font-mono font-black uppercase tracking-widest bg-muted/40 px-2 py-0.5 rounded-lg shadow-inner shrink-0 truncate">{student.id}</span>
+                      <span className="h-1 w-1 rounded-full bg-muted-foreground/30 shrink-0" />
+                      <div className="flex items-center gap-1.5 text-[8px] sm:text-[10px] text-muted-foreground font-black uppercase tracking-widest truncate">
+                        <Clock className="h-3 w-3 text-primary shrink-0" />
                         {student.lastUpdated === "N/A" ? "NO LOG" : student.lastUpdated}
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                    <Button 
                     variant={student.status === "Present" ? "default" : "outline"}
-                    size="lg"
+                    size="sm"
                     className={cn(
-                      "rounded-full h-12 flex-1 sm:flex-none text-[10px] font-black uppercase tracking-widest px-8 shadow-sm transition-all",
+                      "rounded-full h-9 sm:h-11 text-[8px] sm:text-[9px] font-black uppercase tracking-widest px-4 sm:px-6 shadow-sm transition-all whitespace-nowrap",
                       student.status === "Present" ? "bg-green-600 hover:bg-green-700 shadow-green-100" : "hover:bg-green-50 text-green-600 border-green-200"
                     )}
                     onClick={() => handleStatusChange(student.id, "Present")}
@@ -179,9 +160,9 @@ export default function AttendancePage() {
                    </Button>
                    <Button 
                     variant={student.status === "Late" ? "secondary" : "outline"}
-                    size="lg"
+                    size="sm"
                     className={cn(
-                      "rounded-full h-12 flex-1 sm:flex-none text-[10px] font-black uppercase tracking-widest px-8 shadow-sm transition-all",
+                      "rounded-full h-9 sm:h-11 text-[8px] sm:text-[9px] font-black uppercase tracking-widest px-4 sm:px-6 shadow-sm transition-all whitespace-nowrap",
                       student.status === "Late" ? "bg-orange-100 text-orange-700 hover:bg-orange-200 shadow-orange-50" : "hover:bg-orange-50 text-orange-600 border-orange-100"
                     )}
                     onClick={() => handleStatusChange(student.id, "Late")}
@@ -190,14 +171,14 @@ export default function AttendancePage() {
                    </Button>
                    <Button 
                     variant={student.status === "Absent" ? "destructive" : "outline"}
-                    size="lg"
+                    size="sm"
                     className={cn(
-                      "rounded-full h-12 flex-1 sm:flex-none text-[10px] font-black uppercase tracking-widest px-8 shadow-sm transition-all",
+                      "rounded-full h-9 sm:h-11 text-[8px] sm:text-[9px] font-black uppercase tracking-widest px-4 sm:px-6 shadow-sm transition-all whitespace-nowrap",
                       student.status === "Absent" ? "bg-destructive hover:bg-destructive/90 shadow-destructive/20" : "hover:bg-destructive/5 text-destructive border-destructive/20"
                     )}
                     onClick={() => handleStatusChange(student.id, "Absent")}
                    >
-                     {student.status === "Absent" ? "LOGGED ABSENT" : "Mark Absent"}
+                     {student.status === "Absent" ? "ABSENT" : "Absent"}
                    </Button>
                 </div>
               </div>
@@ -206,14 +187,14 @@ export default function AttendancePage() {
         </CardContent>
       </Card>
 
-      <div className="p-8 rounded-[2.5rem] bg-primary/5 border-2 border-dashed border-primary/20 flex flex-col items-center text-center space-y-4 animate-pulse-soft">
-         <div className="h-14 w-14 rounded-full bg-white flex items-center justify-center shadow-xl text-primary border border-primary/10">
-           <CloudOff className="h-7 w-7" />
+      <div className="p-6 sm:p-8 rounded-[2.5rem] bg-primary/5 border-2 border-dashed border-primary/20 flex flex-col items-center text-center space-y-4 animate-pulse-soft overflow-hidden mx-1">
+         <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-white flex items-center justify-center shadow-xl text-primary border border-primary/10 shrink-0">
+           <CloudOff className="h-6 w-6 sm:h-7 sm:w-7" />
          </div>
-         <div className="space-y-1">
-           <p className="text-sm font-black text-primary uppercase tracking-[0.2em]">Operational Resilience Active</p>
-           <p className="text-xs text-muted-foreground leading-relaxed max-w-sm font-medium">
-             Class registers are cached locally using 2026 Edge Sync. Data will dispatch to Beem Africa gateways as soon as connectivity stabilizes.
+         <div className="space-y-1 overflow-hidden">
+           <p className="text-xs sm:text-sm font-black text-primary uppercase tracking-[0.2em]">Resilient Hub Protocol Active</p>
+           <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed max-w-sm font-medium mx-auto px-4">
+             Registers are cached locally using 2026 Edge Sync. Data will dispatch to national gateways as soon as connectivity stabilizes.
            </p>
          </div>
       </div>
