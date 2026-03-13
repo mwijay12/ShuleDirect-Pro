@@ -71,7 +71,7 @@ export default function LandingPage() {
         <div className="absolute top-20 left-[-5%] w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] -z-10 animate-float" />
         
         <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-16 items-center">
-          <div className="lg:col-span-7 space-y-12 animate-reveal">
+          <div className="lg:col-span-7 space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
             <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-[0.4em] border border-primary/10">
               <Zap className="h-4 w-4 fill-primary" /> 2026 Academic Season
             </div>
@@ -88,8 +88,8 @@ export default function LandingPage() {
                   Access Portal <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform" />
                 </Button>
               </Link>
-              <div className="flex items-center gap-4 px-8 py-4 rounded-full border-2 border-muted bg-white/50 backdrop-blur-sm shadow-sm group cursor-default">
-                <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-accent">
+              <div className="flex items-center gap-4 px-8 py-4 rounded-full border-2 border-muted bg-white/50 backdrop-blur-sm shadow-sm group cursor-default transition-all hover:border-primary/20">
+                <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
                   <Star className="h-5 w-5 fill-accent" />
                 </div>
                 <div>
@@ -100,7 +100,7 @@ export default function LandingPage() {
             </div>
           </div>
           
-          <div className="lg:col-span-5 relative group animate-reveal [animation-delay:200ms]">
+          <div className="lg:col-span-5 relative group animate-in fade-in zoom-in-95 duration-1000 delay-300">
             <div className="absolute -inset-10 bg-gradient-to-tr from-primary/20 to-accent/20 rounded-[5rem] blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
             <div className="relative aspect-[4/5] rounded-[4rem] overflow-hidden shadow-2xl border-[16px] border-white bg-muted transition-all duration-1000 animate-slow-zoom">
               {heroImage?.imageUrl ? (
@@ -139,7 +139,7 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto space-y-32 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-20 items-end">
+          <div className="grid lg:grid-cols-2 gap-20 items-end animate-in fade-in slide-in-from-bottom-12 duration-1000">
             <div className="space-y-8">
               <Badge className="bg-white/10 text-white border-none font-black text-[10px] tracking-[0.4em] uppercase px-8 py-2">Infrastructure</Badge>
               <h2 className="text-6xl font-headline font-black tracking-tight leading-[0.9]">Built for <br/>Scale & Speed.</h2>
@@ -149,7 +149,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-1px bg-white/10 border border-white/10 rounded-[4rem] overflow-hidden">
+          <div className="grid md:grid-cols-3 gap-1px bg-white/10 border border-white/10 rounded-[4rem] overflow-hidden animate-in fade-in zoom-in-95 duration-1000 delay-200">
             {[
               { icon: Calculator, title: "NECTA Matrix", desc: "Official CSEE & FTNA point aggregation system." },
               { icon: Banknote, title: "Revenue Flow", desc: "Automated ClickPesa reconciliation and audit logs." },
@@ -158,7 +158,7 @@ export default function LandingPage() {
               { icon: Smartphone, title: "Omnichannel", desc: "Integrated Beem SMS and WhatsApp notification nodes." },
               { icon: PieChart, title: "AI Insights", desc: "Narrative progress summaries for parent reporting." },
             ].map((feature, i) => (
-              <div key={i} className="bg-primary p-16 space-y-8 hover:bg-white/5 transition-all group">
+              <div key={i} className="bg-primary p-16 space-y-8 hover:bg-white/5 transition-all group cursor-default">
                 <div className="h-16 w-16 rounded-2xl bg-white/10 flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
                   <feature.icon className="h-8 w-8 text-accent" />
                 </div>
@@ -178,9 +178,9 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto space-y-32 relative z-10">
           
           <div className="grid md:grid-cols-12 gap-20 items-start">
-            <div className="md:col-span-5 space-y-10">
+            <div className="md:col-span-5 space-y-10 animate-in fade-in slide-in-from-left-8 duration-1000">
               <div className="flex items-center gap-4">
-                <div className="h-14 w-14 rounded-2xl colorful-gradient flex items-center justify-center text-white shadow-xl">
+                <div className="h-14 w-14 rounded-2xl colorful-gradient flex items-center justify-center text-white shadow-xl transition-transform hover:rotate-12 duration-500">
                   <ShieldCheck className="h-8 w-8" />
                 </div>
                 <span className="font-headline font-black text-4xl text-primary tracking-tighter">ShuleDirect Pro</span>
@@ -197,14 +197,23 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="md:col-span-7">
+            <div className="md:col-span-7 animate-in fade-in slide-in-from-right-8 duration-1000">
               <div className="grid sm:grid-cols-2 gap-12">
                 <div className="space-y-10">
                   <h4 className="font-black text-[10px] uppercase tracking-[0.4em] text-primary">Platform</h4>
                   <ul className="space-y-6 text-sm font-bold text-muted-foreground">
-                    <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3"><ArrowRight className="h-4 w-4" /> NECTA Portal Sync</li>
-                    <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3"><ArrowRight className="h-4 w-4" /> Financial Hub</li>
-                    <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3"><ArrowRight className="h-4 w-4" /> 2026 Season Hubs</li>
+                    <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3 group">
+                      <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -ml-4 group-hover:ml-0" /> 
+                      NECTA Portal Sync
+                    </li>
+                    <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3 group">
+                      <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -ml-4 group-hover:ml-0" /> 
+                      Financial Hub
+                    </li>
+                    <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3 group">
+                      <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -ml-4 group-hover:ml-0" /> 
+                      2026 Season Hubs
+                    </li>
                   </ul>
                 </div>
 
