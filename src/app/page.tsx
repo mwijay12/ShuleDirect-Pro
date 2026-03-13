@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -75,7 +76,7 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-[0.4em] border border-primary/10">
               <Zap className="h-4 w-4 fill-primary" /> 2026 Academic Season
             </div>
-            <h1 className="text-5xl sm:text-7xl lg:text-[10rem] font-headline font-black leading-[0.85] text-primary tracking-tighter">
+            <h1 className="text-5xl sm:text-7xl lg:text-8xl xl:text-[10rem] font-headline font-black leading-[0.85] text-primary tracking-tighter">
               Pure <br /> 
               <span className="text-gradient">Performance.</span>
             </h1>
