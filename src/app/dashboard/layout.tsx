@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -92,9 +93,9 @@ export default function DashboardLayout({
             <Loader2 className="h-6 w-6 text-primary animate-spin" />
           </div>
         </div>
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-2 px-4">
           <h1 className="text-2xl font-headline font-black text-primary tracking-tighter">ShuleDirect <span className="text-accent">Pro</span></h1>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] animate-pulse">Securing Academic Excellence</p>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] animate-pulse">National Institutional Node</p>
         </div>
       </div>
     )
@@ -103,8 +104,8 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="bg-background flex flex-col overflow-hidden w-full relative">
-        <header className="flex h-16 sm:h-20 shrink-0 items-center gap-2 border-b bg-card/80 backdrop-blur-md px-4 sm:px-6 sticky top-0 z-20 w-full overflow-hidden">
+      <SidebarInset className="bg-background flex flex-col min-w-0 w-full relative overflow-hidden">
+        <header className="flex h-16 sm:h-20 shrink-0 items-center gap-2 border-b bg-card/80 backdrop-blur-md px-4 sm:px-6 sticky top-0 z-20 w-full">
           <div className="flex items-center gap-2 md:hidden">
              <SidebarTrigger>
                <Menu className="h-5 w-5" />
@@ -114,13 +115,13 @@ export default function DashboardLayout({
             <SidebarTrigger className="hover:bg-accent/10" />
           </div>
           
-          <div className="flex flex-1 items-center gap-2 sm:gap-6 overflow-hidden">
+          <div className="flex flex-1 items-center gap-2 sm:gap-6 min-w-0">
             <div className="flex flex-col min-w-0">
               <h2 className="text-xs sm:text-lg font-bold text-primary flex items-center gap-2 truncate whitespace-nowrap">
                 {greeting}<span className="hidden sm:inline">, Admin! 👋</span>
               </h2>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground font-semibold uppercase tracking-widest truncate">
-                ShuleDirect Node 2026
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground font-black uppercase tracking-widest truncate">
+                PRO HUB 2026
               </p>
             </div>
 
@@ -128,7 +129,7 @@ export default function DashboardLayout({
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search..."
+                placeholder="Search node..."
                 className="pl-10 bg-muted/30 border-none rounded-full h-9 focus-visible:ring-accent"
               />
             </div>
@@ -136,7 +137,7 @@ export default function DashboardLayout({
 
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
             <div className="hidden xl:flex flex-col items-end mr-2">
-               <span className="text-[9px] font-black text-primary uppercase">Secure Node</span>
+               <span className="text-[9px] font-black text-primary uppercase">Secure Hub</span>
                <div className="flex items-center gap-1">
                  <Clock className="h-2.5 w-2.5 text-muted-foreground" />
                  <span className="text-[10px] font-mono font-bold text-muted-foreground">Auto-Lock: 10m</span>
@@ -154,8 +155,8 @@ export default function DashboardLayout({
           </div>
         </header>
         
-        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-x-hidden overflow-y-auto w-full relative">
-          <div className="max-w-full mx-auto">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto w-full relative p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto">
             {children}
           </div>
         </main>

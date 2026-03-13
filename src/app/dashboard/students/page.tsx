@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -243,7 +244,7 @@ export default function StudentsPage() {
                                 <SheetTitle className="text-2xl sm:text-4xl font-headline font-black text-primary leading-tight tracking-tighter truncate">{selectedStudent?.name}</SheetTitle>
                                 <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 items-center">
                                   <Badge className="rounded-full bg-white text-primary border-none shadow-lg font-black px-4 sm:px-6 py-1 text-[10px] sm:text-xs uppercase tracking-widest">{selectedStudent?.class}</Badge>
-                                  <span className="text-[9px] sm:text-[10px] font-mono font-black text-muted-foreground tracking-widest uppercase px-3 sm:px-4 py-1 sm:py-1.5 bg-white rounded-xl shadow-inner">{selectedStudent?.id}</span>
+                                  <span className="text-[9px] sm:text-[10px] font-mono font-black text-muted-foreground tracking-widest uppercase px-3 sm:px-4 py-1.5 bg-white rounded-xl shadow-inner">{selectedStudent?.id}</span>
                                 </div>
                               </div>
                             </div>
@@ -367,7 +368,7 @@ export default function StudentsPage() {
                                  onClick={handleExportDocx} 
                                  disabled={isExporting}
                                  className="w-full rounded-2xl sm:rounded-[2.5rem] h-14 sm:h-16 bg-white border-[2px] sm:border-[3px] border-primary text-primary hover:bg-primary/5 font-black text-sm sm:text-lg shadow-2xl mt-4 sm:mt-6 group"
-                                ]>
+                               >
                                  {isExporting ? <Loader2 className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6 animate-spin" /> : <FileText className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6 group-hover:rotate-6 transition-transform" />}
                                  Generate Report Card
                                </Button>
