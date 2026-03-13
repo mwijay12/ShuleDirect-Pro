@@ -75,7 +75,7 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-[0.4em] border border-primary/10">
               <Zap className="h-4 w-4 fill-primary" /> 2026 Academic Season
             </div>
-            <h1 className="text-7xl lg:text-[10rem] font-headline font-black leading-[0.85] text-primary tracking-tighter">
+            <h1 className="text-5xl sm:text-7xl lg:text-[10rem] font-headline font-black leading-[0.85] text-primary tracking-tighter">
               Pure <br /> 
               <span className="text-gradient">Performance.</span>
             </h1>
@@ -149,7 +149,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-1px bg-white/10 border border-white/10 rounded-[4rem] overflow-hidden animate-in fade-in zoom-in-95 duration-1000 delay-200">
+          <div className="grid md:grid-cols-3 gap-px bg-white/10 border border-white/10 rounded-[4rem] overflow-hidden animate-in fade-in zoom-in-95 duration-1000 delay-200">
             {[
               { icon: Calculator, title: "NECTA Matrix", desc: "Official CSEE & FTNA point aggregation system." },
               { icon: Banknote, title: "Revenue Flow", desc: "Automated ClickPesa reconciliation and audit logs." },
