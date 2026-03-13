@@ -17,7 +17,9 @@ import {
   Clock,
   ArrowRight,
   Megaphone,
-  BellRing
+  BellRing,
+  Building2,
+  Layers
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { 
@@ -45,43 +47,37 @@ const data = [
 
 const stats = [
   {
-    title: "Students",
-    value: "1,284",
-    description: "+12% this term",
+    title: "Total Population",
+    value: "2,480",
+    description: "+120 New Enrolled",
     icon: Users,
     color: "text-blue-600",
     bg: "bg-blue-100/50",
   },
   {
-    title: "Exam Completion",
-    value: "84%",
-    description: "NECTA Prep Active",
-    icon: GraduationCap,
+    title: "Academic Levels",
+    value: "3 Tiers",
+    description: "Primary, O, A-Level",
+    icon: Layers,
     color: "text-purple-600",
     bg: "bg-purple-100/50",
   },
   {
-    title: "Revenue",
-    value: "TZS 42.5M",
-    description: "Fees & Extras",
+    title: "Total Revenue",
+    value: "TZS 142.5M",
+    description: "ClickPesa Synced",
     icon: Banknote,
     color: "text-green-600",
     bg: "bg-green-100/50",
   },
   {
-    title: "Attendance",
+    title: "Avg Attendance",
     value: "96.2%",
-    description: "Peak Performance",
+    description: "Peak Season",
     icon: TrendingUp,
     color: "text-orange-600",
     bg: "bg-orange-100/50",
   },
-]
-
-const announcements = [
-  { id: 1, title: "Staff Meeting", body: "General staff meeting in the hall at 2:00 PM today.", priority: "High", time: "2h ago" },
-  { id: 2, title: "Mock Exams", body: "Form 4 Mock Exams start next Monday. Ensure all scripts are ready.", priority: "Medium", time: "5h ago" },
-  { id: 3, title: "System Update", body: "ClickPesa sync will be down for 10 mins at midnight.", priority: "Low", time: "Yesterday" },
 ]
 
 export default function DashboardPage() {
@@ -96,17 +92,20 @@ export default function DashboardPage() {
     <div className={cn("space-y-8 transition-all duration-700", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div className="space-y-2">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10 w-fit">
+            <Building2 className="h-3 w-3" /> Institutional Node Active
+          </div>
           <h1 className="text-4xl font-headline font-extrabold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Academic Overview
+            Management Pulse
           </h1>
-          <p className="text-muted-foreground font-medium">Insights and actions for Mlimani Academy today.</p>
+          <p className="text-muted-foreground font-medium">Global insights for the 2026 Academic Season.</p>
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" className="rounded-full shadow-sm">
-            <Calendar className="mr-2 h-4 w-4" /> Weekly Schedule
+            <Calendar className="mr-2 h-4 w-4" /> Season Schedule
           </Button>
           <Button size="sm" className="rounded-full shadow-md colorful-gradient">
-            <Sparkles className="mr-2 h-4 w-4" /> AI Insights
+            <Sparkles className="mr-2 h-4 w-4" /> AI Performance Report
           </Button>
         </div>
       </div>
@@ -140,11 +139,11 @@ export default function DashboardPage() {
           <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-xl">Revenue Trends</CardTitle>
-                <CardDescription>Fee collection & Stationery sales via ClickPesa</CardDescription>
+                <CardTitle className="text-xl">Financial Trajectory</CardTitle>
+                <CardDescription>Consolidated Revenue via ClickPesa Gateway</CardDescription>
               </div>
-              <Badge variant="secondary" className="bg-primary/10 text-primary border-none">
-                TZS millions
+              <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-black text-[10px] uppercase px-4">
+                TZS Millions
               </Badge>
             </CardHeader>
             <CardContent className="h-[350px] pt-4">
@@ -166,96 +165,84 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-sm overflow-hidden bg-card/60 backdrop-blur-sm">
-            <CardHeader className="bg-primary/5">
-              <div className="flex items-center gap-2">
-                <Megaphone className="h-5 w-5 text-primary" />
-                <CardTitle className="text-lg">Staff Notice Board</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y divide-border/40">
-                {announcements.map((item) => (
-                  <div key={item.id} className="p-4 hover:bg-muted/30 transition-colors group cursor-pointer">
-                    <div className="flex justify-between items-start mb-1">
-                      <h4 className="font-bold text-sm group-hover:text-primary transition-colors">{item.title}</h4>
-                      <Badge 
-                        variant="outline" 
-                        className={cn(
-                          "text-[9px] font-bold uppercase",
-                          item.priority === "High" ? "border-destructive text-destructive bg-destructive/5" :
-                          item.priority === "Medium" ? "border-orange-500 text-orange-600 bg-orange-50" : "border-muted-foreground/30 text-muted-foreground"
-                        )}
-                      >
-                        {item.priority}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{item.body}</p>
-                    <div className="flex items-center gap-1 mt-2 text-[9px] text-muted-foreground font-mono">
-                      <Clock className="h-3 w-3" /> {item.time}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="p-3 bg-muted/20 border-t">
-                <Button variant="ghost" size="sm" className="w-full text-[10px] font-bold uppercase tracking-widest text-primary">
-                  Post Announcement
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid sm:grid-cols-2 gap-6">
+             <Card className="border-none shadow-sm bg-accent/5 overflow-hidden group hover:shadow-xl transition-all p-8 rounded-[2.5rem]">
+                <div className="flex flex-col h-full justify-between gap-8">
+                   <div>
+                     <Badge className="bg-accent text-white font-black text-[10px] px-4 rounded-full mb-4">NECTA SYNC</Badge>
+                     <h3 className="text-3xl font-black text-accent tracking-tighter">98.4% Accuracy</h3>
+                     <p className="text-sm font-medium text-accent/60 mt-2">Latest results batch verified across official PReMS nodes.</p>
+                   </div>
+                   <Button variant="ghost" className="w-fit text-accent font-black text-xs uppercase tracking-widest p-0 hover:bg-transparent">
+                     View Official Logs <ArrowRight className="ml-2 h-4 w-4" />
+                   </Button>
+                </div>
+             </Card>
+             <Card className="border-none shadow-sm bg-primary/5 overflow-hidden group hover:shadow-xl transition-all p-8 rounded-[2.5rem]">
+                <div className="flex flex-col h-full justify-between gap-8">
+                   <div>
+                     <Badge className="bg-primary text-white font-black text-[10px] px-4 rounded-full mb-4">PERSONNEL</Badge>
+                     <h3 className="text-3xl font-black text-primary tracking-tighter">124 Staff</h3>
+                     <p className="text-sm font-medium text-primary/60 mt-2">Professional educators across 12 academic departments.</p>
+                   </div>
+                   <Button variant="ghost" className="w-fit text-primary font-black text-xs uppercase tracking-widest p-0 hover:bg-transparent">
+                     Manage Directory <ArrowRight className="ml-2 h-4 w-4" />
+                   </Button>
+                </div>
+             </Card>
+          </div>
         </div>
 
         <div className="lg:col-span-4 space-y-6">
-          <Card className="border-none shadow-sm bg-yellow-50/50 border-yellow-100 relative overflow-hidden group">
+          <Card className="border-none shadow-sm bg-yellow-50/50 border-yellow-100 relative overflow-hidden group rounded-[2.5rem]">
             <div className="absolute -right-4 -top-4 opacity-5 group-hover:rotate-12 transition-transform">
               <StickyNote className="h-24 w-24" />
             </div>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2 text-yellow-800">
+              <CardTitle className="text-lg flex items-center gap-2 text-yellow-800 font-black">
                 <StickyNote className="h-5 w-5" /> Later Entry
               </CardTitle>
-              <CardDescription className="text-yellow-700/60">Quick notes for later today</CardDescription>
+              <CardDescription className="text-yellow-700/60 font-bold text-xs uppercase tracking-widest">Administrative scratchpad</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Textarea 
-                placeholder="Buy lab reagents, call parent of S002..." 
-                className="bg-white/50 border-yellow-200 focus-visible:ring-yellow-400 min-h-[100px] resize-none text-sm placeholder:text-yellow-900/30"
+                placeholder="Prepare NECTA Center ID S.1234 report, call Regional Education Officer..." 
+                className="bg-white/50 border-yellow-200 focus-visible:ring-yellow-400 min-h-[120px] resize-none text-sm placeholder:text-yellow-900/30 rounded-2xl"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
               />
-              <Button size="sm" className="w-full bg-yellow-600 hover:bg-yellow-700 text-white rounded-full shadow-lg">
+              <Button size="sm" className="w-full bg-yellow-600 hover:bg-yellow-700 text-white rounded-full shadow-lg font-black h-12">
                 <Send className="mr-2 h-4 w-4" /> Save Quick Note
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm overflow-hidden">
-            <CardHeader className="pb-2 bg-accent/5 border-b border-accent/10">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <BellRing className="h-4 w-4 text-accent" /> Staff Pulse
+          <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm overflow-hidden rounded-[2.5rem]">
+            <CardHeader className="pb-2 bg-accent/5 border-b border-accent/10 p-6">
+              <CardTitle className="text-lg flex items-center gap-2 font-black">
+                <BellRing className="h-4 w-4 text-accent" /> Institutional Pulse
               </CardTitle>
-              <CardDescription>Recent academic actions</CardDescription>
+              <CardDescription className="text-[10px] font-black uppercase tracking-widest">Recent administrative actions</CardDescription>
             </CardHeader>
-            <CardContent className="pt-4">
-              <div className="space-y-5">
+            <CardContent className="pt-6 px-6">
+              <div className="space-y-6">
                 {[
-                  { user: "Mwl. Juma", action: "Uploaded Results", time: "12m ago", icon: CheckCircle2, color: "text-green-500" },
-                  { user: "Bursar", action: "Verified Batch #09", time: "45m ago", icon: Clock, color: "text-primary" },
-                  { user: "System", action: "Sync Completed", time: "1h ago", icon: CheckCircle2, color: "text-accent" },
+                  { user: "H.M.", action: "Authorized Fee Batch #4", time: "12m ago", icon: CheckCircle2, color: "text-green-500" },
+                  { user: "Academics", action: "Stream Updated: O-Level", time: "45m ago", icon: Clock, color: "text-primary" },
+                  { user: "System", action: "Beem Gateway Sync", time: "1h ago", icon: CheckCircle2, color: "text-accent" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-4 group cursor-pointer">
-                    <div className={cn("p-2 rounded-xl bg-muted/50 group-hover:bg-muted transition-colors", item.color)}>
+                    <div className={cn("p-3 rounded-2xl bg-muted/50 group-hover:bg-muted transition-colors", item.color)}>
                       <item.icon className="h-4 w-4" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-bold">{item.user}</p>
-                      <p className="text-[10px] text-muted-foreground font-medium">{item.action}</p>
+                      <p className="text-sm font-black text-foreground/80">{item.user}</p>
+                      <p className="text-[10px] text-muted-foreground font-black uppercase tracking-tighter">{item.action}</p>
                     </div>
-                    <span className="text-[10px] font-mono text-muted-foreground">{item.time}</span>
+                    <span className="text-[10px] font-mono font-bold text-muted-foreground">{item.time}</span>
                   </div>
                 ))}
-                <Button variant="ghost" size="sm" className="w-full text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 rounded-full">
+                <Button variant="ghost" size="sm" className="w-full text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:bg-primary/5 rounded-full h-10 mt-2">
                   View Full Audit Log <ArrowRight className="ml-2 h-3 w-3" />
                 </Button>
               </div>

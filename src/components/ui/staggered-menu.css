@@ -135,6 +135,10 @@
   .sm-panel-inner {
     grid-template-columns: 1fr;
     gap: 2rem;
+    padding-bottom: 4rem;
+  }
+  .staggered-menu-header {
+    padding: 1rem;
   }
 }
 

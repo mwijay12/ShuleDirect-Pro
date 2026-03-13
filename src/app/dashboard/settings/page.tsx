@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -111,7 +112,7 @@ export default function SettingsPage() {
               <div className="grid gap-8 md:grid-cols-2">
                 <div className="space-y-3 px-2">
                   <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Official School Name</Label>
-                  <Input defaultValue="Mlimani Academy Secondary School" className="rounded-2xl h-14 bg-muted/20 border-none font-black text-foreground/80 shadow-inner px-6" />
+                  <Input defaultValue="Institutional Management Node" className="rounded-2xl h-14 bg-muted/20 border-none font-black text-foreground/80 shadow-inner px-6" />
                 </div>
                 <div className="space-y-3 px-2">
                   <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">NECTA Center Number</Label>

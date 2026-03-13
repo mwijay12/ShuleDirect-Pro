@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -6,12 +7,6 @@ import Image from "next/image"
 import { 
   ShieldCheck, 
   ArrowRight, 
-  Sparkles, 
-  CheckCircle2, 
-  Users, 
-  GraduationCap, 
-  Banknote,
-  Smartphone,
   Zap,
   Star,
   Instagram,
@@ -20,23 +15,19 @@ import {
   Github,
   Calculator,
   Shield,
-  Layout,
+  Smartphone,
   PieChart,
-  ChevronRight
+  CheckCircle2,
+  Globe,
+  GraduationCap,
+  Users,
+  Banknote
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { cn } from "@/lib/utils"
 import { StaggeredMenu } from "@/components/ui/staggered-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 
 export default function LandingPage() {
   const heroImage = PlaceHolderImages.find(img => img.id === "school-hero")
@@ -44,13 +35,12 @@ export default function LandingPage() {
   const navItems = [
     { label: "Staff Portal", link: "/login" },
     { label: "Academic Hub", link: "/dashboard/academics" },
-    { label: "Finance Hub", link: "/dashboard/finance" },
-    { label: "Help Center", link: "/dashboard/help" },
+    { label: "Financial Node", link: "/dashboard/finance" },
+    { label: "Official Support", link: "/dashboard/help" },
   ]
 
   const socialItems = [
     { label: "Instagram", link: "https://instagram.com/mwijay.davie" },
-    { label: "X / Twitter", link: "https://x.com/mwijay.davie" },
     { label: "LinkedIn", link: "https://linkedin.com/in/davie-mwijage" },
     { label: "WhatsApp", link: "https://wa.me/255620641695" },
   ]
@@ -60,27 +50,27 @@ export default function LandingPage() {
       {/* High-End Staggered Navigation */}
       <StaggeredMenu items={navItems} socialItems={socialItems} />
 
-      {/* Hero Section - Editorial Layout */}
+      {/* Hero Section - Editorial Tanzanian Layout */}
       <section className="pt-40 pb-32 px-6 relative">
         <div className="absolute top-40 right-[-10%] w-[600px] h-[600px] bg-accent/5 rounded-full blur-[120px] -z-10 animate-pulse-soft" />
         <div className="absolute top-20 left-[-5%] w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] -z-10 animate-float" />
         
         <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-16 items-center">
-          <div className="lg:col-span-7 space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-[0.4em] border border-primary/10">
-              <Zap className="h-4 w-4 fill-primary" /> 2026 Academic Season
+          <div className="lg:col-span-7 space-y-8 sm:space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/5 text-primary text-[9px] sm:text-[10px] font-black uppercase tracking-[0.4em] border border-primary/10">
+              <Zap className="h-4 w-4 fill-primary" /> 2026 Institutional Season
             </div>
-            <h1 className="text-5xl sm:text-7xl lg:text-8xl xl:text-[10rem] font-headline font-black leading-[0.85] text-primary tracking-tighter">
-              Pure <br /> 
+            <h1 className="text-4xl sm:text-7xl lg:text-8xl xl:text-[9rem] font-headline font-black leading-[0.85] text-primary tracking-tighter transition-all">
+              Shule <br /> 
               <span className="text-gradient">Performance.</span>
             </h1>
-            <p className="text-xl text-muted-foreground font-medium max-w-xl leading-relaxed">
-              Elevating Tanzanian institutions with a high-fidelity ERP. NECTA-compliant, PReMS integrated, and engineered for operational excellence.
+            <p className="text-lg sm:text-xl text-muted-foreground font-medium max-w-xl leading-relaxed">
+              Elevating Tanzanian institutions with a high-fidelity ERP. Unified management for thousands of students, NECTA-compliant, and engineered for national-scale excellence.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 pt-4">
-              <Link href="/login">
-                <Button size="lg" className="rounded-full h-20 px-14 font-black colorful-gradient group shadow-[0_25px_60px_rgba(31,91,166,0.3)] hover:scale-105 transition-all text-lg">
-                  Access Portal <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform" />
+              <Link href="/login" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full rounded-full h-16 sm:h-20 px-14 font-black colorful-gradient group shadow-[0_25px_60px_rgba(31,91,166,0.3)] hover:scale-105 transition-all text-base sm:text-lg">
+                  Staff Gateway <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform" />
                 </Button>
               </Link>
               <div className="flex items-center gap-4 px-8 py-4 rounded-full border-2 border-muted bg-white/50 backdrop-blur-sm shadow-sm group cursor-default transition-all hover:border-primary/20">
@@ -89,19 +79,19 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Recognition</p>
-                  <p className="text-sm font-bold text-primary">Awwwards Quality Std.</p>
+                  <p className="text-sm font-bold text-primary">Awwwards Pro Standard</p>
                 </div>
               </div>
             </div>
           </div>
           
-          <div className="lg:col-span-5 relative group animate-in fade-in zoom-in-95 duration-1000 delay-300">
+          <div className="lg:col-span-5 relative group animate-in fade-in zoom-in-95 duration-1000 delay-300 hidden lg:block">
             <div className="absolute -inset-10 bg-gradient-to-tr from-primary/20 to-accent/20 rounded-[5rem] blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
             <div className="relative aspect-[4/5] rounded-[4rem] overflow-hidden shadow-2xl border-[16px] border-white bg-muted transition-all duration-1000 animate-slow-zoom">
               {heroImage?.imageUrl ? (
                 <Image 
                   src={heroImage.imageUrl} 
-                  alt="School Hero" 
+                  alt="Tanzanian Institutional Hub" 
                   fill 
                   className="object-cover"
                   priority
@@ -110,16 +100,36 @@ export default function LandingPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-primary/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
             </div>
             
-            {/* Floating Visual Elements */}
-            <div className="absolute -bottom-12 -left-12 bg-white p-10 rounded-[3rem] shadow-2xl border border-muted/50 hidden sm:flex items-center gap-6 animate-float">
+            {/* Floating Compliance Badge */}
+            <div className="absolute -bottom-12 -left-12 bg-white p-10 rounded-[3rem] shadow-2xl border border-muted/50 flex items-center gap-6 animate-float">
                <div className="h-20 w-20 rounded-3xl bg-green-100 flex items-center justify-center text-green-600 shadow-inner">
-                 <CheckCircle2 className="h-12 w-12" />
+                 <ShieldCheck className="h-12 w-12" />
                </div>
                <div>
                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Compliance</p>
-                 <p className="text-3xl font-black text-primary tracking-tighter">PDPA Ready</p>
+                 <p className="text-3xl font-black text-primary tracking-tighter">NECTA READY</p>
                </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Institutional Statistics Section */}
+      <section className="py-24 px-6 bg-muted/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              { label: "Active Nodes", val: "1,200+", sub: "Tanzania Wide", icon: Globe },
+              { label: "Total Students", val: "850k+", sub: "System Capacity", icon: Users },
+              { label: "Daily Logs", val: "2.4M", sub: "Edge Synced", icon: Zap },
+              { label: "Success Rate", val: "100%", sub: "NECTA Sync", icon: CheckCircle2 },
+            ].map((stat, i) => (
+              <div key={i} className="space-y-2 group animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: `${i * 100}ms` }}>
+                <stat.icon className="h-6 w-6 text-primary/40 group-hover:text-primary transition-colors" />
+                <p className="text-3xl sm:text-4xl font-black text-primary tracking-tighter">{stat.val}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -134,26 +144,26 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto space-y-32 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-20 items-end animate-in fade-in slide-in-from-bottom-12 duration-1000">
-            <div className="space-y-8">
-              <Badge className="bg-white/10 text-white border-none font-black text-[10px] tracking-[0.4em] uppercase px-8 py-2">Infrastructure</Badge>
-              <h2 className="text-6xl font-headline font-black tracking-tight leading-[0.9]">Built for <br/>Scale & Speed.</h2>
+          <div className="grid lg:grid-cols-2 gap-20 items-end">
+            <div className="space-y-8 animate-in fade-in slide-in-from-left-8 duration-1000">
+              <Badge className="bg-white/10 text-white border-none font-black text-[10px] tracking-[0.4em] uppercase px-8 py-2">Full Infrastructure</Badge>
+              <h2 className="text-5xl sm:text-6xl font-headline font-black tracking-tight leading-[0.9]">Built for <br/>Scale & Speed.</h2>
             </div>
             <p className="text-xl text-primary-foreground/70 font-medium max-w-md leading-relaxed pb-2">
-              Every module is re-engineered for the 2026 academic season, focusing on data integrity and user productivity.
+              Every module is re-engineered for the 2026 academic season, focusing on data integrity for schools with hundreds to thousands of students.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-px bg-white/10 border border-white/10 rounded-[4rem] overflow-hidden animate-in fade-in zoom-in-95 duration-1000 delay-200">
+          <div className="grid md:grid-cols-3 gap-px bg-white/10 border border-white/10 rounded-[2rem] sm:rounded-[4rem] overflow-hidden">
             {[
-              { icon: Calculator, title: "NECTA Matrix", desc: "Official CSEE & FTNA point aggregation system." },
-              { icon: Banknote, title: "Revenue Flow", desc: "Automated ClickPesa reconciliation and audit logs." },
+              { icon: Calculator, title: "NECTA Matrix", desc: "Official CSEE & FTNA point aggregation for all levels." },
+              { icon: Banknote, title: "Revenue Hub", desc: "Automated ClickPesa reconciliation for institutional scale." },
               { icon: Shield, title: "Data Security", desc: "Institutional sovereignty compliant with PDPA 2022." },
-              { icon: Users, title: "Personnel Hubs", desc: "Tailored environments for every staff career role." },
-              { icon: Smartphone, title: "Omnichannel", desc: "Integrated Beem SMS and WhatsApp notification nodes." },
-              { icon: PieChart, title: "AI Insights", desc: "Narrative progress summaries for parent reporting." },
+              { icon: Users, title: "Level Hubs", desc: "Tailored environments for Primary, O-Level, and A-Level." },
+              { icon: Smartphone, title: "Omnichannel", desc: "Integrated Beem SMS gateways for thousands of parents." },
+              { icon: PieChart, title: "AI Analytics", desc: "Narrative progress summaries for massive student bodies." },
             ].map((feature, i) => (
-              <div key={i} className="bg-primary p-16 space-y-8 hover:bg-white/5 transition-all group cursor-default">
+              <div key={i} className="bg-primary p-10 sm:p-16 space-y-8 hover:bg-white/5 transition-all group cursor-default">
                 <div className="h-16 w-16 rounded-2xl bg-white/10 flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
                   <feature.icon className="h-8 w-8 text-accent" />
                 </div>
@@ -168,25 +178,25 @@ export default function LandingPage() {
       </section>
 
       {/* Architect Signature & Footer */}
-      <footer className="py-32 px-6 bg-card relative overflow-hidden border-t">
+      <footer className="py-24 sm:py-32 px-6 bg-card relative overflow-hidden border-t">
         <div className="absolute -bottom-40 right-[-10%] w-[800px] h-[800px] bg-primary/5 rounded-full blur-[150px]" />
         <div className="max-w-7xl mx-auto space-y-24 relative z-10">
           
           <div className="grid md:grid-cols-12 gap-16 items-start">
             {/* Branding Column */}
-            <div className="md:col-span-5 space-y-10 animate-in fade-in slide-in-from-left-8 duration-1000">
+            <div className="md:col-span-5 space-y-10">
               <div className="flex items-center gap-4">
                 <div className="h-14 w-14 rounded-2xl colorful-gradient flex items-center justify-center text-white shadow-xl transition-transform hover:rotate-12 duration-500">
                   <ShieldCheck className="h-8 w-8" />
                 </div>
-                <span className="font-headline font-black text-4xl text-primary tracking-tighter">ShuleDirect Pro</span>
+                <span className="font-headline font-black text-3xl sm:text-4xl text-primary tracking-tighter">ShuleDirect Pro</span>
               </div>
-              <p className="text-xl text-muted-foreground font-medium leading-relaxed max-w-sm">
+              <p className="text-lg sm:text-xl text-muted-foreground font-medium leading-relaxed max-w-sm">
                 The high-fidelity institutional ecosystem for the modern East African landscape.
               </p>
               <div className="flex gap-4">
                 {[Twitter, Linkedin, Instagram, Github].map((Icon, i) => (
-                  <div key={i} className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-white transition-all cursor-pointer shadow-sm group">
+                  <div key={i} className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-white transition-all cursor-pointer shadow-sm group">
                     <Icon className="h-6 w-6 group-hover:scale-110" />
                   </div>
                 ))}
@@ -194,28 +204,28 @@ export default function LandingPage() {
             </div>
 
             {/* Platform & Credits Columns */}
-            <div className="md:col-span-7 grid sm:grid-cols-2 gap-12 animate-in fade-in slide-in-from-right-8 duration-1000">
+            <div className="md:col-span-7 grid sm:grid-cols-2 gap-12">
               <div className="space-y-10">
-                <h4 className="font-black text-[10px] uppercase tracking-[0.4em] text-primary">Institutional Hub</h4>
+                <h4 className="font-black text-[10px] uppercase tracking-[0.4em] text-primary">Institutional Portal</h4>
                 <ul className="space-y-6 text-sm font-bold text-muted-foreground">
                   <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3 group">
                     <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -ml-4 group-hover:ml-0" /> 
-                    NECTA Portal Sync
+                    NECTA Cloud Sync
                   </li>
                   <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3 group">
                     <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -ml-4 group-hover:ml-0" /> 
-                    Financial Hub
+                    Financial Assurance
                   </li>
                   <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3 group">
                     <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -ml-4 group-hover:ml-0" /> 
-                    2026 Season Hubs
+                    Multi-Level Hubs
                   </li>
                 </ul>
               </div>
 
               <div className="space-y-10">
                 <h4 className="font-black text-[10px] uppercase tracking-[0.4em] text-accent">System Architect</h4>
-                <div className="p-8 rounded-[2.5rem] bg-muted/30 border-2 border-dashed border-primary/10 space-y-6 shadow-inner hover:border-primary/30 transition-all group max-w-sm">
+                <div className="p-8 rounded-[2.5rem] bg-muted/30 border-2 border-dashed border-primary/10 space-y-6 shadow-inner hover:border-primary/30 transition-all group w-full">
                   <div className="flex items-center gap-3 text-primary font-black text-xs uppercase tracking-widest">
                     <Star className="h-5 w-5 fill-primary animate-pulse" /> Maker Credits
                   </div>
@@ -239,23 +249,12 @@ export default function LandingPage() {
           </div>
 
           <div className="pt-16 border-t flex flex-col md:flex-row justify-between items-center gap-10">
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.5em]">
-              © 2026 ShuleDirect Pro • Engineered for Excellence
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.5em] text-center">
+              © 2026 ShuleDirect Pro • Engineered for Tanzanian Excellence
             </p>
             <div className="flex flex-wrap justify-center gap-8 text-[10px] font-black text-primary uppercase tracking-[0.3em]">
-               <Dialog>
-                 <DialogTrigger className="hover:underline cursor-pointer">Privacy Policy</DialogTrigger>
-                 <DialogContent className="rounded-[3rem] max-w-2xl border-none shadow-2xl p-12">
-                   <DialogHeader className="space-y-6">
-                     <DialogTitle className="text-4xl font-black tracking-tighter">Institutional Privacy</DialogTitle>
-                     <DialogDescription className="font-medium text-lg leading-relaxed text-muted-foreground">
-                       ShuleDirect Pro operates under a strict data sovereignty model. We ensure all minor records and personnel data are protected according to the Tanzania Data Protection Act 2022 (PDPA).
-                     </DialogDescription>
-                   </DialogHeader>
-                 </DialogContent>
-               </Dialog>
-               <Link href="/dashboard/help" className="hover:underline">Staff Support</Link>
-               <span className="text-muted-foreground opacity-30 hidden sm:inline">|</span>
+               <span className="hover:underline cursor-pointer">Privacy Policy</span>
+               <Link href="/dashboard/help" className="hover:underline">Institutional Support</Link>
                <span className="text-accent">Official Release v2.0.26</span>
             </div>
           </div>
