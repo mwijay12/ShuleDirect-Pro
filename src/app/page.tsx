@@ -116,7 +116,7 @@ export default function LandingPage() {
             </div>
             
             {/* Floating Visual Elements */}
-            <div className="absolute -bottom-12 -left-12 bg-white p-10 rounded-[3rem] shadow-2xl border border-muted/50 flex items-center gap-6 animate-float">
+            <div className="absolute -bottom-12 -left-12 bg-white p-10 rounded-[3rem] shadow-2xl border border-muted/50 hidden sm:flex items-center gap-6 animate-float">
                <div className="h-20 w-20 rounded-3xl bg-green-100 flex items-center justify-center text-green-600 shadow-inner">
                  <CheckCircle2 className="h-12 w-12" />
                </div>
@@ -173,11 +173,12 @@ export default function LandingPage() {
       </section>
 
       {/* Architect Signature & Footer */}
-      <footer className="py-32 px-6 bg-card relative overflow-hidden">
+      <footer className="py-32 px-6 bg-card relative overflow-hidden border-t">
         <div className="absolute -bottom-40 right-[-10%] w-[800px] h-[800px] bg-primary/5 rounded-full blur-[150px]" />
-        <div className="max-w-7xl mx-auto space-y-32 relative z-10">
+        <div className="max-w-7xl mx-auto space-y-24 relative z-10">
           
-          <div className="grid md:grid-cols-12 gap-20 items-start">
+          <div className="grid md:grid-cols-12 gap-16 items-start">
+            {/* Branding Column */}
             <div className="md:col-span-5 space-y-10 animate-in fade-in slide-in-from-left-8 duration-1000">
               <div className="flex items-center gap-4">
                 <div className="h-14 w-14 rounded-2xl colorful-gradient flex items-center justify-center text-white shadow-xl transition-transform hover:rotate-12 duration-500">
@@ -197,44 +198,43 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="md:col-span-7 animate-in fade-in slide-in-from-right-8 duration-1000">
-              <div className="grid sm:grid-cols-2 gap-12">
-                <div className="space-y-10">
-                  <h4 className="font-black text-[10px] uppercase tracking-[0.4em] text-primary">Platform</h4>
-                  <ul className="space-y-6 text-sm font-bold text-muted-foreground">
-                    <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3 group">
-                      <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -ml-4 group-hover:ml-0" /> 
-                      NECTA Portal Sync
-                    </li>
-                    <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3 group">
-                      <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -ml-4 group-hover:ml-0" /> 
-                      Financial Hub
-                    </li>
-                    <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3 group">
-                      <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -ml-4 group-hover:ml-0" /> 
-                      2026 Season Hubs
-                    </li>
-                  </ul>
-                </div>
+            {/* Platform & Credits Columns */}
+            <div className="md:col-span-7 grid sm:grid-cols-2 gap-12 animate-in fade-in slide-in-from-right-8 duration-1000">
+              <div className="space-y-10">
+                <h4 className="font-black text-[10px] uppercase tracking-[0.4em] text-primary">Institutional Hub</h4>
+                <ul className="space-y-6 text-sm font-bold text-muted-foreground">
+                  <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3 group">
+                    <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -ml-4 group-hover:ml-0" /> 
+                    NECTA Portal Sync
+                  </li>
+                  <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3 group">
+                    <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -ml-4 group-hover:ml-0" /> 
+                    Financial Hub
+                  </li>
+                  <li className="hover:text-primary cursor-pointer transition-colors flex items-center gap-3 group">
+                    <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -ml-4 group-hover:ml-0" /> 
+                    2026 Season Hubs
+                  </li>
+                </ul>
+              </div>
 
-                <div className="space-y-10">
-                  <h4 className="font-black text-[10px] uppercase tracking-[0.4em] text-accent">System Architect</h4>
-                  <div className="p-8 rounded-[2.5rem] bg-muted/30 border-2 border-dashed border-primary/10 space-y-6 shadow-inner hover:border-primary/30 transition-all group">
-                    <div className="flex items-center gap-3 text-primary font-black text-xs uppercase tracking-widest">
-                      <Star className="h-5 w-5 fill-primary animate-pulse" /> Maker Credits
+              <div className="space-y-10">
+                <h4 className="font-black text-[10px] uppercase tracking-[0.4em] text-accent">System Architect</h4>
+                <div className="p-8 rounded-[2.5rem] bg-muted/30 border-2 border-dashed border-primary/10 space-y-6 shadow-inner hover:border-primary/30 transition-all group max-w-sm">
+                  <div className="flex items-center gap-3 text-primary font-black text-xs uppercase tracking-widest">
+                    <Star className="h-5 w-5 fill-primary animate-pulse" /> Maker Credits
+                  </div>
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <p className="text-2xl font-black leading-tight text-foreground/80 group-hover:text-primary transition-colors">Davie Mwijage</p>
+                      <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Lead Engineer & Architect</p>
                     </div>
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="space-y-1">
-                        <p className="text-2xl font-black leading-tight text-foreground/80 group-hover:text-primary transition-colors">Davie Mwijage</p>
-                        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Lead Engineer & Architect</p>
+                    <div className="flex flex-col gap-3 pt-2">
+                      <div className="flex items-center gap-3 text-[11px] font-black text-primary/80">
+                        <Smartphone className="h-4 w-4 text-primary" /> +255 620 641 695
                       </div>
-                      <div className="flex flex-col gap-3 pt-2">
-                        <div className="flex items-center gap-3 text-[11px] font-black text-primary/80">
-                          <Smartphone className="h-4 w-4 text-primary" /> +255 620 641 695
-                        </div>
-                        <div className="flex items-center gap-3 text-[11px] font-black text-accent">
-                          <Instagram className="h-4 w-4" /> @mwijay.davie
-                        </div>
+                      <div className="flex items-center gap-3 text-[11px] font-black text-accent">
+                        <Instagram className="h-4 w-4" /> @mwijay.davie
                       </div>
                     </div>
                   </div>
@@ -247,7 +247,7 @@ export default function LandingPage() {
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.5em]">
               © 2026 ShuleDirect Pro • Engineered for Excellence
             </p>
-            <div className="flex gap-12 text-[10px] font-black text-primary uppercase tracking-[0.3em]">
+            <div className="flex flex-wrap justify-center gap-8 text-[10px] font-black text-primary uppercase tracking-[0.3em]">
                <Dialog>
                  <DialogTrigger className="hover:underline cursor-pointer">Privacy Policy</DialogTrigger>
                  <DialogContent className="rounded-[3rem] max-w-2xl border-none shadow-2xl p-12">
@@ -260,7 +260,7 @@ export default function LandingPage() {
                  </DialogContent>
                </Dialog>
                <Link href="/dashboard/help" className="hover:underline">Staff Support</Link>
-               <span className="text-muted-foreground opacity-30">|</span>
+               <span className="text-muted-foreground opacity-30 hidden sm:inline">|</span>
                <span className="text-accent">Official Release v2.0.26</span>
             </div>
           </div>

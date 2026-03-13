@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -136,34 +135,46 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Maker Credits */}
-          <div className="grid md:grid-cols-2 gap-8 pt-4">
-            <Card className="p-8 rounded-[2.5rem] bg-muted/30 border-2 border-dashed border-primary/20 space-y-6 shadow-inner hover:border-primary/30 transition-all group">
-              <div className="flex items-center gap-3 text-primary font-black text-xs uppercase tracking-widest">
-                <Star className="h-5 w-5 fill-primary animate-pulse" /> System Architect
+          {/* Maker Credits - Redesigned Card */}
+          <div className="pt-4">
+            <Card className="p-10 rounded-[2.5rem] bg-muted/30 border-2 border-dashed border-primary/20 shadow-inner group transition-all hover:border-primary/40 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-5">
+                <Star className="h-48 w-48 rotate-12" />
               </div>
-              <div className="grid grid-cols-1 gap-4">
-                <div className="space-y-1">
-                  <p className="text-2xl font-black leading-tight text-foreground/80 group-hover:text-primary transition-colors">Davie Mwijage</p>
-                  <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Lead Engineer & Architect</p>
-                </div>
-                <div className="flex flex-col gap-3 pt-2">
-                  <div className="flex items-center gap-3 text-[11px] font-black text-primary/80">
-                    <Smartphone className="h-4 w-4 text-primary" /> +255 620 641 695
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 relative z-10">
+                <div className="space-y-6 max-w-md">
+                  <div className="flex items-center gap-3 text-primary font-black text-xs uppercase tracking-widest">
+                    <Star className="h-5 w-5 fill-primary animate-pulse" /> System Architect Signature
                   </div>
-                  <div className="flex items-center gap-3 text-[11px] font-black text-accent">
-                    <Instagram className="h-4 w-4" /> @mwijay.davie
+                  <div className="space-y-2">
+                    <p className="text-4xl font-black leading-none text-foreground/80 group-hover:text-primary transition-colors">Davie Mwijage</p>
+                    <p className="text-[11px] text-muted-foreground font-black uppercase tracking-[0.3em]">Lead Engineer & Institutional Architect</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground font-medium leading-relaxed italic">
+                    "Designing high-fidelity ecosystems that bridge the gap between Tanzanian institutional potential and digital excellence."
+                  </p>
+                </div>
+                <div className="flex flex-col gap-4 w-full md:w-auto">
+                  <div className="flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm border border-muted group-hover:border-primary/20 transition-all">
+                    <div className="h-10 w-10 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+                      <Smartphone className="h-5 w-5" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Mobile Node</span>
+                      <span className="text-sm font-bold text-foreground/80">+255 620 641 695</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm border border-muted group-hover:border-accent/20 transition-all">
+                    <div className="h-10 w-10 rounded-full bg-accent/5 flex items-center justify-center text-accent">
+                      <Instagram className="h-5 w-5" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Global Identity</span>
+                      <span className="text-sm font-bold text-foreground/80">@mwijay.davie</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </Card>
-            
-            <Card className="p-8 rounded-[2.5rem] bg-accent/5 border-2 border-dashed border-accent/20 flex flex-col justify-center items-center text-center space-y-4">
-               <Shield className="h-12 w-12 text-accent" />
-               <div className="space-y-1">
-                 <p className="text-sm font-black text-accent uppercase tracking-widest">Official v2.0.26</p>
-                 <p className="text-[10px] text-muted-foreground max-w-[200px] font-medium leading-relaxed">Engineered for pure performance and high-fidelity school management.</p>
-               </div>
             </Card>
           </div>
         </TabsContent>
