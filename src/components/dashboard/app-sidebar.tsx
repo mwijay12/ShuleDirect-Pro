@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -17,7 +18,8 @@ import {
   Zap,
   LogOut,
   X,
-  HelpCircle
+  HelpCircle,
+  Building2
 } from "lucide-react"
 
 import {
@@ -66,10 +68,10 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border/50 shadow-sm transition-all duration-300 font-body">
+    <Sidebar collapsible="icon" className="border-r border-border/50 shadow-sm transition-all duration-300 font-body overflow-hidden">
       <SidebarHeader className="p-4 sm:p-6 mb-2 sm:mb-4 relative">
         <Link href="/" className="flex items-center gap-3 group overflow-hidden">
-          <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl colorful-gradient text-white shadow-xl group-hover:rotate-12 transition-transform duration-500">
+          <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl colorful-gradient text-white shadow-xl group-hover:rotate-12 transition-transform duration-500 mx-auto">
             <ShieldCheck className="h-6 w-6 sm:h-7 sm:w-7" />
           </div>
           {!isCollapsed && (
@@ -86,7 +88,7 @@ export function AppSidebar() {
         )}
       </SidebarHeader>
       
-      <SidebarContent className="px-3 sm:px-4">
+      <SidebarContent className="px-3 sm:px-4 overflow-y-auto overflow-x-hidden">
         <SidebarMenu className="gap-1 sm:gap-2">
           {filteredItems.map((item) => {
             const isActive = pathname === item.url
@@ -104,9 +106,9 @@ export function AppSidebar() {
                   )}
                   onClick={() => isMobile && setOpenMobile(false)}
                 >
-                  <Link href={item.url} className="flex items-center">
+                  <Link href={item.url} className={cn("flex items-center", isCollapsed && "justify-center")}>
                     <item.icon className={cn(
-                      "h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-500 group-hover:rotate-12",
+                      "h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-500 group-hover:rotate-12 shrink-0",
                       isActive ? "text-white" : "text-muted-foreground"
                     )} />
                     {!isCollapsed && (
@@ -115,7 +117,7 @@ export function AppSidebar() {
                       </span>
                     )}
                     {!isCollapsed && isActive && (
-                      <div className="h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full bg-white animate-pulse" />
+                      <div className="h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full bg-white animate-pulse shrink-0 ml-2" />
                     )}
                   </Link>
                 </SidebarMenuButton>

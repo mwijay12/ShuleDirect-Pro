@@ -111,6 +111,7 @@ export default function DashboardLayout({
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="bg-background flex flex-col min-w-0 w-full relative overflow-hidden">
+        {/* FIXED: Header re-engineered for rigid responsiveness */}
         <header className="flex h-16 sm:h-24 shrink-0 items-center gap-2 border-b bg-card/80 backdrop-blur-md px-4 sm:px-8 sticky top-0 z-20 w-full overflow-hidden">
           <div className="flex items-center gap-2 md:hidden shrink-0">
              <SidebarTrigger>
@@ -121,23 +122,23 @@ export default function DashboardLayout({
             <SidebarTrigger className="hover:bg-accent/10" />
           </div>
           
-          <div className="flex flex-1 items-center gap-2 sm:gap-8 min-w-0 px-2 sm:px-4">
-            <div className="flex flex-col min-w-0">
-              <h2 className="text-xs sm:text-2xl font-black text-primary flex items-center gap-2 truncate whitespace-nowrap tracking-tight">
+          <div className="flex flex-1 items-center gap-2 sm:gap-8 min-w-0 px-2 sm:px-4 overflow-hidden">
+            <div className="flex flex-col min-w-0 overflow-hidden">
+              <h2 className="text-sm sm:text-xl lg:text-2xl font-black text-primary flex items-center gap-2 truncate whitespace-nowrap tracking-tight">
                 {greeting}<span className="hidden lg:inline">, Administrator! 👋</span>
               </h2>
               <div className="flex items-center gap-2 overflow-hidden">
                 <p className="text-[8px] sm:text-[10px] text-muted-foreground font-black uppercase tracking-widest truncate">
                   {schoolName} Hub
                 </p>
-                <Badge variant="outline" className="hidden sm:flex border-green-200 bg-green-50 text-green-700 h-4 text-[7px] font-black px-2 rounded-full whitespace-nowrap">
+                <Badge variant="outline" className="hidden xl:flex border-green-200 bg-green-50 text-green-700 h-4 text-[7px] font-black px-2 rounded-full whitespace-nowrap">
                   OFFLINE CACHE ACTIVE
                 </Badge>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0 ml-auto">
             <div className="hidden xl:flex flex-col items-end mr-2">
                <span className="text-[9px] font-black text-primary uppercase tracking-tighter">Security Node</span>
                <div className="flex items-center gap-1">
