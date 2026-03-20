@@ -60,28 +60,20 @@ import { useToast } from "@/hooks/use-toast"
 import { generateStudentProgressSummary } from "@/ai/flows/generate-student-progress-summary-flow"
 
 const initialStudents = [
-  { id: "2026-001", name: "Amani Mwamba", class: "O-Level Stream A", gender: "Male", status: "Active", parent: "Juma Mwamba", contact: "+255 712 000 001", attendance: "98%", balance: "TZS 120,000", email: "amani@example.com" },
-  { id: "2026-002", name: "Careen Mushi", class: "Primary Node 7", gender: "Female", status: "Active", parent: "Sarah Mushi", contact: "+255 754 000 002", attendance: "92%", balance: "TZS 0", email: "careen@example.com" },
-  { id: "2026-003", name: "Baraka Juma", class: "A-Level PCM", gender: "Male", status: "Active", parent: "Fatuma Juma", contact: "+255 621 000 003", attendance: "85%", balance: "TZS 450,000", email: "baraka@example.com" },
-  { id: "2026-004", name: "Doreen Peter", class: "O-Level Stream C", gender: "Female", status: "Inactive", parent: "Peter John", contact: "+255 788 000 004", attendance: "60%", balance: "TZS 1,200,000", email: "doreen@example.com" },
-  { id: "2026-005", name: "Emanuel Lema", class: "A-Level HGL", gender: "Male", status: "Active", parent: "David Lema", contact: "+255 713 000 005", attendance: "95%", balance: "TZS 50,000", email: "emanuel@example.com" },
+  { id: "2026-001", name: "Amani Mwamba", class: "O-Level Stream A", gender: "Male", status: "Active", parent: "Juma Mwamba", contact: "+255 712 000 001", attendance: "98%", balance: "120,000", email: "amani@example.com" },
+  { id: "2026-002", name: "Careen Mushi", class: "Primary Node 7", gender: "Female", status: "Active", parent: "Sarah Mushi", contact: "+255 754 000 002", attendance: "92%", balance: "0", email: "careen@example.com" },
+  { id: "2026-003", name: "Baraka Juma", class: "A-Level PCM", gender: "Male", status: "Active", parent: "Fatuma Juma", contact: "+255 621 000 003", attendance: "85%", balance: "450,000", email: "baraka@example.com" },
+  { id: "2026-004", name: "Doreen Peter", class: "O-Level Stream C", gender: "Female", status: "Inactive", parent: "Peter John", contact: "+255 788 000 004", attendance: "60%", balance: "1,200,000", email: "doreen@example.com" },
+  { id: "2026-005", name: "Emanuel Lema", class: "A-Level HGL", gender: "Male", status: "Active", parent: "David Lema", contact: "+255 713 000 005", attendance: "95%", balance: "50,000", email: "emanuel@example.com" },
 ]
 
 export default function StudentsPage() {
   const { toast } = useToast()
   const [students, setStudents] = useState(initialStudents)
-  const [selectedStudent, setSelectedStudent] = useState<typeof initialStudents[0] | null>(null)
+  const [selectedStudent, setSelectedStudent] = useState<typeof students[0] | null>(initialStudents[0])
   const [isGeneratingAi, setIsGeneratingAi] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [aiSummary, setAiSummary] = useState("")
-
-  const handleDeleteStudent = (id: string) => {
-    setStudents(prev => prev.filter(s => s.id !== id))
-    toast({
-      title: "Record Purged",
-      description: "Student data removed from 2026 node.",
-    })
-  }
 
   const handleGenerateAiSummary = async () => {
     if (!selectedStudent) return
@@ -105,6 +97,14 @@ export default function StudentsPage() {
     }
   }
 
+  const handleDeleteStudent = (id: string) => {
+    setStudents(prev => prev.filter(s => s.id !== id))
+    toast({
+      title: "Student Deleted",
+      description: "Institutional record removed from 2026 node.",
+    })
+  }
+
   const handleExportDocx = () => {
     setIsExporting(true)
     setTimeout(() => {
@@ -121,7 +121,7 @@ export default function StudentsPage() {
     const studentName = selectedStudent?.name || "Student"
     
     if (type === 'whatsapp') {
-      toast({ title: "Opening WhatsApp", description: `Drafting update for ${parentName}...` })
+      toast({ title: "Opening WhatsApp", description: `Drafting result update for ${parentName}...` })
       window.open(`https://wa.me/${selectedStudent?.contact.replace('+', '')}?text=Habari ${parentName}, hapa ni ShuleDirect Node. Maendeleo ya ${studentName} ni mazuri...`, '_blank')
     } else if (type === 'sms') {
       toast({ title: "SMS Gateway Active", description: "Message queued via Beem Africa API." })
@@ -133,13 +133,13 @@ export default function StudentsPage() {
   }
 
   return (
-    <div className="space-y-6 pb-20 overflow-x-hidden relative">
+    <div className="space-y-6 pb-20 overflow-x-hidden">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
+        <div className="animate-in fade-in slide-in-from-left-4 duration-700">
           <h1 className="text-2xl sm:text-3xl font-headline font-black text-primary tracking-tight">Student Directory</h1>
-          <p className="text-muted-foreground font-medium text-xs sm:text-sm">National-scale institutional student records 2026.</p>
+          <p className="text-muted-foreground font-medium text-sm sm:text-base">National-scale institutional student records 2026.</p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 w-full sm:w-auto animate-in fade-in slide-in-from-right-4 duration-700">
           <Button variant="outline" size="sm" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-bold">
             <Download className="mr-2 h-4 w-4 shrink-0" /> Export
           </Button>
@@ -149,27 +149,26 @@ export default function StudentsPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 animate-in fade-in zoom-in-95 duration-1000">
         {[
           { label: "Population", value: "1,284", color: "text-primary", trend: "+12%" },
           { label: "Active", value: "1,240", color: "text-green-600", trend: "Stable" },
           { label: "Presence", value: "96.2%", color: "text-accent", trend: "+2%" },
           { label: "Delta", value: "+8%", color: "text-orange-600", trend: "High" },
         ].map((stat) => (
-          <Card key={stat.label} className="border-none shadow-sm hover:shadow-xl transition-all rounded-[2rem] bg-white/60 backdrop-blur-sm">
+          <Card key={stat.label} className="border-none shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden group rounded-[2rem] bg-white/60 backdrop-blur-sm">
             <CardHeader className="pb-2 p-4 sm:p-6">
               <div className="flex justify-between items-start">
                 <CardDescription className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest">{stat.label}</CardDescription>
                 <Badge variant="outline" className="text-[7px] sm:text-[8px] py-0 h-4 border-none bg-primary/5 text-primary font-black">{stat.trend}</Badge>
               </div>
-              {/* FIXED: Reduced font size for population numbers on small screens/tablets */}
-              <CardTitle className={cn("text-xl sm:text-2xl lg:text-3xl font-black mt-1 truncate", stat.color)}>{stat.value}</CardTitle>
+              <CardTitle className={cn("text-xl sm:text-3xl font-black mt-1 truncate", stat.color)}>{stat.value}</CardTitle>
             </CardHeader>
           </Card>
         ))}
       </div>
 
-      <Card className="border-none shadow-xl overflow-hidden bg-white/60 backdrop-blur-md rounded-[2.5rem]">
+      <Card className="border-none shadow-xl overflow-hidden bg-white/60 backdrop-blur-md rounded-[2.5rem] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
         <CardHeader className="pb-3 px-4 sm:px-8 pt-6 sm:pt-8 bg-muted/20 border-b">
           <div className="flex flex-col sm:flex-row justify-between gap-4">
             <div className="relative flex-1 max-w-sm group">
@@ -225,7 +224,7 @@ export default function StudentsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right pr-8">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex justify-end items-center gap-2">
                       <Sheet onOpenChange={() => { setAiSummary(""); setSelectedStudent(student); }}>
                         <SheetTrigger asChild>
                           <Button 
@@ -264,7 +263,6 @@ export default function StudentsPage() {
                           </div>
 
                           <div className="p-6 sm:p-10 space-y-8 sm:space-y-10">
-                            {/* Omnichannel Gateway */}
                             <div className="space-y-4">
                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2 px-2">
                                  <Zap className="h-4 w-4 text-accent fill-accent shrink-0" /> Omnichannel Gateway
@@ -472,8 +470,8 @@ export default function StudentsPage() {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        onClick={() => handleDeleteStudent(student.id)}
                         className="h-10 w-10 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/5"
+                        onClick={() => handleDeleteStudent(student.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
