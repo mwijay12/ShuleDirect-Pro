@@ -4,14 +4,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  GraduationCapIcon,
-  LicenseIcon,
   GlobalSearchIcon,
   AiCloudIcon,
   SmartPhone01Icon,
   CheckmarkCircle01Icon,
   DashboardSquare01Icon,
   MagicWandIcon,
+  TaskDaily01Icon,
+  LibraryIcon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -20,14 +20,14 @@ const FEATURES = [
   {
     id: "academic",
     label: "Academic Matrix",
-    icon: GraduationCapIcon,
+    icon: LibraryIcon,
     image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200",
     description: "NECTA-aligned grading and automated point aggregation for all tiers.",
   },
   {
     id: "finance",
     label: "Revenue Hub",
-    icon: LicenseIcon,
+    icon: DashboardSquare01Icon,
     image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=1200",
     description: "Consolidated financial assurance via ClickPesa and Beem SMS gateways.",
   },
@@ -62,7 +62,7 @@ const FEATURES = [
   {
     id: "security",
     label: "Data Vault",
-    icon: DashboardSquare01Icon,
+    icon: TaskDaily01Icon,
     image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=1200",
     description: "Institutional sovereignty compliant with PDPA 2022 and national standards.",
   },
