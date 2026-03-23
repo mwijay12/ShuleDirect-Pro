@@ -9,7 +9,6 @@ import {
   Zap,
   Star,
   Smartphone,
-  CheckCircle2,
   Globe,
   Users,
   Banknote,
@@ -19,10 +18,10 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { cn } from "@/lib/utils"
 import { StaggeredMenu } from "@/components/ui/staggered-menu"
 import { FeatureCarousel } from "@/components/ui/feature-carousel"
+import { MarqueeAnimation } from "@/components/ui/marquee-effect"
 
 export default function LandingPage() {
   const [schoolName, setSchoolName] = React.useState("ShuleDirect Pro")
@@ -33,6 +32,7 @@ export default function LandingPage() {
   }, [])
   
   const navItems = [
+    { label: "Dashboard", link: "/dashboard" },
     { label: "Staff Portal", link: "/login" },
     { label: "Support Hub", link: "/dashboard/help" },
   ]
@@ -57,7 +57,7 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary/5 text-primary text-[9px] sm:text-[11px] font-black uppercase tracking-[0.4em] border border-primary/10 w-fit">
               <Zap className="h-3 w-3 sm:h-4 w-4 fill-primary" /> Institutional Excellence 2026
             </div>
-            <h1 className="text-[clamp(2.5rem,12vw,10rem)] font-headline font-black leading-[0.85] text-primary tracking-tighter text-balance uppercase">
+            <h1 className="text-[clamp(2.5rem,12vw,8rem)] font-headline font-black leading-[0.85] text-primary tracking-tighter text-balance uppercase">
               Pure <br /> 
               <span className="text-gradient">Performance.</span>
             </h1>
@@ -68,7 +68,7 @@ export default function LandingPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <Link href="/login" className="w-full sm:w-auto">
-                    <Button size="lg" className="w-full rounded-full h-16 sm:h-24 px-10 sm:px-20 font-black colorful-gradient group shadow-[0_30px_70px_rgba(31,91,166,0.3)] hover:scale-[1.03] transition-all text-sm sm:text-xl uppercase tracking-widest">
+                    <Button size="lg" className="w-full rounded-full h-16 sm:h-20 px-10 sm:px-16 font-black colorful-gradient group shadow-[0_30px_70px_rgba(31,91,166,0.3)] hover:scale-[1.03] transition-all text-sm sm:text-lg uppercase tracking-widest">
                       Staff Entry <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-3 transition-transform" />
                     </Button>
                   </Link>
@@ -86,6 +86,16 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Marquee Visual Layer */}
+      <div className="py-10 space-y-4 border-y bg-muted/30">
+        <MarqueeAnimation direction="left" baseVelocity={-2} className="text-primary/10 text-4xl sm:text-7xl font-black">
+          NECTA COMPLIANT • AUDIT READY • CLICKPESA SYNC • 2026 SEASON • 
+        </MarqueeAnimation>
+        <MarqueeAnimation direction="right" baseVelocity={-2} className="text-accent/10 text-4xl sm:text-7xl font-black">
+          INSTITUTIONAL SOVEREIGNTY • PURE PERFORMANCE • TANZANIAN EXCELLENCE • 
+        </MarqueeAnimation>
+      </div>
+
       {/* Feature Architecture Grid */}
       <section className="py-20 sm:py-40 px-4 sm:px-10 bg-primary text-white overflow-hidden relative w-full">
         <div className="max-w-7xl mx-auto space-y-20 sm:space-y-32">
@@ -101,9 +111,9 @@ export default function LandingPage() {
               { icon: Calculator, title: "NECTA Hub", desc: "Official CSEE & FTNA point aggregation matrices for all academic tiers." },
               { icon: Banknote, title: "Revenue Node", desc: "Consolidated financial assurance via ClickPesa and Beem SMS gateways." },
               { icon: Shield, title: "Data Vault", desc: "Institutional sovereignty compliant with PDPA 2022 and national standards." },
-              { icon: Users, title: "Population", desc: "High-fidelity management for thousands of students across multiple streams." },
-              { icon: Globe, title: "Offline Node", desc: "Edge-synced architecture that remains fully functional without internet connectivity." },
-              { icon: PieChart, title: "AI Analytics", desc: "Narrative progress reports and automated behavioral summaries for each student." },
+              { icon: Users, title: "Population", desc: "High-fidelity management for thousands of students across multiple levels." },
+              { icon: Globe, title: "Offline Node", desc: "Edge-synced architecture that remains fully functional without connectivity." },
+              { icon: PieChart, title: "AI Analytics", desc: "Narrative progress reports and automated behavioral summaries powered by AI." },
             ].map((feature, i) => (
               <div key={i} className="bg-primary p-12 sm:p-20 space-y-8 sm:space-y-12 hover:bg-white/5 transition-all group cursor-default">
                 <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-white/10 flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-xl">
