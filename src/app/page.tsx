@@ -3,34 +3,28 @@
 
 import * as React from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { 
   ShieldCheck, 
   ArrowRight, 
   Zap,
   Star,
-  Instagram,
-  Linkedin,
-  Twitter,
-  Github,
-  Calculator,
-  Shield,
   Smartphone,
-  PieChart,
   CheckCircle2,
   Globe,
-  GraduationCap,
   Users,
-  Banknote
+  Banknote,
+  Calculator,
+  Shield,
+  PieChart
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { cn } from "@/lib/utils"
 import { StaggeredMenu } from "@/components/ui/staggered-menu"
+import { FeatureCarousel } from "@/components/ui/feature-carousel"
 
 export default function LandingPage() {
-  const heroImage = PlaceHolderImages.find(img => img.id === "school-hero")
   const [schoolName, setSchoolName] = React.useState("ShuleDirect Pro")
 
   React.useEffect(() => {
@@ -51,10 +45,9 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background font-body selection:bg-primary/20 overflow-x-hidden w-full relative">
-      {/* High-End Staggered Navigation */}
       <StaggeredMenu items={navItems} socialItems={socialItems} />
 
-      {/* Hero Section - Rigid Typography responsive to the soul of the screen */}
+      {/* Hero Section */}
       <section className="pt-32 sm:pt-48 pb-20 sm:pb-40 px-4 sm:px-10 relative w-full overflow-hidden">
         <div className="absolute top-40 right-[-10%] w-[300px] sm:w-[800px] h-[300px] sm:h-[800px] bg-accent/5 rounded-full blur-[80px] sm:blur-[150px] -z-10 animate-pulse-soft" />
         <div className="absolute top-20 left-[-5%] w-[200px] sm:w-[500px] h-[200px] sm:h-[500px] bg-primary/5 rounded-full blur-[60px] sm:blur-[120px] -z-10 animate-float" />
@@ -62,7 +55,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto space-y-12 sm:space-y-20 relative z-10">
           <div className="space-y-6 sm:space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
             <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary/5 text-primary text-[9px] sm:text-[11px] font-black uppercase tracking-[0.4em] border border-primary/10 w-fit">
-              <Zap className="h-3 w-3 sm:h-4 sm:w-4 fill-primary" /> Institutional Excellence 2026
+              <Zap className="h-3 w-3 sm:h-4 w-4 fill-primary" /> Institutional Excellence 2026
             </div>
             <h1 className="text-[clamp(2.5rem,12vw,10rem)] font-headline font-black leading-[0.85] text-primary tracking-tighter text-balance uppercase">
               Pure <br /> 
@@ -126,6 +119,18 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Feature Deep Dive Carousel */}
+      <section className="py-24 sm:py-48 px-4 sm:px-10 relative overflow-hidden bg-background">
+        <div className="max-w-7xl mx-auto space-y-16">
+          <div className="text-center space-y-4 max-w-3xl mx-auto">
+            <Badge variant="outline" className="rounded-full px-6 py-1 font-black text-[10px] tracking-[0.3em] text-primary uppercase border-primary/20">Module Showcase</Badge>
+            <h2 className="text-4xl sm:text-6xl font-headline font-black text-primary uppercase tracking-tighter">Experience the Node.</h2>
+            <p className="text-muted-foreground font-medium text-lg">A granular look into the high-fidelity features powering ShuleDirect Pro.</p>
+          </div>
+          <FeatureCarousel />
+        </div>
+      </section>
+
       {/* Footer & Signature Architecture */}
       <footer className="py-20 sm:py-40 px-4 sm:px-10 bg-card relative overflow-hidden border-t w-full">
         <div className="max-w-7xl mx-auto">
@@ -140,13 +145,6 @@ export default function LandingPage() {
               <p className="text-lg sm:text-2xl text-muted-foreground font-medium max-w-md leading-relaxed">
                 The authoritative institutional hub for the modern academic era in Tanzania.
               </p>
-              <div className="flex gap-4 sm:gap-6">
-                {[Twitter, Linkedin, Instagram, Github].map((Icon, i) => (
-                  <div key={i} className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-white transition-all cursor-pointer shadow-sm shrink-0">
-                    <Icon className="h-6 w-6 sm:h-8 sm:w-8" />
-                  </div>
-                ))}
-              </div>
             </div>
 
             <div className="lg:col-span-7 grid sm:grid-cols-2 gap-16 sm:gap-20 w-full">
@@ -183,9 +181,6 @@ export default function LandingPage() {
                     <div className="flex flex-col gap-4 pt-6 border-t border-muted-foreground/10">
                       <div className="flex items-center gap-4 text-[11px] sm:text-[13px] font-black text-primary/80">
                         <Smartphone className="h-4 w-4 sm:h-5 sm:w-5 text-primary" /> +255 620 641 695
-                      </div>
-                      <div className="flex items-center gap-4 text-[11px] sm:text-[13px] font-black text-accent">
-                        <Instagram className="h-4 w-4 sm:h-5 sm:w-5" /> @mwijay.davie
                       </div>
                     </div>
                   </div>
