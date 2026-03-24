@@ -86,12 +86,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Marquee Visual Layer */}
+      {/* Marquee Visual Layer - Reduced Speed */}
       <div className="py-10 space-y-4 border-y bg-muted/30">
-        <MarqueeAnimation direction="left" baseVelocity={-2} className="text-primary/10 text-4xl sm:text-7xl font-black">
+        <MarqueeAnimation direction="left" baseVelocity={-1.5} className="text-primary/10 text-4xl sm:text-7xl font-black">
           NECTA COMPLIANT • AUDIT READY • CLICKPESA SYNC • 2026 SEASON • 
         </MarqueeAnimation>
-        <MarqueeAnimation direction="right" baseVelocity={-2} className="text-accent/10 text-4xl sm:text-7xl font-black">
+        <MarqueeAnimation direction="right" baseVelocity={-1.5} className="text-accent/10 text-4xl sm:text-7xl font-black">
           INSTITUTIONAL SOVEREIGNTY • PURE PERFORMANCE • TANZANIAN EXCELLENCE • 
         </MarqueeAnimation>
       </div>
