@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useRef, useMemo, ReactNode, RefObject } from 'react';
@@ -113,7 +112,7 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
 
   return (
     <div ref={containerRef} className={`my-5 ${containerClassName}`}>
-      <div className={`text-[clamp(1.2rem,3vw,2.5rem)] leading-[1.4] font-medium ${textClassName}`}>{splitText}</div>
+      <div className={`text-[clamp(1rem,2vw,1.5rem)] leading-[1.4] font-medium ${textClassName}`}>{splitText}</div>
     </div>
   );
 };

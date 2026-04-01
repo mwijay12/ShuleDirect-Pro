@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useMemo, useRef, ReactNode, RefObject } from 'react';
@@ -80,7 +79,7 @@ const ScrollFloat: React.FC<ScrollFloatProps> = ({
 
   return (
     <h2 ref={containerRef} className={`my-5 overflow-hidden ${containerClassName}`}>
-      <span className={`inline-block text-[clamp(2rem,6vw,5rem)] leading-[1.1] font-black uppercase tracking-tighter ${textClassName}`}>{splitText}</span>
+      <span className={`inline-block text-[clamp(1.8rem,5vw,3.5rem)] leading-[1.1] font-black uppercase tracking-tighter ${textClassName}`}>{splitText}</span>
     </h2>
   );
 };
