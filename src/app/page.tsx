@@ -14,7 +14,9 @@ import {
   Banknote,
   Calculator,
   Shield,
-  PieChart
+  PieChart,
+  Layers,
+  Building2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -22,6 +24,9 @@ import { cn } from "@/lib/utils"
 import { StaggeredMenu } from "@/components/ui/staggered-menu"
 import { FeatureCarousel } from "@/components/ui/feature-carousel"
 import { MarqueeAnimation } from "@/components/ui/marquee-effect"
+import ScrollReveal from "@/components/ui/scroll-reveal"
+import ScrollFloat from "@/components/ui/scroll-float"
+import GradientText from "@/components/ui/gradient-text"
 
 export default function LandingPage() {
   const [schoolName, setSchoolName] = React.useState("ShuleDirect Pro")
@@ -53,20 +58,32 @@ export default function LandingPage() {
         <div className="absolute top-20 left-[-5%] w-[200px] sm:w-[500px] h-[200px] sm:h-[500px] bg-primary/5 rounded-full blur-[60px] sm:blur-[120px] -z-10 animate-float" />
         
         <div className="max-w-7xl mx-auto space-y-12 sm:space-y-20 relative z-10">
-          <div className="space-y-6 sm:space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary/5 text-primary text-[9px] sm:text-[11px] font-black uppercase tracking-[0.4em] border border-primary/10 w-fit">
+          <div className="space-y-6 sm:space-y-10">
+            <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary/5 text-primary text-[9px] sm:text-[11px] font-black uppercase tracking-[0.4em] border border-primary/10 w-fit animate-in fade-in slide-in-from-bottom-4 duration-1000">
               <Zap className="h-3 w-3 sm:h-4 w-4 fill-primary" /> Institutional Excellence 2026
             </div>
-            <h1 className="text-[clamp(2.5rem,12vw,8rem)] font-headline font-black leading-[0.85] text-primary tracking-tighter text-balance uppercase">
-              Pure <br /> 
-              <span className="text-gradient">Performance.</span>
-            </h1>
+            
+            <div className="space-y-4">
+              <ScrollFloat 
+                containerClassName="text-left"
+                textClassName="text-primary"
+              >
+                PURE PERFORMANCE.
+              </ScrollFloat>
+              <GradientText className="text-4xl sm:text-7xl font-black uppercase tracking-tighter mx-0 sm:mx-0 justify-start">
+                Tanzanian Excellence.
+              </GradientText>
+            </div>
+
             <div className="grid lg:grid-cols-12 gap-10 sm:gap-20 items-end">
               <div className="lg:col-span-7 space-y-8">
-                <p className="text-base sm:text-2xl text-muted-foreground font-medium max-w-2xl leading-relaxed text-balance">
+                <ScrollReveal 
+                  containerClassName="max-w-2xl"
+                  textClassName="text-muted-foreground !text-[clamp(1.1rem,2vw,1.8rem)] leading-relaxed"
+                >
                   {schoolName} — The high-fidelity institutional ecosystem for the modern East African landscape. Engineered for national-scale reliability and academic distinction.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                </ScrollReveal>
+                <div className="flex flex-col sm:flex-row gap-4 pt-4 animate-in fade-in slide-in-from-bottom-8 duration-1000">
                   <Link href="/login" className="w-full sm:w-auto">
                     <Button size="lg" className="w-full rounded-full h-16 sm:h-20 px-10 sm:px-16 font-black colorful-gradient group shadow-[0_30px_70px_rgba(31,91,166,0.3)] hover:scale-[1.03] transition-all text-sm sm:text-lg uppercase tracking-widest">
                       Staff Entry <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-3 transition-transform" />
@@ -86,7 +103,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Marquee Visual Layer - Reduced Speed */}
+      {/* Marquee Visual Layer */}
       <div className="py-10 space-y-4 border-y bg-muted/30">
         <MarqueeAnimation direction="left" baseVelocity={-1.5} className="text-primary/10 text-4xl sm:text-7xl font-black">
           NECTA COMPLIANT • AUDIT READY • CLICKPESA SYNC • 2026 SEASON • 
@@ -100,10 +117,19 @@ export default function LandingPage() {
       <section className="py-20 sm:py-40 px-4 sm:px-10 bg-primary text-white overflow-hidden relative w-full">
         <div className="max-w-7xl mx-auto space-y-20 sm:space-y-32">
           <div className="grid lg:grid-cols-2 gap-10 sm:gap-20 items-end border-b border-white/10 pb-20">
-            <h2 className="text-4xl sm:text-7xl font-headline font-black tracking-tight leading-[0.9] uppercase text-balance">Built for <br/>Scale & Speed.</h2>
-            <p className="text-lg sm:text-2xl text-primary-foreground/70 font-medium max-w-lg leading-relaxed text-balance">
+            <ScrollFloat 
+              textClassName="text-white !text-[clamp(2.5rem,8vw,6rem)]"
+              scrollStart="top bottom"
+              scrollEnd="bottom center"
+            >
+              Built for Scale & Speed.
+            </ScrollFloat>
+            <ScrollReveal 
+              textClassName="text-primary-foreground/70 !text-[clamp(1.1rem,2vw,1.8rem)]"
+              baseOpacity={0.2}
+            >
               Every hub is re-engineered for the 2026 academic season, focusing on data sovereignty for Tanzanian institutions.
-            </p>
+            </ScrollReveal>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10 border border-white/10 rounded-[3rem] sm:rounded-[5rem] overflow-hidden shadow-2xl">
@@ -134,7 +160,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto space-y-16">
           <div className="text-center space-y-4 max-w-3xl mx-auto">
             <Badge variant="outline" className="rounded-full px-6 py-1 font-black text-[10px] tracking-[0.3em] text-primary uppercase border-primary/20">Module Showcase</Badge>
-            <h2 className="text-4xl sm:text-6xl font-headline font-black text-primary uppercase tracking-tighter">Experience the Node.</h2>
+            <ScrollFloat textClassName="text-primary">Experience the Node.</ScrollFloat>
             <p className="text-muted-foreground font-medium text-lg">A granular look into the high-fidelity features powering ShuleDirect Pro.</p>
           </div>
           <FeatureCarousel />
