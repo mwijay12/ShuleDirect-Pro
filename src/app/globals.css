@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -48,15 +47,15 @@
     @apply bg-background text-foreground font-body antialiased;
   }
   
-  /* RIGID TYPOGRAPHY - TRANSITIONED FROM DEMO TO INSTITUTIONAL */
+  /* RIGID TYPOGRAPHY - RE-CALIBRATED FOR PROFESSIONAL PURITY */
   h1 {
-    @apply font-headline font-bold tracking-tight text-[clamp(1.5rem,3.5vw,2.2rem)] leading-tight;
+    @apply font-headline font-bold tracking-tight text-[clamp(1.2rem,3vw,1.8rem)] leading-tight;
   }
   h2 {
-    @apply font-headline font-bold tracking-tight text-[clamp(1.25rem,2.5vw,1.8rem)] leading-tight;
+    @apply font-headline font-bold tracking-tight text-[clamp(1.1rem,2.2vw,1.5rem)] leading-tight;
   }
   h3 {
-    @apply font-headline font-bold tracking-tight text-[clamp(1.1rem,2vw,1.4rem)] leading-tight;
+    @apply font-headline font-bold tracking-tight text-[clamp(1rem,1.8vw,1.3rem)] leading-tight;
   }
 }
 
