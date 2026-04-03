@@ -3,35 +3,27 @@
 import * as React from "react"
 import { useState, useEffect } from "react"
 import { 
-  Settings, 
+  Settings as SettingsIcon, 
   School, 
-  Users, 
-  Shield, 
-  Smartphone,
   Save,
   Plus,
   Trash2,
   ShieldCheck,
-  Palette,
   Upload,
   Image as ImageIcon,
   Zap,
-  Star,
-  Instagram,
   Terminal,
-  Webhook,
   Activity,
-  Bot,
   Layout,
   UserPlus,
-  ShieldAlert
+  RefreshCw,
+  AlertCircle
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -54,6 +46,7 @@ export default function SettingsPage() {
   const [systemVersion, setSystemVersion] = useState("2.0.26")
   const [n8nUrl, setN8nUrl] = useState("")
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [isResetting, setIsResetting] = useState(false)
   
   // Personnel State
   const [staff, setStaff] = useState([
@@ -81,11 +74,17 @@ export default function SettingsPage() {
     localStorage.setItem("shule_system_name", systemName)
     localStorage.setItem("shule_version", systemVersion)
     localStorage.setItem("shule_n8n_url", n8nUrl)
-    toast({
-      title: "System Node Synced",
-      description: `Institutional configurations updated successfully.`,
-    })
-    setTimeout(() => window.location.reload(), 1000)
+    toast({ title: "System Node Synced", description: "Institutional configurations updated." })
+    setTimeout(() => window.location.reload(), 800)
+  }
+
+  const handleResetSystem = () => {
+    setIsResetting(true)
+    setTimeout(() => {
+      localStorage.clear()
+      toast({ title: "Fresh Start Initialized", description: "Demo nodes cleared. Logging out..." })
+      setTimeout(() => window.location.href = "/", 1500)
+    }, 2000)
   }
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,10 +95,7 @@ export default function SettingsPage() {
         const base64 = reader.result as string;
         setLogoPreview(base64);
         localStorage.setItem("shule_logo", base64);
-        toast({
-          title: "Logo Uploaded",
-          description: "Institutional branding refreshed.",
-        });
+        toast({ title: "Logo Uploaded", description: "Institutional branding refreshed." });
       };
       reader.readAsDataURL(file);
     }
@@ -120,15 +116,39 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto pb-24 font-body animate-in fade-in duration-700">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-1">
+    <div className="space-y-6 max-w-6xl mx-auto pb-24 px-1">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-headline font-black text-primary tracking-tight uppercase">System Control Node</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-primary">System Control Node</h1>
           <p className="text-muted-foreground font-medium text-[9px] uppercase tracking-widest">Global Administrative Hub 2026</p>
         </div>
-        <Button onClick={handleSave} className="font-black rounded-full colorful-gradient h-11 px-8 shadow-lg w-full sm:w-auto text-[9px] uppercase tracking-widest group">
-          <Save className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" /> Sync Institutional Node
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="rounded-full h-11 px-6 border-destructive/20 text-destructive hover:bg-destructive/5 font-black text-[9px] uppercase">
+                <RefreshCw className="mr-2 h-3.5 w-3.5" /> Fresh Start
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="rounded-[2rem] max-w-md border-none shadow-2xl">
+              <DialogHeader className="text-center">
+                <div className="h-14 w-14 rounded-full bg-destructive/10 text-destructive mx-auto flex items-center justify-center mb-4">
+                  <AlertCircle className="h-7 w-7" />
+                </div>
+                <DialogTitle className="text-xl font-black uppercase">Initialize Fresh Start?</DialogTitle>
+                <DialogDescription className="text-[10px] font-bold uppercase tracking-widest">This will clear all demo data and reset institutional nodes.</DialogDescription>
+              </DialogHeader>
+              <div className="py-6 space-y-4">
+                <p className="text-xs font-medium text-muted-foreground text-center">Are you sure you want to purge the current session? This action is irreversible for the current client node.</p>
+                <Button onClick={handleResetSystem} disabled={isResetting} variant="destructive" className="w-full h-12 rounded-2xl font-black text-[10px] uppercase">
+                  {isResetting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Confirm Purge Node"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button onClick={handleSave} className="flex-1 sm:flex-none font-black rounded-full colorful-gradient h-11 px-8 shadow-lg text-[9px] uppercase">
+            <Save className="mr-2 h-4 w-4" /> Sync Institutional Node
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="school" className="space-y-6">
@@ -147,25 +167,18 @@ export default function SettingsPage() {
                   <div className="h-10 w-10 rounded-xl bg-white shadow-md flex items-center justify-center text-primary">
                     <School className="h-5 w-5" />
                   </div>
-                  <div>
-                    <CardTitle className="text-base font-black">Institutional Identity</CardTitle>
-                    <CardDescription className="text-[9px] font-black uppercase tracking-widest text-primary/60">Official school credentials for the 2026 season</CardDescription>
-                  </div>
+                  <CardTitle className="text-base font-black uppercase">Institutional Identity</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="p-8">
                 <div className="grid gap-6 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest ml-1">Official School Name</Label>
-                    <Input 
-                      value={schoolName}
-                      onChange={(e) => setSchoolName(e.target.value)}
-                      className="rounded-xl h-12 bg-muted/20 border-none font-black text-sm px-5 shadow-inner" 
-                    />
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Official School Name</Label>
+                    <Input value={schoolName} onChange={(e) => setSchoolName(e.target.value)} className="rounded-xl h-12 bg-muted/20 border-none font-black shadow-inner" />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest ml-1">NECTA Center Number</Label>
-                    <Input defaultValue="S.1234" className="rounded-xl h-12 bg-muted/20 border-none font-mono font-black text-primary px-5 shadow-inner" />
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">NECTA Center ID</Label>
+                    <Input defaultValue="S.1234" className="rounded-xl h-12 bg-muted/20 border-none font-mono font-black text-primary shadow-inner" />
                   </div>
                 </div>
               </CardContent>
@@ -179,30 +192,18 @@ export default function SettingsPage() {
                   <div className="h-10 w-10 rounded-xl bg-white shadow-md flex items-center justify-center text-accent">
                     <Layout className="h-5 w-5" />
                   </div>
-                  <div>
-                    <CardTitle className="text-base font-black">White-label Controls</CardTitle>
-                    <CardDescription className="text-[9px] font-black uppercase tracking-widest text-accent/60">Customize system-wide product branding</CardDescription>
-                  </div>
+                  <CardTitle className="text-base font-black uppercase">System Controls</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="p-8">
                 <div className="grid gap-6 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest ml-1">Product/System Name</Label>
-                    <Input 
-                      value={systemName}
-                      onChange={(e) => setSystemName(e.target.value)}
-                      placeholder="e.g. ShuleDirect"
-                      className="rounded-xl h-12 bg-muted/20 border-none font-black text-sm px-5 shadow-inner" 
-                    />
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Product Name</Label>
+                    <Input value={systemName} onChange={(e) => setSystemName(e.target.value)} className="rounded-xl h-12 bg-muted/20 border-none font-black shadow-inner" />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest ml-1">System Version Node</Label>
-                    <Input 
-                      value={systemVersion}
-                      onChange={(e) => setSystemVersion(e.target.value)}
-                      className="rounded-xl h-12 bg-muted/20 border-none font-mono font-black text-primary px-5 shadow-inner" 
-                    />
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">System Version Node</Label>
+                    <Input value={systemVersion} onChange={(e) => setSystemVersion(e.target.value)} className="rounded-xl h-12 bg-muted/20 border-none font-mono font-black text-primary shadow-inner" />
                   </div>
                 </div>
               </CardContent>
@@ -211,201 +212,126 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="staff" className="space-y-6">
-          <AnimatedContent distance={20}>
-            <Card className="border-none shadow-xl overflow-hidden rounded-[2.5rem] bg-white/60 backdrop-blur-md">
-              <CardHeader className="bg-muted/20 border-b p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                <div>
-                  <CardTitle className="text-xl font-black">Staff Personnel Registry</CardTitle>
-                  <CardDescription className="text-[9px] font-black uppercase tracking-widest">Manage institutional access keys for 2026</CardDescription>
-                </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button className="rounded-full h-12 px-8 colorful-gradient font-black text-[10px] uppercase tracking-widest shadow-xl group">
-                      <UserPlus className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" /> Enroll Personnel
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl max-w-md">
-                    <DialogHeader className="bg-primary/5 p-8 border-b">
-                      <DialogTitle className="text-xl font-black text-primary uppercase">New Staff Node</DialogTitle>
-                      <DialogDescription className="text-[10px] font-bold uppercase tracking-widest">Register institutional staff member</DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleAddStaff} className="p-8 space-y-6">
-                      <div className="space-y-2">
-                        <Label className="text-[9px] font-black uppercase text-muted-foreground">Full Legal Name</Label>
-                        <Input name="name" placeholder="e.g. Bakari Said" required className="h-12 rounded-xl bg-muted/20 border-none font-bold shadow-inner" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-[9px] font-black uppercase text-muted-foreground">Institutional Email</Label>
-                        <Input name="email" type="email" placeholder="staff@shule.pro" required className="h-12 rounded-xl bg-muted/20 border-none font-bold shadow-inner" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-[9px] font-black uppercase text-muted-foreground">Assigned Node/Role</Label>
-                        <Select name="role" defaultValue="TEACHER">
-                          <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-bold shadow-inner">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="rounded-xl">
-                            <SelectItem value="ADMIN">Administrator</SelectItem>
-                            <SelectItem value="BURSAR">Bursar/Accounts</SelectItem>
-                            <SelectItem value="TEACHER">Teaching Staff</SelectItem>
-                            <SelectItem value="WARDEN">Hostel Warden</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <DialogFooter className="pt-4">
-                        <Button type="submit" className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-2xl">
-                          Authorize Staff Access
+          <Card className="border-none shadow-xl overflow-hidden rounded-[2.5rem] bg-white/60 backdrop-blur-md">
+            <CardHeader className="bg-muted/20 border-b p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+              <div>
+                <CardTitle className="text-lg font-black uppercase">Staff Registry</CardTitle>
+                <CardDescription className="text-[9px] font-black uppercase tracking-widest">Manage institutional access keys for 2026</CardDescription>
+              </div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="rounded-full h-12 px-8 colorful-gradient font-black text-[10px] uppercase shadow-xl">
+                    <UserPlus className="mr-2 h-4 w-4" /> Enroll Personnel
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="rounded-[2.5rem] max-w-md">
+                  <DialogHeader className="text-center">
+                    <DialogTitle className="text-xl font-black text-primary uppercase">New Staff Node</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleAddStaff} className="p-8 space-y-6">
+                    <div className="space-y-2">
+                      <Label className="text-[9px] font-black uppercase text-muted-foreground">Legal Name</Label>
+                      <Input name="name" required className="h-12 rounded-xl bg-muted/20 border-none font-bold" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[9px] font-black uppercase text-muted-foreground">Institutional Email</Label>
+                      <Input name="email" type="email" required className="h-12 rounded-xl bg-muted/20 border-none font-bold" />
+                    </div>
+                    <Button type="submit" className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-2xl">Authorize Access</Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader className="bg-muted/10">
+                  <TableRow className="border-none h-14">
+                    <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Full Name</TableHead>
+                    <TableHead className="text-[9px] font-black uppercase tracking-widest">Role Hub</TableHead>
+                    <TableHead className="text-right pr-8 text-[9px] font-black uppercase tracking-widest">Control</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {staff.map((s) => (
+                    <TableRow key={s.id} className="border-b last:border-none">
+                      <TableCell className="pl-8 py-6">
+                        <div className="flex flex-col">
+                          <span className="font-black text-sm text-foreground/80">{s.name}</span>
+                          <span className="text-[9px] font-mono font-black text-muted-foreground uppercase">{s.id}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="rounded-full font-black text-[8px] uppercase tracking-widest border-primary/10 bg-primary/5 text-primary">
+                          {s.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right pr-8">
+                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-muted-foreground hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
                         </Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </CardHeader>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader className="bg-muted/10">
-                    <TableRow className="border-none h-14">
-                      <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Full Name</TableHead>
-                      <TableHead className="text-[9px] font-black uppercase tracking-widest">Role Hub</TableHead>
-                      <TableHead className="text-[9px] font-black uppercase tracking-widest">Credential</TableHead>
-                      <TableHead className="text-right pr-8 text-[9px] font-black uppercase tracking-widest">Control</TableHead>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {staff.map((s) => (
-                      <TableRow key={s.id} className="group hover:bg-primary/[0.02] border-b last:border-none transition-colors">
-                        <TableCell className="pl-8 py-6">
-                          <div className="flex flex-col">
-                            <span className="font-black text-sm text-foreground/80">{s.name}</span>
-                            <span className="text-[9px] text-muted-foreground font-mono font-black uppercase">{s.id}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="rounded-full font-black text-[8px] uppercase tracking-widest border-primary/10 bg-primary/5 text-primary px-3 py-0.5">
-                            {s.role}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs font-medium text-muted-foreground">{s.email}</TableCell>
-                        <TableCell className="text-right pr-8">
-                          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/5">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </AnimatedContent>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="automation" className="space-y-6">
-          <AnimatedContent distance={20}>
-            <Card className="border-none shadow-sm overflow-hidden rounded-[2rem] bg-slate-950 text-white">
-              <CardHeader className="border-b border-white/10 p-6 bg-white/5">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center text-white shadow-lg shadow-accent/20">
-                      <Terminal className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base font-black">n8n Workflow Hub</CardTitle>
-                      <CardDescription className="text-[9px] font-black uppercase tracking-widest text-white/40">Real Webhook Integration — Mwijay Edition</CardDescription>
-                    </div>
-                  </div>
-                  <Badge className="bg-green-500 text-white border-none font-black text-[9px] px-3 h-6 rounded-full animate-pulse-soft">FIREBASE SYNC</Badge>
+          <Card className="border-none shadow-sm overflow-hidden rounded-[2rem] bg-slate-950 text-white">
+            <CardHeader className="border-b border-white/10 p-6 bg-white/5">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center text-white">
+                  <Terminal className="h-5 w-5" />
                 </div>
-              </CardHeader>
-              <CardContent className="p-8 space-y-8">
-                <div className="space-y-4 max-w-2xl">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-white/60">Webhook Base URL</Label>
-                  <div className="flex gap-2">
-                    <Input 
-                      value={n8nUrl}
-                      onChange={(e) => setN8nUrl(e.target.value)}
-                      placeholder="https://n8n.yourdomain.com/webhook" 
-                      className="h-12 bg-white/10 border-white/20 rounded-xl font-mono text-xs text-accent"
-                    />
-                    <Button onClick={handleSave} className="h-12 bg-accent hover:bg-accent/80 text-white font-black text-[9px] uppercase px-6 rounded-xl">Set Node</Button>
-                  </div>
-                  <p className="text-[9px] text-white/40 font-medium italic">Your institutional n8n production webhook URL. Firebase functions will trigger these nodes automatically.</p>
+                <CardTitle className="text-base font-black uppercase">n8n Workflow Hub</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="p-8 space-y-8">
+              <div className="space-y-4 max-w-2xl">
+                <Label className="text-[9px] font-black uppercase tracking-widest text-white/60">Webhook Base URL</Label>
+                <div className="flex gap-2">
+                  <Input value={n8nUrl} onChange={(e) => setN8nUrl(e.target.value)} className="h-12 bg-white/10 border-white/20 rounded-xl font-mono text-xs text-accent" />
+                  <Button onClick={handleSave} className="h-12 bg-accent hover:bg-accent/80 text-white font-black text-[9px] uppercase px-6 rounded-xl">Set Node</Button>
                 </div>
-
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {[
-                    { label: "Student Entry", icon: Webhook, status: "Ready", hook: "student-registered" },
-                    { label: "Results Audit", icon: Zap, status: "Ready", hook: "grades-uploaded" },
-                    { label: "Staff Login", icon: Activity, status: "Ready", hook: "staff-login" },
-                  ].map((node, i) => (
-                    <div key={i} className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
-                          <node.icon className="h-4 w-4" />
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest">{node.label}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <code className="text-[9px] font-mono text-white/40 truncate mr-2">/{node.hook}</code>
-                        <Badge variant="outline" className="text-[8px] font-black border-white/20 text-green-400 h-4">{node.status}</Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </AnimatedContent>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="branding" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-3">
             <Card className="md:col-span-2 border-none shadow-sm overflow-hidden rounded-[2rem] bg-white/60 backdrop-blur-md">
               <CardHeader className="bg-accent/5 border-b border-accent/10 p-6">
-                <CardTitle className="text-base font-black">Visual System Architecture</CardTitle>
+                <CardTitle className="text-base font-black uppercase">Visual Architecture</CardTitle>
               </CardHeader>
-              <CardContent className="p-8 space-y-8">
+              <CardContent className="p-8">
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div className="space-y-3">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Brand Primary Hub</Label>
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Primary Hub</Label>
                     <div className="flex gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-primary shadow-lg ring-2 ring-white" />
+                      <div className="h-10 w-10 rounded-xl bg-primary shadow-lg" />
                       <Input defaultValue="#1F5BA6" className="rounded-xl h-10 font-mono font-black text-xs text-center border-none bg-muted/20 shadow-inner" />
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Brand Accent Node</Label>
-                    <div className="flex gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-accent shadow-lg ring-2 ring-white" />
-                      <Input defaultValue="#945CE6" className="rounded-xl h-10 font-mono font-black text-xs text-center border-none bg-muted/20 shadow-inner" />
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-none shadow-sm overflow-hidden flex flex-col rounded-[2rem] bg-white/60 backdrop-blur-md">
+            <Card className="border-none shadow-sm overflow-hidden rounded-[2rem] bg-white/60 backdrop-blur-md">
               <CardHeader className="bg-muted/30 border-b p-6">
                 <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Institutional Seal</CardTitle>
               </CardHeader>
-              <CardContent className="p-8 flex-1 flex flex-col items-center justify-center space-y-6">
+              <CardContent className="p-8 flex flex-col items-center justify-center space-y-6">
                 <div className="h-32 w-32 rounded-[2rem] colorful-gradient flex items-center justify-center text-white shadow-xl group relative overflow-hidden transition-all hover:scale-105 border-4 border-white">
-                  {logoPreview ? (
-                    <img src={logoPreview} alt="Preview" className="h-full w-full object-cover" />
-                  ) : (
-                    <ShieldCheck className="h-12 w-12" />
-                  )}
+                  {logoPreview ? <img src={logoPreview} alt="Preview" className="h-full w-full object-cover" /> : <ShieldCheck className="h-12 w-12" />}
                   <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white">
                     <Upload className="h-6 w-6 mb-1" />
-                    <span className="text-[8px] font-black uppercase tracking-widest">Replace</span>
+                    <span className="text-[8px] font-black uppercase">Replace</span>
                     <input type="file" className="hidden" onChange={handleLogoUpload} accept="image/*" />
                   </label>
                 </div>
-                <Button variant="outline" className="w-full rounded-full h-10 border-dashed border-primary/20 text-[9px] font-black uppercase tracking-widest text-primary h-10" asChild>
-                  <label className="cursor-pointer">
-                    <ImageIcon className="h-4 w-4 mr-2" /> Upload Seal Node
-                    <input type="file" className="hidden" onChange={handleLogoUpload} accept="image/*" />
-                  </label>
-                </Button>
               </CardContent>
             </Card>
           </div>

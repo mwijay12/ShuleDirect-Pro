@@ -47,15 +47,15 @@
     @apply bg-background text-foreground font-body antialiased;
   }
   
-  /* RIGID TYPOGRAPHY - RE-CALIBRATED FOR PROFESSIONAL PURITY */
+  /* ULTRA-RIGID TYPOGRAPHY - NO OVERSIZED HEADERS */
   h1 {
-    @apply font-headline font-bold tracking-tight text-[clamp(1.1rem,2.5vw,1.6rem)] leading-tight;
+    @apply font-headline font-black tracking-tight text-[clamp(1.2rem,2.5vw,1.8rem)] leading-none uppercase;
   }
   h2 {
-    @apply font-headline font-bold tracking-tight text-[clamp(1rem,2vw,1.4rem)] leading-tight;
+    @apply font-headline font-black tracking-tight text-[clamp(1rem,2vw,1.4rem)] leading-tight uppercase;
   }
   h3 {
-    @apply font-headline font-bold tracking-tight text-[clamp(0.9rem,1.8vw,1.25rem)] leading-tight;
+    @apply font-headline font-black tracking-tight text-[clamp(0.85rem,1.8vw,1.1rem)] leading-tight uppercase;
   }
 }
 
@@ -67,7 +67,7 @@
 
 @keyframes float {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-8px); }
   100% { transform: translateY(0px); }
 }
 
