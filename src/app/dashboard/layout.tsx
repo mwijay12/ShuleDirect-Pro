@@ -34,6 +34,7 @@ export default function DashboardLayout({
   const router = useRouter()
   const [greeting, setGreeting] = useState("Welcome")
   const [schoolName, setSchoolName] = useState("ShuleDirect Pro")
+  const [systemName, setSystemName] = useState("ShuleDirect")
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -51,7 +52,10 @@ export default function DashboardLayout({
 
   useEffect(() => {
     const savedName = localStorage.getItem("shule_name")
+    const savedSystemName = localStorage.getItem("shule_system_name")
+    
     if (savedName) setSchoolName(savedName)
+    if (savedSystemName) setSystemName(savedSystemName)
 
     const hours = new Date().getHours()
     let msg = "Good Morning"
@@ -105,7 +109,7 @@ export default function DashboardLayout({
                   {schoolName} Hub
                 </p>
                 <Badge variant="outline" className="hidden sm:flex border-green-200 bg-green-50 text-green-700 h-4 text-[7px] font-black px-2 rounded-full whitespace-nowrap">
-                  SECURE 2026
+                  {systemName.toUpperCase()} 2026
                 </Badge>
               </div>
             </div>

@@ -21,7 +21,8 @@ import {
   Terminal,
   Webhook,
   Activity,
-  Bot
+  Bot,
+  Layout
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -38,25 +39,35 @@ import AnimatedContent from "@/components/ui/animated-content"
 export default function SettingsPage() {
   const { toast } = useToast()
   const [schoolName, setSchoolName] = useState("Mlimani Secondary School")
+  const [systemName, setSystemName] = useState("ShuleDirect")
+  const [systemVersion, setSystemVersion] = useState("2.0.26")
   const [n8nUrl, setN8nUrl] = useState("")
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   
   useEffect(() => {
     const savedName = localStorage.getItem("shule_name")
+    const savedSystemName = localStorage.getItem("shule_system_name")
+    const savedVersion = localStorage.getItem("shule_version")
     const savedN8n = localStorage.getItem("shule_n8n_url")
     const savedLogo = localStorage.getItem("shule_logo")
+    
     if (savedName) setSchoolName(savedName)
+    if (savedSystemName) setSystemName(savedSystemName)
+    if (savedVersion) setSystemVersion(savedVersion)
     if (savedN8n) setN8nUrl(savedN8n)
     if (savedLogo) setLogoPreview(savedLogo)
   }, [])
 
   const handleSave = () => {
     localStorage.setItem("shule_name", schoolName)
+    localStorage.setItem("shule_system_name", systemName)
+    localStorage.setItem("shule_version", systemVersion)
     localStorage.setItem("shule_n8n_url", n8nUrl)
     toast({
       title: "System Node Synced",
-      description: `Institutional configurations for 2026 season updated.`,
+      description: `Institutional configurations updated successfully.`,
     })
+    // Reload to propagate changes globally (system name etc)
     setTimeout(() => window.location.reload(), 1000)
   }
 
@@ -124,6 +135,43 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <Label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest ml-1">NECTA Center Number</Label>
                     <Input defaultValue="S.1234" className="rounded-xl h-12 bg-muted/20 border-none font-mono font-black text-primary px-5" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </AnimatedContent>
+
+          <AnimatedContent distance={20} delay={0.1}>
+            <Card className="border-none shadow-sm overflow-hidden rounded-[2rem] bg-white/60 backdrop-blur-md">
+              <CardHeader className="bg-accent/5 border-b border-accent/10 p-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-xl bg-white shadow-md flex items-center justify-center text-accent">
+                    <Layout className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base font-black">White-label Controls</CardTitle>
+                    <CardDescription className="text-[9px] font-black uppercase tracking-widest text-accent/60">Customize system-wide product branding</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-8">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest ml-1">Product/System Name</Label>
+                    <Input 
+                      value={systemName}
+                      onChange={(e) => setSystemName(e.target.value)}
+                      placeholder="e.g. ShuleDirect"
+                      className="rounded-xl h-12 bg-muted/20 border-none font-black text-sm px-5" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest ml-1">System Version Node</Label>
+                    <Input 
+                      value={systemVersion}
+                      onChange={(e) => setSystemVersion(e.target.value)}
+                      className="rounded-xl h-12 bg-muted/20 border-none font-mono font-black text-primary px-5" 
+                    />
                   </div>
                 </div>
               </CardContent>

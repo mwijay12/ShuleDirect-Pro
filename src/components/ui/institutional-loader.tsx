@@ -8,13 +8,17 @@ export function InstitutionalLoader({ onComplete }: { onComplete?: () => void })
   const [progress, setProgress] = useState(0)
   const [isExiting, setIsExiting] = useState(false)
   const [schoolName, setSchoolName] = useState("ShuleDirect Pro")
+  const [systemName, setSystemName] = useState("ShuleDirect")
   const [logo, setLogo] = useState<string | null>(null)
 
   useEffect(() => {
     // Load branding on client mount
     const savedName = localStorage.getItem("shule_name")
+    const savedSystemName = localStorage.getItem("shule_system_name")
     const savedLogo = localStorage.getItem("shule_logo")
+    
     if (savedName) setSchoolName(savedName)
+    if (savedSystemName) setSystemName(savedSystemName)
     if (savedLogo) setLogo(savedLogo)
 
     const interval = setInterval(() => {
@@ -131,7 +135,7 @@ export function InstitutionalLoader({ onComplete }: { onComplete?: () => void })
               <Loader2 className="h-3 w-3 animate-spin text-primary" />
               Pure Performance System
             </div>
-            <p className="text-[7px] font-bold text-muted-foreground/40 uppercase tracking-widest">Architecture by Mwijay Node</p>
+            <p className="text-[7px] font-bold text-muted-foreground/40 uppercase tracking-widest">Architecture by {systemName} Node</p>
           </motion.div>
         </motion.div>
       )}

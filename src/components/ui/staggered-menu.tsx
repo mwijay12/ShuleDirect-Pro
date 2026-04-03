@@ -61,6 +61,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   const iconRef = useRef<HTMLSpanElement>(null);
   const textInnerRef = useRef<HTMLSpanElement>(null);
   const [textLines, setTextLines] = useState(['Menu', 'Close']);
+  const [systemName, setSystemName] = useState("ShuleDirect");
 
   const openTlRef = useRef<gsap.core.Timeline | null>(null);
   const closeTweenRef = useRef<gsap.core.Tween | null>(null);
@@ -69,6 +70,11 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   const colorTweenRef = useRef<gsap.core.Tween | null>(null);
   const toggleBtnRef = useRef<HTMLButtonElement>(null);
   const busyRef = useRef(false);
+
+  useEffect(() => {
+    const savedSystemName = localStorage.getItem("shule_system_name");
+    if (savedSystemName) setSystemName(savedSystemName);
+  }, []);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -87,7 +93,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       preLayerElsRef.current = preLayers;
 
       const offscreen = position === 'left' ? -100 : 100;
-      gsap.set([panel, ...preLayers], { xPercent: offscreen });
+      gsap.set([panel, ...preLayers], { xPercent: offscreen, visibility: 'hidden' });
       gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 });
       gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 90 });
       gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
@@ -116,6 +122,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     const layerStates = layers.map(el => ({ el, start: Number(gsap.getProperty(el, 'xPercent')) }));
     const panelStart = Number(gsap.getProperty(panel, 'xPercent'));
 
+    // Reset visibility and initial positions
+    gsap.set([panel, ...layers], { visibility: 'visible' });
     if (itemEls.length) {
       gsap.set(itemEls, { yPercent: 140, rotate: 10 });
     }
@@ -225,6 +233,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       duration: 0.32,
       ease: 'power3.in',
       onComplete: () => {
+        gsap.set(all, { visibility: 'hidden' });
         busyRef.current = false;
       }
     });
@@ -349,7 +358,9 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
             <div className="h-8 w-8 rounded-xl colorful-gradient flex items-center justify-center text-white shadow-lg">
               <ShieldCheck className="h-5 w-5" />
             </div>
-            <span className="font-headline font-black text-lg text-primary tracking-tighter hidden sm:block">ShuleDirect <span className="text-accent">Pro</span></span>
+            <span className="font-headline font-black text-lg text-primary tracking-tighter hidden sm:block">
+              {systemName} <span className="text-accent">Pro</span>
+            </span>
           </div>
         </div>
         <button
