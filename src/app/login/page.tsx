@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -29,9 +28,9 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
-    // Institutional Verification Logic
+    // Institutional Verification Node
     setTimeout(() => {
-      // In professional mode, credentials are not displayed on the front-end
+      // Internal Hard-locked Admin Credentials
       if (email === "admin@shule.pro" && password === "admin123") {
         localStorage.setItem("shule_role", "ADMIN")
         localStorage.setItem("shule_user", email)
@@ -40,8 +39,12 @@ export default function LoginPage() {
         localStorage.setItem("shule_role", "BURSAR")
         localStorage.setItem("shule_user", email)
         router.push("/dashboard")
+      } else if (email === "teacher@shule.pro" && password === "teacher123") {
+        localStorage.setItem("shule_role", "TEACHER")
+        localStorage.setItem("shule_user", email)
+        router.push("/dashboard")
       } else {
-        setError("Invalid institutional credentials. Please contact your System Administrator.")
+        setError("Invalid institutional credentials. Please contact your system node manager.")
         setLoading(false)
       }
     }, 1200)
@@ -59,7 +62,7 @@ export default function LoginPage() {
 
       <div className="w-full max-w-lg space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
         <div className="text-center space-y-4">
-          <div className="h-20 w-20 rounded-[2rem] colorful-gradient flex items-center justify-center text-white mx-auto shadow-2xl mb-6 animate-float">
+          <div className="h-20 w-20 rounded-[2rem] colorful-gradient flex items-center justify-center text-white mx-auto shadow-2xl mb-6 animate-float border-4 border-white/20">
             <ShieldCheck className="h-10 w-10" />
           </div>
           <div className="space-y-2 px-4">
@@ -74,20 +77,20 @@ export default function LoginPage() {
               <Building2 className="h-64 w-64 -right-10 -top-10 absolute rotate-12" />
             </div>
             <CardTitle className="text-xl sm:text-2xl flex items-center justify-center gap-3 text-primary font-black uppercase tracking-tight">
-              <Lock className="h-5 w-5" /> Secure Access
+              <Lock className="h-5 w-5" /> Secure Access Hub
             </CardTitle>
-            <CardDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-2">Enter credentials to initialize session</CardDescription>
+            <CardDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-2">Authorized Staff Credentials Required</CardDescription>
           </CardHeader>
           <CardContent className="p-8 sm:p-12 space-y-8">
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-3">
-                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Email Address</Label>
+                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Institutional Email</Label>
                 <div className="relative group">
                   <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input 
                     id="email"
                     type="email" 
-                    placeholder="e.g. admin@school.com" 
+                    placeholder="e.g. admin@school.pro" 
                     className="pl-14 h-14 rounded-2xl border-none bg-muted/30 focus-visible:ring-4 focus-visible:ring-primary/10 focus-visible:bg-white text-sm font-bold shadow-inner"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -121,13 +124,13 @@ export default function LoginPage() {
 
               <Button 
                 disabled={loading} 
-                className="w-full h-14 rounded-2xl font-black colorful-gradient shadow-2xl text-base group mt-6 hover:scale-[1.02] transition-transform uppercase tracking-[0.2em]"
+                className="w-full h-14 rounded-2xl font-black colorful-gradient shadow-2xl text-sm group mt-6 hover:scale-[1.02] transition-transform uppercase tracking-[0.2em]"
               >
                 {loading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <>
-                    Enter Hub <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-2 transition-transform" />
+                    Initialize Session <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-2 transition-transform" />
                   </>
                 )}
               </Button>
@@ -137,7 +140,7 @@ export default function LoginPage() {
               <div className="flex items-center gap-3 px-6 py-2 rounded-full bg-accent/10 text-accent text-[9px] font-black uppercase tracking-[0.3em]">
                 <Sparkles className="h-4 w-4" /> 2026 AUDIT COMPLIANT
               </div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">System Architect: Davie Mwijage</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Architect: Davie Mwijage</p>
             </div>
           </CardContent>
         </Card>
