@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -20,7 +19,7 @@ import {
   X,
   HelpCircle,
   PackageSearch,
-  Database
+  UtensilsCrossed
 } from "lucide-react"
 
 import {
@@ -42,6 +41,7 @@ const allNavItems = [
   { title: "Attendance", url: "/dashboard/attendance", icon: ClipboardCheck, roles: ["ADMIN", "TEACHER"] },
   { title: "Academics", url: "/dashboard/academics", icon: GraduationCap, roles: ["ADMIN", "TEACHER"] },
   { title: "Finance", url: "/dashboard/finance", icon: Banknote, roles: ["ADMIN", "BURSAR"] },
+  { title: "Canteen", url: "/dashboard/canteen", icon: UtensilsCrossed, roles: ["ADMIN", "BURSAR"] },
   { title: "Inventory", url: "/dashboard/assets", icon: PackageSearch, roles: ["ADMIN", "BURSAR"] },
   { title: "Transport", url: "/dashboard/transport", icon: Bus, roles: ["ADMIN", "BURSAR"] },
   { title: "Hostel", url: "/dashboard/hostel", icon: Bed, roles: ["ADMIN", "BURSAR"] },
@@ -81,7 +81,7 @@ export function AppSidebar() {
           </div>
           {!isCollapsed && (
             <div className="flex flex-col gap-0.5 leading-none overflow-hidden animate-in fade-in slide-in-from-left-4 duration-500">
-              <span className="font-headline font-black text-lg sm:text-xl text-primary tracking-tighter whitespace-nowrap">{systemName}</span>
+              <span className="font-headline font-black text-lg sm:text-xl text-primary tracking-tighter whitespace-nowrap uppercase">{systemName}</span>
               <span className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-black">Pro Hub 2026</span>
             </div>
           )}
