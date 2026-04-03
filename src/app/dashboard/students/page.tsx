@@ -19,7 +19,10 @@ import {
   TrendingUp,
   MessageCircle,
   Mail,
-  Phone
+  Phone,
+  Stethoscope,
+  Activity,
+  Heart
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -89,10 +92,7 @@ export default function StudentsPage() {
 
   const handleDeleteStudent = (id: string) => {
     setStudents(prev => prev.filter(s => s.id !== id))
-    toast({
-      title: "Record Terminated",
-      description: "Student node removed from 2026 registry.",
-    })
+    toast({ title: "Record Terminated", description: "Student node removed from 2026 registry." })
   }
 
   const handleRegistryExport = () => {
@@ -198,7 +198,7 @@ export default function StudentsPage() {
                         <SheetTrigger asChild>
                           <Button variant="ghost" size="sm" className="text-xs font-black text-primary hover:bg-primary/5 rounded-full px-6 h-10 border border-transparent hover:border-primary/10 transition-all">Hub Access</Button>
                         </SheetTrigger>
-                        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto border-l-0 shadow-2xl p-0">
+                        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto border-l-0 shadow-2xl p-0 font-body">
                           <div className="bg-primary/5 p-8 sm:p-10 border-b relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-10 opacity-5">
                               <ShieldCheck className="h-48 sm:h-64 w-48 sm:w-64 rotate-12" />
@@ -221,35 +221,12 @@ export default function StudentsPage() {
                           </div>
 
                           <div className="p-8 sm:p-10 space-y-10">
-                            <div className="space-y-4">
-                               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2 px-2">
-                                 <Zap className="h-4 w-4 text-accent fill-accent shrink-0" /> Communications Node
-                               </h3>
-                               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                  <Button onClick={() => handleCommunicate('whatsapp')} className="flex flex-col gap-2 h-20 rounded-2xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 border-none transition-all">
-                                    <MessageCircle className="h-5 w-5" />
-                                    <span className="text-[8px] font-black uppercase">WhatsApp</span>
-                                  </Button>
-                                  <Button onClick={() => handleCommunicate('sms')} className="flex flex-col gap-2 h-20 rounded-2xl bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border-none transition-all">
-                                    <Smartphone className="h-5 w-5" />
-                                    <span className="text-[8px] font-black uppercase">SMS Beem</span>
-                                  </Button>
-                                  <Button onClick={() => handleCommunicate('email')} className="flex flex-col gap-2 h-20 rounded-2xl bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 border-none transition-all">
-                                    <Mail className="h-5 w-5" />
-                                    <span className="text-[8px] font-black uppercase">Email</span>
-                                  </Button>
-                                  <Button onClick={() => handleCommunicate('call')} className="flex flex-col gap-2 h-20 rounded-2xl bg-primary/10 text-primary hover:bg-primary/20 border-none transition-all">
-                                    <Phone className="h-5 w-5" />
-                                    <span className="text-[8px] font-black uppercase">Voice</span>
-                                  </Button>
-                               </div>
-                            </div>
-
                             <Tabs defaultValue="overview" className="space-y-10">
-                              <TabsList className="grid w-full grid-cols-3 bg-muted/40 p-1 rounded-2xl h-14 shadow-inner">
-                                <TabsTrigger value="overview" className="rounded-xl text-[10px] font-black uppercase tracking-widest">AI Agent</TabsTrigger>
-                                <TabsTrigger value="performance" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Academic</TabsTrigger>
-                                <TabsTrigger value="conduct" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Conduct</TabsTrigger>
+                              <TabsList className="grid w-full grid-cols-4 bg-muted/40 p-1 rounded-2xl h-14 shadow-inner">
+                                <TabsTrigger value="overview" className="rounded-xl text-[9px] font-black uppercase tracking-widest">AI Node</TabsTrigger>
+                                <TabsTrigger value="academic" className="rounded-xl text-[9px] font-black uppercase tracking-widest">Matrix</TabsTrigger>
+                                <TabsTrigger value="medical" className="rounded-xl text-[9px] font-black uppercase tracking-widest text-destructive">Health</TabsTrigger>
+                                <TabsTrigger value="comms" className="rounded-xl text-[9px] font-black uppercase tracking-widest text-accent">Gateway</TabsTrigger>
                               </TabsList>
 
                               <TabsContent value="overview" className="space-y-10">
@@ -270,39 +247,67 @@ export default function StudentsPage() {
                                     </Button>
                                   </div>
                                   <div className="bg-white/90 rounded-[2rem] p-8 text-xs sm:text-sm leading-relaxed text-foreground/80 border-2 border-dashed border-accent/20 font-medium italic shadow-inner min-h-[120px]">
-                                    {aiSummary || "Initiate academic analysis to generate a 2026 performance narrative for this student node."}
+                                    {aiSummary || "Initiate academic analysis to generate a 2026 performance narrative."}
                                   </div>
                                 </Card>
                               </TabsContent>
 
-                              <TabsContent value="performance" className="space-y-8">
+                              <TabsContent value="medical" className="space-y-8">
                                  <div className="flex items-center justify-between px-2">
-                                   <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Current 2026 Matrix</h3>
-                                   <Badge className="bg-primary text-white font-black px-5 py-2 rounded-full text-[10px] tracking-widest shadow-lg">RANK: TOP 10%</Badge>
+                                   <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2">
+                                     <Stethoscope className="h-4 w-4 text-destructive" /> Sickbay Logs
+                                   </h3>
+                                   <Badge className="bg-destructive/10 text-destructive border-none font-black px-4 py-1 rounded-full text-[9px]">2026 HEALTH NODE</Badge>
                                  </div>
                                  <div className="space-y-3">
                                    {[
-                                     { subject: "Mathematics", grade: "A", score: 82 },
-                                     { subject: "Physics", grade: "B", score: 68 },
-                                   ].map((sub) => (
-                                     <div key={sub.subject} className="flex items-center justify-between p-5 bg-white rounded-3xl shadow-sm border border-muted/50 group hover:border-primary/20 transition-all">
+                                     { date: "May 10, 2026", complaint: "Mild Fever", status: "Recovering", warden: "Mwl. Juma" },
+                                     { date: "April 12, 2026", complaint: "General Fatigue", status: "Discharged", warden: "Mwl. Neema" },
+                                   ].map((log, i) => (
+                                     <div key={i} className="flex items-center justify-between p-5 bg-white rounded-3xl shadow-sm border border-muted/50 group hover:border-destructive/20 transition-all">
                                        <div className="flex items-center gap-5">
-                                          <div className="h-12 w-12 rounded-2xl bg-primary text-white flex items-center justify-center font-black text-xl shadow-xl transition-transform group-hover:rotate-6">
-                                            {sub.grade}
+                                          <div className="h-12 w-12 rounded-2xl bg-destructive/5 text-destructive flex items-center justify-center shadow-inner">
+                                            <Heart className="h-5 w-5" />
                                           </div>
                                           <div>
-                                            <p className="text-sm font-black tracking-tight text-foreground/80">{sub.subject}</p>
-                                            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">{sub.score}% Grade Weight</p>
+                                            <p className="text-sm font-black tracking-tight text-foreground/80">{log.complaint}</p>
+                                            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">{log.date} • {log.warden}</p>
                                           </div>
                                        </div>
-                                       <TrendingUp className="h-5 w-5 text-green-600" />
+                                       <Badge variant="outline" className="text-[8px] font-black border-destructive/20 text-destructive">{log.status}</Badge>
                                      </div>
                                    ))}
                                  </div>
+                                 <Button className="w-full rounded-2xl h-12 bg-destructive/5 border border-destructive/20 text-destructive hover:bg-destructive/10 font-black text-[10px] uppercase tracking-widest">
+                                   Log New Clinic Visit
+                                 </Button>
+                              </TabsContent>
+
+                              <TabsContent value="comms" className="space-y-6">
+                                <div className="grid grid-cols-2 gap-3">
+                                  <Button onClick={() => handleCommunicate('whatsapp')} className="flex flex-col gap-2 h-24 rounded-3xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 border-none transition-all">
+                                    <MessageCircle className="h-6 w-6" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest">WhatsApp</span>
+                                  </Button>
+                                  <Button onClick={() => handleCommunicate('sms')} className="flex flex-col gap-2 h-24 rounded-3xl bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border-none transition-all">
+                                    <Smartphone className="h-6 w-6" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest">SMS Beem</span>
+                                  </Button>
+                                </div>
+                                <div className="p-6 rounded-[2rem] bg-accent/5 border border-accent/10">
+                                   <div className="flex items-center gap-3 mb-2 text-accent">
+                                      <Zap className="h-4 w-4" />
+                                      <span className="text-[10px] font-black uppercase tracking-widest">Gateway Status</span>
+                                   </div>
+                                   <p className="text-[11px] text-muted-foreground font-medium">Beem SMS Node is operational. 4,280 Credits remaining in institutional pool.</p>
+                                </div>
+                              </TabsContent>
+
+                              <TabsContent value="academic" className="space-y-8">
                                  <Button 
                                    onClick={handleExportReportCard} 
                                    disabled={isExporting}
-                                   className="w-full rounded-3xl h-16 bg-white border-[2.5px] border-primary text-primary hover:bg-primary/5 font-black text-sm shadow-xl group mt-6"
+                                   className="w-full rounded-3xl h-16 bg-white border-[2.5px] border-primary text-primary hover:bg-primary/5 font-black text-sm shadow-xl group"
                                  >
                                    {isExporting ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : <FileText className="mr-3 h-6 w-6 group-hover:scale-110 transition-transform" />}
                                    Export Official Word Transcript

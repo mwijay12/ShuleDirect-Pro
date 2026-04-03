@@ -19,7 +19,8 @@ import {
   LogOut,
   X,
   HelpCircle,
-  Building2
+  PackageSearch,
+  Database
 } from "lucide-react"
 
 import {
@@ -41,6 +42,7 @@ const allNavItems = [
   { title: "Attendance", url: "/dashboard/attendance", icon: ClipboardCheck, roles: ["ADMIN", "TEACHER"] },
   { title: "Academics", url: "/dashboard/academics", icon: GraduationCap, roles: ["ADMIN", "TEACHER"] },
   { title: "Finance", url: "/dashboard/finance", icon: Banknote, roles: ["ADMIN", "BURSAR"] },
+  { title: "Inventory", url: "/dashboard/assets", icon: PackageSearch, roles: ["ADMIN", "BURSAR"] },
   { title: "Transport", url: "/dashboard/transport", icon: Bus, roles: ["ADMIN", "BURSAR"] },
   { title: "Hostel", url: "/dashboard/hostel", icon: Bed, roles: ["ADMIN", "BURSAR"] },
   { title: "Reports", url: "/dashboard/reports", icon: Zap, roles: ["ADMIN", "TEACHER", "BURSAR"] },
@@ -54,10 +56,13 @@ export function AppSidebar() {
   const { state, setOpenMobile, isMobile } = useSidebar()
   const isCollapsed = state === "collapsed"
   const [role, setRole] = useState<string>("ADMIN")
+  const [systemName, setSystemName] = useState("ShuleDirect")
 
   useEffect(() => {
     const savedRole = localStorage.getItem("shule_role")
+    const savedSystem = localStorage.getItem("shule_system_name")
     if (savedRole) setRole(savedRole)
+    if (savedSystem) setSystemName(savedSystem)
   }, [])
 
   const filteredItems = allNavItems.filter(item => item.roles.includes(role))
@@ -76,7 +81,7 @@ export function AppSidebar() {
           </div>
           {!isCollapsed && (
             <div className="flex flex-col gap-0.5 leading-none overflow-hidden animate-in fade-in slide-in-from-left-4 duration-500">
-              <span className="font-headline font-black text-lg sm:text-xl text-primary tracking-tighter whitespace-nowrap">ShuleDirect</span>
+              <span className="font-headline font-black text-lg sm:text-xl text-primary tracking-tighter whitespace-nowrap">{systemName}</span>
               <span className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-black">Pro Hub 2026</span>
             </div>
           )}

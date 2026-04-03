@@ -31,7 +31,10 @@ import {
   ArrowDownRight,
   ChevronRight,
   Printer,
-  FileText
+  FileText,
+  MessageSquare,
+  Zap,
+  Activity
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -66,14 +69,8 @@ export default function FinancePage() {
   const handleGenerateControlNumber = () => {
     const newNo = "99" + Math.floor(100000000 + Math.random() * 900000000).toString()
     setControlNo(newNo)
-    
-    // Real n8n dispatch
     triggerN8nWebhook("fee-payment", { studentName: "Student", amount: "650000", controlNumber: newNo });
-    
-    toast({
-      title: "Control Number Generated",
-      description: `Payment ID ${newNo} dispatched via n8n gateway.`,
-    })
+    toast({ title: "Control Number Generated", description: `Payment ID ${newNo} dispatched via n8n gateway.` })
   }
 
   const handleExportFinance = () => {
@@ -81,21 +78,37 @@ export default function FinancePage() {
     setTimeout(() => {
       exportToExcel(transactions, "Institutional_Financial_Ledger");
       setIsExporting(false)
-      toast({
-        title: "Excel Ledger Generated",
-        description: "Official financial statement saved locally.",
-      })
+      toast({ title: "Excel Ledger Generated", description: "Official financial statement saved locally." })
     }, 1000)
   }
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-32 px-1">
-      <div className="space-y-4">
-        <Badge variant="outline" className="w-fit border-primary/20 bg-primary/5 text-primary px-4 py-1 h-6 text-[9px] font-black tracking-widest uppercase rounded-full">
-          Financial Node • Audit Ready 2026
-        </Badge>
-        <h1 className="text-2xl sm:text-3xl font-headline font-black text-primary tracking-tight">Institutional Accounts</h1>
-        <p className="text-muted-foreground font-medium text-xs sm:text-sm max-w-xl">Revenue assurance and ClickPesa reconciliation node.</p>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
+        <div className="space-y-4">
+          <Badge variant="outline" className="w-fit border-primary/20 bg-primary/5 text-primary px-4 py-1 h-6 text-[9px] font-black tracking-widest uppercase rounded-full">
+            Financial Node • Audit Ready 2026
+          </Badge>
+          <h1 className="text-2xl sm:text-3xl font-headline font-black text-primary tracking-tight">Institutional Accounts</h1>
+          <p className="text-muted-foreground font-medium text-xs sm:text-sm max-w-xl">Revenue assurance and ClickPesa reconciliation node.</p>
+        </div>
+        
+        {/* Beem SMS Credits Node */}
+        <Card className="border-none shadow-xl bg-accent text-white rounded-3xl p-6 min-w-[280px] overflow-hidden relative group">
+           <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
+             <MessageSquare className="h-20 w-20" />
+           </div>
+           <div className="relative z-10 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center">
+                <Zap className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-widest text-white/60">Beem SMS Node</p>
+                <p className="text-2xl font-black">4,280 Credits</p>
+                <Badge className="bg-white/20 text-white border-none font-black text-[8px] h-4 mt-1">ACTIVE NODE</Badge>
+              </div>
+           </div>
+        </Card>
       </div>
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
@@ -103,13 +116,13 @@ export default function FinancePage() {
           { title: "Revenue", value: "142.5M", icon: Banknote, color: "text-green-600" },
           { title: "Outstanding", value: "18.2M", icon: ArrowUpRight, color: "text-destructive" },
           { title: "Expenditure", value: "45.1M", icon: TrendingDown, color: "text-orange-600" },
-          { title: "Reconciled", value: "98.4%", icon: CheckCircle, color: "text-primary" },
+          { title: "Gateway", value: "ONLINE", icon: Activity, color: "text-primary" },
         ].map((stat) => (
           <Card key={stat.title} className="border-none shadow-xl rounded-[2rem] bg-white/60 backdrop-blur-md overflow-hidden">
             <CardContent className="p-5 sm:p-6">
               <p className="text-[8px] sm:text-[10px] font-black uppercase text-muted-foreground tracking-widest">{stat.title}</p>
               <div className="flex items-baseline gap-1 mt-2">
-                <span className="text-[10px] font-black text-muted-foreground">TZS</span>
+                <span className="text-[10px] font-black text-muted-foreground">{stat.title === "Gateway" ? "" : "TZS"}</span>
                 <span className={cn("text-xl sm:text-2xl font-black truncate", stat.color)}>{stat.value}</span>
               </div>
             </CardContent>
@@ -133,7 +146,7 @@ export default function FinancePage() {
                   <Plus className="h-4 w-4 mr-2" /> Create Invoice
                 </Button>
               </DialogTrigger>
-              <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl max-w-md">
+              <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl max-w-md font-body">
                 <DialogHeader className="bg-primary/5 p-8 border-b">
                   <DialogTitle className="text-xl font-black text-primary">Invoice Node</DialogTitle>
                   <DialogDescription className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Generate official control numbers.</DialogDescription>
@@ -222,9 +235,7 @@ export default function FinancePage() {
             {isExporting ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <FileSpreadsheet className="h-5 w-5 mr-2" />}
             Export Excel Ledger
           </Button>
-          <Button 
-            className="h-14 rounded-full bg-white text-primary hover:bg-white/90 font-black text-[9px] uppercase tracking-widest px-10 shadow-xl"
-          >
+          <Button className="h-14 rounded-full bg-white text-primary hover:bg-white/90 font-black text-[9px] uppercase tracking-widest px-10 shadow-xl">
             <Printer className="h-5 w-5 mr-2" /> Print Statement
           </Button>
         </div>
