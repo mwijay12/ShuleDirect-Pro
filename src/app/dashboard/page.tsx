@@ -16,7 +16,9 @@ import {
   ArrowRight,
   BellRing,
   Building2,
-  Layers
+  Layers,
+  Zap,
+  AlertCircle
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { 
@@ -45,33 +47,33 @@ const data = [
 
 const stats = [
   {
-    title: "Total Population",
+    title: "Population Node",
     value: "2,480",
     description: "+120 New Enrolled",
     icon: Users,
-    color: "text-blue-600",
-    bg: "bg-blue-100/50",
+    color: "text-primary",
+    bg: "bg-primary/5",
   },
   {
-    title: "Academic Levels",
-    value: "3 Tiers",
-    description: "Primary, O, A-Level",
+    title: "Academic Tiers",
+    value: "3 Levels",
+    description: "National Standard",
     icon: Layers,
     color: "text-purple-600",
     bg: "bg-purple-100/50",
   },
   {
-    title: "Total Revenue",
-    value: "TZS 142.5M",
+    title: "Institutional Revenue",
+    value: "142.5M",
     description: "ClickPesa Synced",
     icon: Banknote,
     color: "text-green-600",
     bg: "bg-green-100/50",
   },
   {
-    title: "Avg Attendance",
+    title: "Attendance Rate",
     value: "96.2%",
-    description: "Peak Season",
+    description: "Peak Performance",
     icon: TrendingUp,
     color: "text-orange-600",
     bg: "bg-orange-100/50",
@@ -87,23 +89,21 @@ export default function DashboardPage() {
   }, [])
 
   return (
-    <div className={cn("space-y-8 transition-all duration-700", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
+    <div className={cn("space-y-8 transition-all duration-700 pb-24 px-1", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div className="space-y-2">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10 w-fit">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary text-[9px] font-black uppercase tracking-widest border border-primary/10 w-fit">
             <Building2 className="h-3 w-3" /> Institutional Node Active
           </div>
-          <h1 className="text-2xl sm:text-3xl font-headline font-extrabold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Management Pulse
-          </h1>
-          <p className="text-muted-foreground font-medium text-sm">Global insights for the 2026 Academic Season.</p>
+          <h1 className="text-2xl sm:text-3xl font-headline font-black text-primary tracking-tight uppercase">Management Pulse</h1>
+          <p className="text-muted-foreground font-bold text-[10px] uppercase tracking-widest leading-none">Global institutional insights for the 2026 academic season.</p>
         </div>
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" className="rounded-full shadow-sm text-xs h-9">
-            <Calendar className="mr-2 h-4 w-4" /> Season Schedule
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button size="sm" variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary font-black text-[10px] uppercase tracking-widest bg-white shadow-sm">
+            <Calendar className="mr-2 h-4 w-4" /> Season Map
           </Button>
-          <Button size="sm" className="rounded-full shadow-md colorful-gradient text-xs h-9">
-            <Sparkles className="mr-2 h-4 w-4" /> AI Performance Report
+          <Button size="sm" className="flex-1 sm:flex-none rounded-full h-11 colorful-gradient font-black text-[10px] uppercase tracking-widest shadow-xl group">
+            <Sparkles className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" /> AI Performance Hub
           </Button>
         </div>
       </div>
@@ -111,16 +111,16 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, i) => (
           <AnimatedContent key={stat.title} delay={i * 0.1} distance={20}>
-            <Card className="group border-none shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden bg-card/60 backdrop-blur-sm h-full">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{stat.title}</CardTitle>
-                <div className={cn(stat.bg, "p-2 rounded-2xl group-hover:scale-110 transition-transform")}>
+            <Card className="group border-none shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden bg-white/60 backdrop-blur-md h-full rounded-[2rem]">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{stat.title}</CardTitle>
+                <div className={cn(stat.bg, "p-2.5 rounded-2xl group-hover:scale-110 transition-transform")}>
                   <stat.icon className={cn("h-4 w-4", stat.color)} />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-xl sm:text-2xl font-extrabold">{stat.value}</div>
-                <p className="text-[9px] font-bold text-muted-foreground mt-2 flex items-center gap-1">
+                <div className="text-xl sm:text-2xl font-black tracking-tight">{stat.value}</div>
+                <p className="text-[8px] font-black text-muted-foreground/60 uppercase mt-2 flex items-center gap-1.5 tracking-tighter">
                   {stat.description.includes('+') ? (
                     <ArrowUpRight className="h-3 w-3 text-green-500" />
                   ) : (
@@ -137,17 +137,17 @@ export default function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="lg:col-span-8 space-y-6">
           <AnimatedContent distance={30}>
-            <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
-              <CardHeader className="flex flex-row items-center justify-between py-4">
+            <Card className="border-none shadow-2xl bg-card/60 backdrop-blur-md rounded-[2.5rem] overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between p-8 bg-muted/20 border-b">
                 <div>
-                  <CardTitle className="text-lg">Financial Trajectory</CardTitle>
-                  <CardDescription className="text-xs">Consolidated Revenue via ClickPesa Gateway</CardDescription>
+                  <CardTitle className="text-xl font-black uppercase">Financial Trajectory</CardTitle>
+                  <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-primary/60">Revenue assurance via ClickPesa Gateway</CardDescription>
                 </div>
-                <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-black text-[9px] uppercase px-3">
-                  TZS Millions
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-black text-[9px] uppercase px-4 py-1 rounded-full">
+                  TZS MILLIONS
                 </Badge>
               </CardHeader>
-              <CardContent className="h-[300px] pt-2">
+              <CardContent className="h-[350px] p-8 pt-10">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={data}>
                     <defs>
@@ -157,10 +157,10 @@ export default function DashboardPage() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} />
-                    <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
-                    <Area type="monotone" dataKey="fees" stroke="#1F5BA6" strokeWidth={3} fillOpacity={1} fill="url(#colorFees)" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 900}} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 900}} />
+                    <RechartsTooltip contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)', fontWeight: 900, textTransform: 'uppercase', fontSize: '10px' }} />
+                    <Area type="monotone" dataKey="fees" stroke="#1F5BA6" strokeWidth={4} fillOpacity={1} fill="url(#colorFees)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -169,29 +169,29 @@ export default function DashboardPage() {
 
           <div className="grid sm:grid-cols-2 gap-4">
              <AnimatedContent direction="horizontal" distance={20} delay={0.2}>
-               <Card className="border-none shadow-sm bg-accent/5 overflow-hidden group hover:shadow-xl transition-all p-6 rounded-[2rem]">
-                  <div className="flex flex-col h-full justify-between gap-6">
+               <Card className="border-none shadow-xl bg-accent/5 overflow-hidden group hover:shadow-2xl transition-all p-8 rounded-[2.5rem]">
+                  <div className="flex flex-col h-full justify-between gap-8">
                      <div>
-                       <Badge className="bg-accent text-white font-black text-[9px] px-3 rounded-full mb-3">NECTA SYNC</Badge>
-                       <h3 className="text-2xl font-black text-accent tracking-tighter">98.4% Accuracy</h3>
-                       <p className="text-xs font-medium text-accent/60 mt-1">Latest results batch verified across official PReMS nodes.</p>
+                       <Badge className="bg-accent text-white font-black text-[9px] px-4 py-1 rounded-full mb-4 uppercase tracking-widest shadow-lg">NECTA SYNC</Badge>
+                       <h3 className="text-2xl font-black text-accent tracking-tighter uppercase leading-none">98.4% Accuracy</h3>
+                       <p className="text-[10px] font-bold text-accent/60 mt-3 uppercase tracking-widest leading-relaxed">Official PReMS nodes verified for the current assessment cycle.</p>
                      </div>
-                     <Button variant="ghost" className="w-fit text-accent font-black text-[10px] uppercase tracking-widest p-0 h-auto hover:bg-transparent">
-                       View Official Logs <ArrowRight className="ml-2 h-3 w-3" />
+                     <Button variant="ghost" className="w-fit text-accent font-black text-[10px] uppercase tracking-[0.2em] p-0 h-auto hover:bg-transparent group">
+                       View Official Logs <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                      </Button>
                   </div>
                </Card>
              </AnimatedContent>
              <AnimatedContent direction="horizontal" distance={20} delay={0.3} reverse>
-               <Card className="border-none shadow-sm bg-primary/5 overflow-hidden group hover:shadow-xl transition-all p-6 rounded-[2rem]">
-                  <div className="flex flex-col h-full justify-between gap-6">
+               <Card className="border-none shadow-xl bg-primary/5 overflow-hidden group hover:shadow-2xl transition-all p-8 rounded-[2.5rem]">
+                  <div className="flex flex-col h-full justify-between gap-8">
                      <div>
-                       <Badge className="bg-primary text-white font-black text-[9px] px-3 rounded-full mb-3">PERSONNEL</Badge>
-                       <h3 className="text-2xl font-black text-primary tracking-tighter">124 Staff</h3>
-                       <p className="text-xs font-medium text-primary/60 mt-1">Professional educators across 12 academic departments.</p>
+                       <Badge className="bg-primary text-white font-black text-[9px] px-4 py-1 rounded-full mb-4 uppercase tracking-widest shadow-lg">PERSONNEL</Badge>
+                       <h3 className="text-2xl font-black text-primary tracking-tighter uppercase leading-none">124 Staff</h3>
+                       <p className="text-[10px] font-bold text-primary/60 mt-3 uppercase tracking-widest leading-relaxed">Professional educators across 12 academic departments hub.</p>
                      </div>
-                     <Button variant="ghost" className="w-fit text-primary font-black text-[10px] uppercase tracking-widest p-0 h-auto hover:bg-transparent">
-                       Manage Directory <ArrowRight className="ml-2 h-3 w-3" />
+                     <Button variant="ghost" className="w-fit text-primary font-black text-[10px] uppercase tracking-[0.2em] p-0 h-auto hover:bg-transparent group">
+                       Manage Directory <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                      </Button>
                   </div>
                </Card>
@@ -200,59 +200,85 @@ export default function DashboardPage() {
         </div>
 
         <div className="lg:col-span-4 space-y-6">
+          {/* AI Early Warning System Feature */}
           <AnimatedContent distance={20} delay={0.4}>
-            <Card className="border-none shadow-sm bg-yellow-50/50 border-yellow-100 relative overflow-hidden group rounded-[2rem]">
+            <Card className="border-none shadow-xl bg-destructive/5 border border-destructive/10 relative overflow-hidden group rounded-[2.5rem]">
               <div className="absolute -right-4 -top-4 opacity-5 group-hover:rotate-12 transition-transform">
-                <StickyNote className="h-20 w-24" />
+                <AlertCircle className="h-20 w-24" />
               </div>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2 text-yellow-800 font-black">
-                  <StickyNote className="h-4 w-4" /> Later Entry
+              <CardHeader className="pb-2 p-8">
+                <CardTitle className="text-base flex items-center gap-3 text-destructive font-black uppercase tracking-tight">
+                  <Zap className="h-5 w-5 fill-destructive" /> AI Early Warning
                 </CardTitle>
-                <CardDescription className="text-yellow-700/60 font-bold text-[10px] uppercase tracking-widest">Administrative scratchpad</CardDescription>
+                <CardDescription className="text-destructive/60 font-black text-[9px] uppercase tracking-widest mt-1">NECTA Prediction Alert Node</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Textarea 
-                  placeholder="Prepare NECTA Center ID report..." 
-                  className="bg-white/50 border-yellow-200 focus-visible:ring-yellow-400 min-h-[100px] resize-none text-xs placeholder:text-yellow-900/30 rounded-xl"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                />
-                <Button size="sm" className="w-full bg-yellow-600 hover:bg-yellow-700 text-white rounded-full shadow-lg font-black h-10 text-xs">
-                  <Send className="mr-2 h-3.5 w-3.5" /> Save Note
+              <CardContent className="p-8 pt-0 space-y-4">
+                <div className="p-4 rounded-2xl bg-white/80 border border-destructive/10 shadow-sm">
+                  <p className="text-[10px] font-black text-destructive uppercase tracking-widest mb-1">Critical Insight:</p>
+                  <p className="text-xs font-bold text-foreground/70 leading-relaxed">
+                    15 Students are at risk of NECTA DIV IV/0 based on current O-Level trends. Remedial intervention required.
+                  </p>
+                </div>
+                <Button size="sm" variant="destructive" className="w-full rounded-2xl shadow-lg font-black h-12 text-[10px] uppercase tracking-widest">
+                  Deploy Remedial Plan
                 </Button>
               </CardContent>
             </Card>
           </AnimatedContent>
 
           <AnimatedContent distance={20} delay={0.5}>
-            <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm overflow-hidden rounded-[2rem]">
-              <CardHeader className="pb-2 bg-accent/5 border-b border-accent/10 p-5">
-                <CardTitle className="text-base flex items-center gap-2 font-black">
-                  <BellRing className="h-4 w-4 text-accent" /> Institutional Pulse
+            <Card className="border-none shadow-xl bg-yellow-50/50 border-yellow-100 relative overflow-hidden group rounded-[2.5rem]">
+              <div className="absolute -right-4 -top-4 opacity-5 group-hover:rotate-12 transition-transform">
+                <StickyNote className="h-20 w-24" />
+              </div>
+              <CardHeader className="pb-2 p-8">
+                <CardTitle className="text-base flex items-center gap-3 text-yellow-800 font-black uppercase tracking-tight">
+                  <StickyNote className="h-5 w-5" /> Admin Scratchpad
                 </CardTitle>
-                <CardDescription className="text-[9px] font-black uppercase tracking-widest">Recent administrative actions</CardDescription>
+                <CardDescription className="text-yellow-700/60 font-black text-[9px] uppercase tracking-widest mt-1">Operational Quick Entry</CardDescription>
               </CardHeader>
-              <CardContent className="pt-4 px-5">
-                <div className="space-y-5">
+              <CardContent className="p-8 pt-0 space-y-4">
+                <Textarea 
+                  placeholder="Prepare NECTA Center ID report..." 
+                  className="bg-white/50 border-yellow-200 focus-visible:ring-yellow-400 min-h-[120px] resize-none text-xs font-bold placeholder:text-yellow-900/30 rounded-2xl shadow-inner px-5 py-4 border-none"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                />
+                <Button size="sm" className="w-full bg-yellow-600 hover:bg-yellow-700 text-white rounded-2xl shadow-xl font-black h-12 text-[10px] uppercase tracking-widest">
+                  <Send className="mr-2 h-4 w-4" /> Save Ledger Note
+                </Button>
+              </CardContent>
+            </Card>
+          </AnimatedContent>
+
+          <AnimatedContent distance={20} delay={0.6}>
+            <Card className="border-none shadow-xl bg-card/60 backdrop-blur-md overflow-hidden rounded-[2.5rem]">
+              <CardHeader className="pb-2 bg-accent/5 border-b border-accent/10 p-8">
+                <CardTitle className="text-base flex items-center gap-3 font-black uppercase tracking-tight">
+                  <BellRing className="h-5 w-5 text-accent" /> Institutional Pulse
+                </CardTitle>
+                <CardDescription className="text-[9px] font-black uppercase tracking-widest mt-1">Live administrative gateway actions</CardDescription>
+              </CardHeader>
+              <CardContent className="p-8">
+                <div className="space-y-6">
                   {[
                     { user: "H.M.", action: "Authorized Fee Batch", time: "12m ago", icon: CheckCircle2, color: "text-green-500" },
-                    { user: "Academics", action: "Stream Updated", time: "45m ago", icon: Clock, color: "text-primary" },
+                    { user: "Academics", action: "Stream Node Updated", time: "45m ago", icon: Clock, color: "text-primary" },
                     { user: "System", action: "Beem Gateway Sync", time: "1h ago", icon: CheckCircle2, color: "text-accent" },
                   ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 group cursor-pointer">
-                      <div className={cn("p-2 rounded-xl bg-muted/50 group-hover:bg-muted transition-colors", item.color)}>
-                        <item.icon className="h-3.5 w-3.5" />
+                    <div key={i} className="flex items-center gap-4 group cursor-pointer transition-transform hover:translate-x-1">
+                      <div className={cn("p-2.5 rounded-xl bg-muted/50 group-hover:bg-muted transition-colors shadow-inner", item.color)}>
+                        <item.icon className="h-4 w-4" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-xs font-black text-foreground/80">{item.user}</p>
-                        <p className="text-[9px] text-muted-foreground font-black uppercase tracking-tighter">{item.action}</p>
+                      <div className="flex-1 overflow-hidden">
+                        <p className="text-xs font-black text-foreground/80 uppercase tracking-tighter truncate">{item.user}</p>
+                        <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest truncate">{item.action}</p>
                       </div>
-                      <span className="text-[9px] font-mono font-bold text-muted-foreground">{item.time}</span>
+                      <span className="text-[9px] font-mono font-black text-muted-foreground shrink-0">{item.time}</span>
                     </div>
                   ))}
-                  <Button variant="ghost" size="sm" className="w-full text-[9px] font-black uppercase tracking-[0.2em] text-primary hover:bg-primary/5 rounded-full h-9 mt-1">
-                    Audit Log <ArrowRight className="ml-2 h-3 w-3" />
+                  <Button variant="ghost" size="sm" className="w-full text-[9px] font-black uppercase tracking-[0.3em] text-primary hover:bg-primary/5 rounded-full h-11 mt-2 border border-transparent hover:border-primary/10">
+                    Audit Ledger <ArrowRight className="ml-2 h-3.5 w-3.5" />
                   </Button>
                 </div>
               </CardContent>

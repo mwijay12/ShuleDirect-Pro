@@ -33,7 +33,7 @@ const prompt = ai.definePrompt({
   output: { schema: CreateLearningResourceOutputSchema },
   prompt: `You are an expert educator and content creator for the Tanzanian NECTA curriculum. Your task is to generate tailored learning resources based on the provided specifications.
 
-Generate a \"{{{resourceType}}}\" on the topic of \"{{{nectaCurriculumTopic}}}\" for \"{{{studentAcademicLevel}}}\" students in the subject of \"{{{subject}}}\".
+Generate a "{{{resourceType}}}" on the topic of "{{{nectaCurriculumTopic}}}" for "{{{studentAcademicLevel}}}" students in the subject of "{{{subject}}}".
 
 Ensure the resource is:
 - Academically appropriate for the specified student level and NECTA standards.
