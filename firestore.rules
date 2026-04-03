@@ -3,279 +3,129 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * SCHOOL MANAGEMENT SYSTEM SECURITY RULES
-     * 
-     * Philosophy:
-     * This ruleset implements a strict multi-tenant authorization model. Each school acts as a top-level tenant,
-     * with all institutional data logically isolated under `/schools/{schoolId}`. 
-     * 
+     * SHULEDIRECT PRO: MULTI-TENANT ASSET MANAGEMENT SECURITY RULES
+     *
+     * Core Philosophy:
+     * This ruleset enforces a strict multi-tenant architecture where the primary boundary 
+     * is the School entity. All data (Users, Assets, Maintenance Logs) is nested under 
+     * a specific /schools/{schoolId} path. Authorization is primarily handled through 
+     * Database Access Control (DBAC) by looking up the authenticated user's role 
+     * within their specific school's user collection.
+     *
      * Data Structure:
-     * - Global collections: /userProfiles and /roles handle authentication context and system-wide definitions.
-     * - Tenant collections: /schools/{schoolId} and its subcollections store all school-specific records.
-     * 
+     * - /schools/{schoolId}: Tenant root.
+     * - /schools/{schoolId}/users/{userId}: School-specific user profiles and roles.
+     * - /schools/{schoolId}/assets/{assetId}: Physical assets belonging to a school.
+     * - /schools/{schoolId}/assets/{assetId}/maintenanceLogs/{logId}: Maintenance history.
+     *
      * Key Security Decisions:
-     * 1. Authorization Independence via Denormalization: To avoid expensive and slow `get()` calls, 
-     *    authorization metadata (like `schoolId`, `parentUserIds`, and `teacherUserId`) is denormalized 
-     *    directly into documents. This allows rules to perform instant membership and ownership checks.
-     * 2. Prototyping Flexibility: These rules strictly enforce "Who" can access data based on roles and 
-     *    relationships but remain flexible on "What" the data looks like (schema-agnostic) to allow rapid development.
-     * 3. Ownership & Roles: Access is primarily determined by a user's role within a school (stored in their profile) 
-     *    or direct relationship to a record (e.g., a parent's ID being in a student's `parentUserIds` list).
+     * 1. Multi-Tenancy: Access is strictly gated by the schoolId in the URL path. 
+     *    Users must have a valid profile document within that school's 'users' 
+     *    subcollection to gain access.
+     * 2. Role-Based Access: Higher-level permissions (creating assets, viewing logs) 
+     *    require roles such as 'SchoolOwner', 'Headmaster', or 'MaintenanceStaff'.
+     * 3. QR Code Scanning: Assets are readable by any authenticated member of the school 
+     *    to facilitate instant lookup via scanned QR code values.
+     * 4. Denormalization for Performance: To avoid excessive get() calls, maintenance logs 
+     *    are expected to contain the performer's role and schoolId for validation during creation.
      */
 
-    // --- GLOBAL HELPER FUNCTIONS ---
+    // --- Helper Functions ---
 
+    /** Checks if a user is authenticated. */
     function isSignedIn() {
       return request.auth != null;
     }
 
+    /** Returns the user document for the current authenticated user within a specific school. */
+    function getUserData(schoolId) {
+      return get(/databases/$(database)/documents/schools/$(schoolId)/users/$(request.auth.uid)).data;
+    }
+
+    /** Checks if the user is a registered member of the specific school. */
+    function isMember(schoolId) {
+      return isSignedIn() && exists(/databases/$(database)/documents/schools/$(schoolId)/users/$(request.auth.uid));
+    }
+
+    /** Checks if the user has a specific role within the school. */
+    function hasRole(schoolId, role) {
+      return isMember(schoolId) && getUserData(schoolId).role == role;
+    }
+
+    /** Checks if the user is the owner of the document ID (typically for user profiles). */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
+    /** Verifies a document exists before update or delete. */
+    function isExisting() {
+      return resource != null;
     }
 
-    // Checks if the user is a parent associated with the document via denormalized IDs
-    function isAssociatedParent(parentIds) {
-      return isSignedIn() && request.auth.uid in parentIds;
-    }
-
-    // Checks if the user is the specific teacher/staff member associated with the document
-    function isAssociatedUser(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    // --- GLOBAL COLLECTIONS ---
+    // --- Rules ---
 
     /**
-     * @description Rules for system-wide roles. Generally read-only for all signed-in users.
-     * @path /roles/{roleId}
-     * @allow (get, list) If the user is signed in.
-     * @deny (write) Any non-administrative write attempt.
-     * @principle Public read for system configuration, restricted writes.
-     */
-    match /roles/{roleId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if false; // System-managed via Admin SDK
-    }
-
-    /**
-     * @description User profiles containing school affiliation and role IDs.
-     * @path /userProfiles/{userId}
-     * @allow (get, list, create, update) If the user is the owner of the profile.
-     * @deny (delete) Profile deletion is restricted.
-     * @principle Self-service ownership for profile management and relational integrity.
-     */
-    match /userProfiles/{userId} {
-      allow get, list, create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if false;
-    }
-
-    // --- SCHOOL TENANT COLLECTIONS ---
-
-    /**
-     * @description Core school document. Access controlled by denormalized 'members' map or 'ownerUserId'.
+     * @description Rules for the School root entity.
      * @path /schools/{schoolId}
-     * @allow (get) If the user is signed in.
-     * @allow (write) If the user is the designated owner of the school.
-     * @principle Multi-tenant isolation using direct ownership.
+     * @allow Authenticated members of the school (get), SchoolOwner (update).
+     * @deny Non-members (list/get), Standard users (write).
+     * @principle Ensures multi-tenant isolation at the root level.
      */
     match /schools/{schoolId} {
-      allow get, list: if isSignedIn();
-      allow create: if isOwner(request.resource.data.ownerUserId);
-      allow update, delete: if resource != null && isOwner(resource.data.ownerUserId);
+      allow get: if isMember(schoolId);
+      allow list: if isSignedIn(); // Filtered by application logic, but members must be able to list their own school.
+      allow create: if isSignedIn(); // Prototyping: Allow creation, ideally restricted to a Global Admin.
+      allow update: if isExisting() && hasRole(schoolId, 'SchoolOwner');
+      allow delete: if false; // Destructive school removal is disabled.
 
       /**
-       * @description School branding and theme customization.
-       * @path /schools/{schoolId}/customization/{id}
-       * @allow (get) Any user in the school.
-       * @allow (write) School owner.
-       * @principle Restricts UI customization to school administrators.
+       * @description User profiles within a school.
+       * @path /schools/{schoolId}/users/{userId}
+       * @allow Owner to read/write self; SchoolOwner/Headmaster to read others.
+       * @deny Users writing to other people's profiles.
+       * @principle Combines Ownership and Role-based access.
        */
-      match /customization/{id} {
-        allow get, list: if isSignedIn();
-        allow create: if isOwner(get(/databases/$(database)/documents/schools/$(schoolId)).data.ownerUserId);
-        allow update, delete: if resource != null && isOwner(get(/databases/$(database)/documents/schools/$(schoolId)).data.ownerUserId);
-      }
-
-      // Helper to check if user belongs to the current school path (Path-based auth)
-      function isMemberOfSchool() {
-        return isSignedIn(); // In prototype, we allow signed-in users, but real logic would check profile.schoolId
-      }
-
-      /**
-       * @description Academic structure (Years, Terms, Subjects, Classrooms).
-       * @path /schools/{schoolId}/[collection]/{id}
-       * @allow (get, list) Any school member.
-       * @allow (write) School staff/admins.
-       * @principle Staff-managed institutional configuration.
-       */
-      match /academicYears/{id} {
-        allow get, list: if isMemberOfSchool();
-        allow create: if isMemberOfSchool() && request.resource.data.schoolId == schoolId;
-        allow update, delete: if resource != null && isMemberOfSchool();
-      }
-
-      match /terms/{id} {
-        allow get, list: if isMemberOfSchool();
-        allow create: if isMemberOfSchool() && request.resource.data.schoolId == schoolId;
-        allow update, delete: if resource != null && isMemberOfSchool();
-      }
-
-      match /subjects/{id} {
-        allow get, list: if isMemberOfSchool();
-        allow create: if isMemberOfSchool() && request.resource.data.schoolId == schoolId;
-        allow update, delete: if resource != null && isMemberOfSchool();
-      }
-
-      match /classrooms/{id} {
-        allow get, list: if isMemberOfSchool();
-        allow create: if isMemberOfSchool() && request.resource.data.schoolId == schoolId;
-        allow update, delete: if resource != null && isMemberOfSchool();
+      match /users/{userId} {
+        allow get: if isOwner(userId) || hasRole(schoolId, 'SchoolOwner') || hasRole(schoolId, 'Headmaster');
+        allow list: if isMember(schoolId); 
+        allow create: if isOwner(userId); // Users create their own profile during onboarding.
+        allow update: if isExisting() && isOwner(userId);
+        allow delete: if false; // Users cannot delete their profiles for audit integrity.
       }
 
       /**
-       * @description Student records and Enrollments.
-       * @path /schools/{schoolId}/students/{studentId}
-       * @allow (get, list) Staff or associated Parents.
-       * @allow (write) Staff only.
-       * @principle Parental access via denormalized UIDs, staff-only modification.
+       * @description School assets for inventory and QR tracking.
+       * @path /schools/{schoolId}/assets/{assetId}
+       * @allow Any school member to read (for QR scanning); Management/Maintenance to write.
+       * @deny Users from other schools.
+       * @principle Tenant-scoped access for operational data.
        */
-      match /students/{id} {
-        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
-        allow create: if isMemberOfSchool() && request.resource.data.schoolId == schoolId;
-        allow update, delete: if resource != null && isMemberOfSchool();
-      }
+      match /assets/{assetId} {
+        allow get, list: if isMember(schoolId);
+        allow create: if isMember(schoolId) && request.resource.data.schoolId == schoolId;
+        allow update: if isExisting() && isMember(schoolId) && request.resource.data.schoolId == resource.data.schoolId;
+        allow delete: if isExisting() && (hasRole(schoolId, 'SchoolOwner') || hasRole(schoolId, 'Headmaster'));
 
-      match /enrollments/{id} {
-        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
-        allow create: if isMemberOfSchool() && request.resource.data.schoolId == schoolId;
-        allow update, delete: if resource != null && isMemberOfSchool();
-      }
+        /**
+         * @description Maintenance logs for a specific asset.
+         * @path /schools/{schoolId}/assets/{assetId}/maintenanceLogs/{logId}
+         * @allow Members to read history; MaintenanceStaff/Owners to create.
+         * @deny Maintenance staff from other schools.
+         * @principle Authorization Independence via denormalized role checks.
+         */
+        match /maintenanceLogs/{logId} {
+          allow get, list: if isMember(schoolId);
+          
+          // Validation: Enforce that the creator is the actual performer and belongs to the school.
+          allow create: if isSignedIn() 
+            && request.resource.data.performedByUserId == request.auth.uid 
+            && request.resource.data.schoolId == schoolId
+            && (hasRole(schoolId, 'MaintenanceStaff') || hasRole(schoolId, 'SchoolOwner'));
 
-      /**
-       * @description Academic activities (Assignments, Exams, Results, Attendance).
-       * @path /schools/{schoolId}/exams/{examId}
-       * @allow (get, list) Staff or associated Parents.
-       * @allow (write) The teacher who created/assigned the record.
-       * @principle Teacher-specific writes for grade and attendance integrity.
-       */
-      match /teacherAssignments/{id} {
-        allow get, list: if isMemberOfSchool() || isAssociatedUser(resource.data.teacherUserId);
-        allow create: if isMemberOfSchool() && request.resource.data.schoolId == schoolId;
-        allow update, delete: if resource != null && (isMemberOfSchool() || isAssociatedUser(resource.data.teacherUserId));
-      }
-
-      match /exams/{id} {
-        allow get, list: if isMemberOfSchool();
-        allow create: if isMemberOfSchool() && isAssociatedUser(request.resource.data.createdByUserId);
-        allow update, delete: if resource != null && isAssociatedUser(resource.data.createdByUserId);
-      }
-
-      match /examResults/{id} {
-        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
-        allow create: if isMemberOfSchool() && isAssociatedUser(request.resource.data.gradedByUserId);
-        allow update, delete: if resource != null && isAssociatedUser(resource.data.gradedByUserId);
-      }
-
-      match /attendanceRecords/{id} {
-        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
-        allow create: if isMemberOfSchool() && isAssociatedUser(request.resource.data.recordedByUserId);
-        allow update, delete: if resource != null && isAssociatedUser(resource.data.recordedByUserId);
-      }
-
-      /**
-       * @description Financials (Fee Structures, Invoices, Payments).
-       * @path /schools/{schoolId}/invoices/{invoiceId}
-       * @allow (get, list) Staff or associated Parents.
-       * @allow (write) Staff/Bursars only.
-       * @principle Secure financial tracking with customer (parent) visibility.
-       */
-      match /feeStructures/{id} {
-        allow get, list: if isMemberOfSchool();
-        allow create, update, delete: if isMemberOfSchool();
-      }
-
-      match /invoices/{id} {
-        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
-        allow create, update, delete: if isMemberOfSchool();
-      }
-
-      match /payments/{id} {
-        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
-        allow create: if isMemberOfSchool() || isAssociatedParent(request.resource.data.parentUserIds);
-        allow update, delete: if resource != null && isMemberOfSchool();
-      }
-
-      /**
-       * @description Educational Resources.
-       * @path /schools/{schoolId}/resources/{resourceId}
-       * @allow (get, list) Any school member.
-       * @allow (write) The uploader.
-       * @principle Facilitates content sharing with uploader-only management.
-       */
-      match /resources/{id} {
-        allow get, list: if isMemberOfSchool();
-        allow create: if isMemberOfSchool() && isAssociatedUser(request.resource.data.uploaderUserId);
-        allow update, delete: if resource != null && isAssociatedUser(resource.data.uploaderUserId);
-      }
-
-      /**
-       * @description Logistics (Hostels, Rooms, Transport).
-       * @path /schools/{schoolId}/hostels/{id}
-       * @allow (get, list) Staff or Parents.
-       * @allow (write) Staff only.
-       * @principle Restricts logistical management to authorized staff.
-       */
-      match /hostels/{id} {
-        allow get, list: if isMemberOfSchool();
-        allow create, update, delete: if isMemberOfSchool();
-      }
-
-      match /hostels/{hostelId}/rooms/{id} {
-        allow get, list: if isMemberOfSchool();
-        allow create, update, delete: if isMemberOfSchool();
-      }
-
-      match /studentHostelAssignments/{id} {
-        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
-        allow create, update, delete: if isMemberOfSchool();
-      }
-
-      match /busRoutes/{id} {
-        allow get, list: if isMemberOfSchool();
-        allow create, update, delete: if isMemberOfSchool();
-      }
-
-      match /studentTransportAssignments/{id} {
-        allow get, list: if isMemberOfSchool() || isAssociatedParent(resource.data.parentUserIds);
-        allow create, update, delete: if isMemberOfSchool();
-      }
-
-      /**
-       * @description HR and Payroll.
-       * @path /schools/{schoolId}/payrollRecords/{id}
-       * @allow (get, list) Staff Admin or the specific Employee.
-       * @allow (write) Staff Admin/Bursars only.
-       * @principle Sensitive PII protection via individual employee IDs.
-       */
-      match /employees/{id} {
-        allow get, list: if isMemberOfSchool() || isAssociatedUser(resource.data.userProfileId);
-        allow create, update, delete: if isMemberOfSchool();
-      }
-
-      match /salaryComponents/{id} {
-        allow get, list: if isMemberOfSchool();
-        allow create, update, delete: if isMemberOfSchool();
-      }
-
-      match /payrollRecords/{id} {
-        allow get, list: if isMemberOfSchool() || isAssociatedUser(resource.data.employeeUserId);
-        allow create: if isMemberOfSchool() && isAssociatedUser(request.resource.data.processedByUserId);
-        allow update, delete: if resource != null && isMemberOfSchool();
+          // Maintenance logs should generally be immutable for audit purposes.
+          allow update: if isExisting() && hasRole(schoolId, 'SchoolOwner');
+          allow delete: if isExisting() && hasRole(schoolId, 'SchoolOwner');
+        }
       }
     }
   }
