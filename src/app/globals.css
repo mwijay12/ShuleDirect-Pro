@@ -49,13 +49,13 @@
   
   /* RIGID TYPOGRAPHY - RE-CALIBRATED FOR PROFESSIONAL PURITY */
   h1 {
-    @apply font-headline font-bold tracking-tight text-[clamp(1.2rem,3vw,1.8rem)] leading-tight;
+    @apply font-headline font-bold tracking-tight text-[clamp(1.1rem,2.5vw,1.6rem)] leading-tight;
   }
   h2 {
-    @apply font-headline font-bold tracking-tight text-[clamp(1.1rem,2.2vw,1.5rem)] leading-tight;
+    @apply font-headline font-bold tracking-tight text-[clamp(1rem,2vw,1.4rem)] leading-tight;
   }
   h3 {
-    @apply font-headline font-bold tracking-tight text-[clamp(1rem,1.8vw,1.3rem)] leading-tight;
+    @apply font-headline font-bold tracking-tight text-[clamp(0.9rem,1.8vw,1.25rem)] leading-tight;
   }
 }
 

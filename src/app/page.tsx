@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -39,12 +38,16 @@ export default function LandingPage() {
     if (saved) setSchoolName(saved)
   }, [])
 
-  // Force ScrollTrigger refresh after loader
+  // Robust ScrollTrigger refresh after loader completes
   useEffect(() => {
     if (!isLoading) {
-      setTimeout(() => {
-        ScrollTrigger.refresh()
-      }, 500)
+      // Small delay to ensure DOM is fully painted
+      const timer = setTimeout(() => {
+        ScrollTrigger.refresh();
+        // Force an update to the scroll position to kickstart animations
+        window.dispatchEvent(new Event('scroll'));
+      }, 800);
+      return () => clearTimeout(timer);
     }
   }, [isLoading])
   
@@ -83,12 +86,12 @@ export default function LandingPage() {
               <div className="space-y-1">
                 <ScrollFloat 
                   containerClassName="text-center lg:text-left"
-                  textClassName="text-primary !text-[clamp(1.8rem,5vw,3rem)]"
+                  textClassName="text-primary !text-[clamp(1.5rem,4vw,2.5rem)]"
                 >
                   PURE PERFORMANCE.
                 </ScrollFloat>
                 <GradientText 
-                  className="text-3xl sm:text-5xl font-black uppercase tracking-tighter mx-auto lg:mx-0 justify-center lg:justify-start"
+                  className="text-2xl sm:text-4xl font-black uppercase tracking-tighter mx-auto lg:mx-0 justify-center lg:justify-start"
                   colors={['#1F5BA6', '#945CE6', '#1F5BA6']}
                 >
                   Tanzanian Excellence.
@@ -99,7 +102,7 @@ export default function LandingPage() {
                 <div className="lg:col-span-7 space-y-6">
                   <ScrollReveal 
                     containerClassName="max-w-2xl mx-auto lg:mx-0"
-                    textClassName="text-muted-foreground !text-[clamp(0.9rem,1.5vw,1.1rem)] leading-relaxed text-center lg:text-left"
+                    textClassName="text-muted-foreground !text-[clamp(0.85rem,1.3vw,1rem)] leading-relaxed text-center lg:text-left"
                   >
                     {schoolName} — The high-fidelity institutional ecosystem for the modern East African landscape. Engineered for national-scale reliability and academic distinction.
                   </ScrollReveal>
@@ -143,7 +146,7 @@ export default function LandingPage() {
             <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center border-b border-white/10 pb-10">
               <div className="flex-1">
                 <ScrollFloat 
-                  textClassName="text-white !text-[clamp(1.5rem,4vw,2.5rem)]"
+                  textClassName="text-white !text-[clamp(1.3rem,3.5vw,2.2rem)]"
                   scrollStart="top bottom"
                   scrollEnd="bottom center"
                 >
@@ -152,7 +155,7 @@ export default function LandingPage() {
               </div>
               <div className="flex-1">
                 <ScrollReveal 
-                  textClassName="text-primary-foreground/70 !text-[clamp(0.85rem,1.2vw,1rem)] leading-relaxed"
+                  textClassName="text-primary-foreground/70 !text-[clamp(0.8rem,1.1vw,0.9rem)] leading-relaxed"
                   baseOpacity={0.2}
                 >
                   Re-engineered for the 2026 season, focusing on data sovereignty for Tanzanian institutions.
@@ -192,7 +195,7 @@ export default function LandingPage() {
               <AnimatedContent distance={20}>
                 <Badge variant="outline" className="rounded-full px-5 py-0.5 font-black text-[8px] tracking-[0.3em] text-primary uppercase border-primary/20">Module Showcase</Badge>
               </AnimatedContent>
-              <ScrollFloat textClassName="text-primary !text-[clamp(1.5rem,4vw,2.8rem)]">Experience the Node.</ScrollFloat>
+              <ScrollFloat textClassName="text-primary !text-[clamp(1.3rem,3.5vw,2.2rem)]">Experience the Node.</ScrollFloat>
               <p className="text-muted-foreground font-medium text-sm sm:text-base">Granular insights into the features powering {schoolName}.</p>
             </div>
             <AnimatedContent scale={0.95} distance={0} duration={1.2}>

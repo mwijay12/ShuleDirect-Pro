@@ -39,6 +39,24 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import AnimatedContent from "@/components/ui/animated-content"
 
+// Target Icon needed for stats - Defined at the top to avoid ReferenceError
+const Target = ({ className }: { className?: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="6" />
+    <circle cx="12" cy="12" r="2" />
+  </svg>
+)
+
 const data = [
   { name: "Jan", attendance: 92, fees: 4500 },
   { name: "Feb", attendance: 95, fees: 5200 },
@@ -83,24 +101,6 @@ const stats = [
   },
 ]
 
-// Target Icon needed for stats
-const Target = ({ className }: { className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <circle cx="12" cy="12" r="10" />
-    <circle cx="12" cy="12" r="6" />
-    <circle cx="12" cy="12" r="2" />
-  </svg>
-)
-
 export default function DashboardPage() {
   const [note, setNote] = useState("")
   const [isLoaded, setIsLoaded] = useState(false)
@@ -122,8 +122,8 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary text-[9px] font-black uppercase tracking-widest border border-primary/10 w-fit">
             <Building2 className="h-3 w-3" /> Institutional Node Active
           </div>
-          <h1 className="text-2xl sm:text-3xl font-headline font-black text-primary tracking-tight uppercase">Management Pulse</h1>
-          <p className="text-muted-foreground font-bold text-[10px] uppercase tracking-widest leading-none">Global institutional insights for the 2026 academic season.</p>
+          <h1 className="text-xl sm:text-2xl font-headline font-black text-primary tracking-tight uppercase">Management Pulse</h1>
+          <p className="text-muted-foreground font-bold text-[9px] uppercase tracking-widest leading-none">Global institutional insights for the 2026 academic season.</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <Button 
@@ -174,7 +174,7 @@ export default function DashboardPage() {
             <Card className="border-none shadow-2xl bg-card/60 backdrop-blur-md rounded-[2.5rem] overflow-hidden">
               <CardHeader className="flex flex-row items-center justify-between p-8 bg-muted/20 border-b">
                 <div>
-                  <CardTitle className="text-xl font-black uppercase">Financial Trajectory</CardTitle>
+                  <CardTitle className="text-lg font-black uppercase">Financial Trajectory</CardTitle>
                   <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-primary/60">Revenue assurance via ClickPesa Gateway</CardDescription>
                 </div>
                 <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-black text-[9px] uppercase px-4 py-1 rounded-full">
@@ -207,7 +207,7 @@ export default function DashboardPage() {
                   <div className="flex flex-col h-full justify-between gap-8">
                      <div>
                        <Badge className="bg-accent text-white font-black text-[9px] px-4 py-1 rounded-full mb-4 uppercase tracking-widest shadow-lg">NECTA SYNC</Badge>
-                       <h3 className="text-2xl font-black text-accent tracking-tighter uppercase leading-none">98.4% Accuracy</h3>
+                       <h3 className="text-xl font-black text-accent tracking-tighter uppercase leading-none">98.4% Accuracy</h3>
                        <p className="text-[10px] font-bold text-accent/60 mt-3 uppercase tracking-widest leading-relaxed">Official PReMS nodes verified for the current assessment cycle.</p>
                      </div>
                      <Button variant="ghost" className="w-fit text-accent font-black text-[10px] uppercase tracking-[0.2em] p-0 h-auto hover:bg-transparent group">
@@ -221,7 +221,7 @@ export default function DashboardPage() {
                   <div className="flex flex-col h-full justify-between gap-8">
                      <div>
                        <Badge className="bg-primary text-white font-black text-[9px] px-4 py-1 rounded-full mb-4 uppercase tracking-widest shadow-lg">HOSTEL HUB</Badge>
-                       <h3 className="text-2xl font-black text-primary tracking-tighter uppercase leading-none">Utility Healthy</h3>
+                       <h3 className="text-xl font-black text-primary tracking-tighter uppercase leading-none">Utility Healthy</h3>
                        <p className="text-[10px] font-bold text-primary/60 mt-3 uppercase tracking-widest leading-relaxed">LUKU and Water nodes monitored across 4 primary wings hub.</p>
                      </div>
                      <Button variant="ghost" className="w-fit text-primary font-black text-[10px] uppercase tracking-[0.2em] p-0 h-auto hover:bg-transparent group">
@@ -240,7 +240,7 @@ export default function DashboardPage() {
                 <AlertCircle className="h-20 w-24" />
               </div>
               <CardHeader className="pb-2 p-8">
-                <CardTitle className="text-base flex items-center gap-3 text-destructive font-black uppercase tracking-tight">
+                <CardTitle className="text-sm flex items-center gap-3 text-destructive font-black uppercase tracking-tight">
                   <Zap className="h-5 w-5 fill-destructive" /> AI Early Warning
                 </CardTitle>
                 <CardDescription className="text-destructive/60 font-black text-[9px] uppercase tracking-widest mt-1">NECTA Prediction Alert Node</CardDescription>
@@ -265,7 +265,7 @@ export default function DashboardPage() {
                 <StickyNote className="h-20 w-24" />
               </div>
               <CardHeader className="pb-2 p-8">
-                <CardTitle className="text-base flex items-center gap-3 text-yellow-800 font-black uppercase tracking-tight">
+                <CardTitle className="text-sm flex items-center gap-3 text-yellow-800 font-black uppercase tracking-tight">
                   <StickyNote className="h-5 w-5" /> Admin Scratchpad
                 </CardTitle>
                 <CardDescription className="text-yellow-700/60 font-black text-[9px] uppercase tracking-widest mt-1">Operational Quick Entry</CardDescription>
@@ -287,7 +287,7 @@ export default function DashboardPage() {
           <AnimatedContent distance={20} delay={0.6}>
             <Card className="border-none shadow-xl bg-card/60 backdrop-blur-md overflow-hidden rounded-[2.5rem]">
               <CardHeader className="pb-2 bg-accent/5 border-b border-accent/10 p-8">
-                <CardTitle className="text-base flex items-center gap-3 font-black uppercase tracking-tight">
+                <CardTitle className="text-sm flex items-center gap-3 font-black uppercase tracking-tight">
                   <BellRing className="h-5 w-5 text-accent" /> Institutional Pulse
                 </CardTitle>
                 <CardDescription className="text-[9px] font-black uppercase tracking-widest mt-1">Live administrative gateway actions</CardDescription>
