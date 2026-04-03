@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -26,6 +27,8 @@ import ScrollFloat from "@/components/ui/scroll-float"
 import GradientText from "@/components/ui/gradient-text"
 import AnimatedContent from "@/components/ui/animated-content"
 import { InstitutionalLoader } from "@/components/ui/institutional-loader"
+import { gsap } from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 
 export default function LandingPage() {
   const [schoolName, setSchoolName] = useState("ShuleDirect Pro")
@@ -35,6 +38,15 @@ export default function LandingPage() {
     const saved = localStorage.getItem("shule_name")
     if (saved) setSchoolName(saved)
   }, [])
+
+  // Force ScrollTrigger refresh after loader
+  useEffect(() => {
+    if (!isLoading) {
+      setTimeout(() => {
+        ScrollTrigger.refresh()
+      }, 500)
+    }
+  }, [isLoading])
   
   const navItems = [
     { label: "Dashboard", link: "/dashboard" },
