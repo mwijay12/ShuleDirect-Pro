@@ -8,25 +8,22 @@ import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { Toaster } from "@/components/ui/toaster"
 import { 
   Bell, 
-  Search, 
-  LayoutDashboard, 
-  ClipboardCheck, 
-  Users, 
-  Banknote,
   Menu,
   ShieldCheck,
   Loader2,
   Clock,
-  CloudOff
+  LayoutDashboard,
+  ClipboardCheck,
+  Users,
+  Banknote
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 
-const AUTO_LOGOUT_MS = 10 * 60 * 1000 // 10 Minutes
+const AUTO_LOGOUT_MS = 15 * 60 * 1000 // 15 Minutes
 
 export default function DashboardLayout({
   children,
@@ -53,14 +50,12 @@ export default function DashboardLayout({
   }, [handleLogout])
 
   useEffect(() => {
-    // Sync School Name
     const savedName = localStorage.getItem("shule_name")
     if (savedName) setSchoolName(savedName)
 
-    // Initial App Boot
     const loadTimer = setTimeout(() => {
       setIsInitialLoading(false)
-    }, 2000)
+    }, 1500)
 
     const hours = new Date().getHours()
     let msg = "Good Morning"
@@ -68,7 +63,6 @@ export default function DashboardLayout({
     if (hours >= 16) msg = "Good Evening"
     setGreeting(msg)
 
-    // Security Listeners
     window.addEventListener("mousemove", resetTimer)
     window.addEventListener("keydown", resetTimer)
     resetTimer()
@@ -92,16 +86,16 @@ export default function DashboardLayout({
     return (
       <div className="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center space-y-6">
         <div className="relative">
-          <div className="h-24 w-24 rounded-[2.5rem] colorful-gradient flex items-center justify-center text-white shadow-2xl animate-bounce">
-            <ShieldCheck className="h-14 w-14" />
+          <div className="h-20 w-20 rounded-[2rem] colorful-gradient flex items-center justify-center text-white shadow-2xl animate-bounce">
+            <ShieldCheck className="h-10 w-10" />
           </div>
-          <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1.5 shadow-lg">
-            <Loader2 className="h-6 w-6 text-primary animate-spin" />
+          <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-lg">
+            <Loader2 className="h-5 w-5 text-primary animate-spin" />
           </div>
         </div>
         <div className="text-center space-y-2 px-4">
-          <h1 className="text-2xl font-headline font-black text-primary tracking-tighter truncate max-w-xs">{schoolName}</h1>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] animate-pulse">Initializing Security Node</p>
+          <h1 className="text-xl font-headline font-black text-primary tracking-tighter truncate max-w-xs">{schoolName}</h1>
+          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.3em] animate-pulse">2026 Academic Node Online</p>
         </div>
       </div>
     )
@@ -110,28 +104,28 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="bg-background flex flex-col min-w-0 w-full relative overflow-hidden">
-        <header className="flex h-16 sm:h-24 shrink-0 items-center gap-2 border-b bg-card/80 backdrop-blur-md px-4 sm:px-8 sticky top-0 z-20 w-full overflow-hidden">
-          <div className="flex items-center gap-2 md:hidden shrink-0">
+      <SidebarInset className="bg-background flex flex-col min-w-0 w-full relative overflow-hidden min-h-screen">
+        <header className="flex h-16 sm:h-20 shrink-0 items-center gap-2 border-b bg-card/80 backdrop-blur-md px-4 sm:px-8 sticky top-0 z-20 w-full">
+          <div className="flex items-center gap-2 md:hidden">
              <SidebarTrigger>
                <Menu className="h-5 w-5" />
              </SidebarTrigger>
           </div>
-          <div className="hidden md:block shrink-0">
+          <div className="hidden md:block">
             <SidebarTrigger className="hover:bg-accent/10" />
           </div>
           
-          <div className="flex flex-1 items-center gap-2 sm:gap-8 min-w-0 px-2 sm:px-4">
+          <div className="flex flex-1 items-center gap-4 min-w-0 px-2">
             <div className="flex flex-col min-w-0">
-              <h2 className="text-xs sm:text-2xl font-black text-primary flex items-center gap-2 truncate whitespace-nowrap tracking-tight">
+              <h2 className="text-xs sm:text-lg font-black text-primary flex items-center gap-2 truncate tracking-tight">
                 {greeting}<span className="hidden lg:inline">, Administrator! 👋</span>
               </h2>
               <div className="flex items-center gap-2 overflow-hidden">
-                <p className="text-[8px] sm:text-[10px] text-muted-foreground font-black uppercase tracking-widest truncate">
+                <p className="text-[8px] sm:text-[9px] text-muted-foreground font-black uppercase tracking-widest truncate">
                   {schoolName} Hub
                 </p>
                 <Badge variant="outline" className="hidden sm:flex border-green-200 bg-green-50 text-green-700 h-4 text-[7px] font-black px-2 rounded-full whitespace-nowrap">
-                  OFFLINE CACHE ACTIVE
+                  SECURE 2026
                 </Badge>
               </div>
             </div>
@@ -139,31 +133,31 @@ export default function DashboardLayout({
 
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             <div className="hidden xl:flex flex-col items-end mr-2">
-               <span className="text-[9px] font-black text-primary uppercase tracking-tighter">Security Node</span>
+               <span className="text-[8px] font-black text-primary uppercase tracking-tighter">Identity Node</span>
                <div className="flex items-center gap-1">
                  <Clock className="h-2.5 w-2.5 text-muted-foreground" />
-                 <span className="text-[10px] font-mono font-bold text-muted-foreground">Lock: 10m</span>
+                 <span className="text-[9px] font-mono font-bold text-muted-foreground">Session: 15m</span>
                </div>
             </div>
             
-            <Button variant="ghost" size="icon" className="relative text-muted-foreground rounded-full hover:bg-accent/10 h-10 w-10 shrink-0">
+            <Button variant="ghost" size="icon" className="relative text-muted-foreground rounded-full h-10 w-10">
               <Bell className="h-5 w-5" />
               <span className="absolute top-2.5 right-2.5 flex h-2 w-2 rounded-full bg-destructive border-2 border-white" />
             </Button>
             
-            <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center text-white font-black text-sm shadow-xl shadow-primary/20 shrink-0">
+            <div className="h-9 w-9 rounded-2xl bg-primary flex items-center justify-center text-white font-black text-sm shadow-xl shadow-primary/20 shrink-0">
               A
             </div>
           </div>
         </header>
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto w-full relative p-4 sm:p-8 lg:p-12">
-          <div className="max-w-7xl mx-auto space-y-10">
+        <main className="flex-1 w-full relative p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          <div className="max-w-7xl mx-auto min-w-0">
             {children}
           </div>
         </main>
 
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t flex items-center justify-around px-2 z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t flex items-center justify-around px-2 z-50 shadow-lg">
           {bottomNavItems.map((item) => {
             const isActive = pathname === item.href
             return (
@@ -171,12 +165,12 @@ export default function DashboardLayout({
                 key={item.href} 
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center gap-1 transition-colors px-2",
+                  "flex flex-col items-center gap-1 transition-colors px-2 min-w-0",
                   isActive ? "text-primary" : "text-muted-foreground hover:text-primary"
                 )}
               >
-                <item.icon className={cn("h-5 w-5", isActive && "animate-pulse")} />
-                <span className="text-[9px] font-black uppercase tracking-tighter">{item.label}</span>
+                <item.icon className={cn("h-5 w-5", isActive && "scale-110")} />
+                <span className="text-[8px] font-black uppercase tracking-tighter truncate w-full text-center">{item.label}</span>
               </Link>
             )
           })}

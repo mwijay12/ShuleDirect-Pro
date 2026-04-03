@@ -47,15 +47,16 @@
   body {
     @apply bg-background text-foreground font-body antialiased;
   }
-  /* RIGID TYPOGRAPHY RESET */
+  
+  /* RIGID TYPOGRAPHY - TRANSITIONED FROM DEMO TO INSTITUTIONAL */
   h1 {
-    @apply font-headline font-bold tracking-tight text-[clamp(1.5rem,4vw,2.5rem)] leading-tight;
+    @apply font-headline font-bold tracking-tight text-[clamp(1.5rem,3.5vw,2.2rem)] leading-tight;
   }
   h2 {
-    @apply font-headline font-bold tracking-tight text-[clamp(1.25rem,3vw,2rem)] leading-tight;
+    @apply font-headline font-bold tracking-tight text-[clamp(1.25rem,2.5vw,1.8rem)] leading-tight;
   }
   h3 {
-    @apply font-headline font-bold tracking-tight text-[clamp(1.1rem,2.5vw,1.5rem)] leading-tight;
+    @apply font-headline font-bold tracking-tight text-[clamp(1.1rem,2vw,1.4rem)] leading-tight;
   }
 }
 
@@ -67,24 +68,13 @@
 
 @keyframes float {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-15px); }
+  50% { transform: translateY(-10px); }
   100% { transform: translateY(0px); }
 }
 
 @keyframes pulse-soft {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-@keyframes reveal {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slow-zoom {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.08); }
-  100% { transform: scale(1); }
+  50% { opacity: 0.8; }
 }
 
 .animate-float {
@@ -93,14 +83,6 @@
 
 .animate-pulse-soft {
   animation: pulse-soft 4s ease-in-out infinite;
-}
-
-.animate-reveal {
-  animation: reveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-slow-zoom {
-  animation: slow-zoom 25s ease-in-out infinite;
 }
 
 .colorful-gradient {
@@ -114,10 +96,6 @@
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
