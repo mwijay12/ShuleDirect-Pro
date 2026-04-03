@@ -121,6 +121,7 @@
   justify-content: center;
   pointer-events: auto;
   overflow-y: auto;
+  visibility: hidden; /* Prevent flash of content before GSAP mount */
 }
 
 .sm-panel-inner {
@@ -167,7 +168,7 @@
 }
 
 .sm-panel-itemLabel {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: clamp(2rem, 8vw, 5rem);
   font-weight: 900;
   line-height: 0.9;

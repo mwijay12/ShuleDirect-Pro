@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -45,8 +44,10 @@ export default function SettingsPage() {
   useEffect(() => {
     const savedName = localStorage.getItem("shule_name")
     const savedN8n = localStorage.getItem("shule_n8n_url")
+    const savedLogo = localStorage.getItem("shule_logo")
     if (savedName) setSchoolName(savedName)
     if (savedN8n) setN8nUrl(savedN8n)
+    if (savedLogo) setLogoPreview(savedLogo)
   }, [])
 
   const handleSave = () => {
@@ -62,11 +63,17 @@ export default function SettingsPage() {
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      setLogoPreview(URL.createObjectURL(file))
-      toast({
-        title: "Logo Uploaded",
-        description: "Institutional branding refreshed.",
-      })
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setLogoPreview(base64);
+        localStorage.setItem("shule_logo", base64);
+        toast({
+          title: "Logo Uploaded",
+          description: "Institutional branding refreshed.",
+        });
+      };
+      reader.readAsDataURL(file);
     }
   }
 

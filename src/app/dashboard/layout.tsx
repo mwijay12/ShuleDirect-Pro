@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -22,6 +21,7 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
+import { InstitutionalLoader } from "@/components/ui/institutional-loader"
 
 const AUTO_LOGOUT_MS = 15 * 60 * 1000 // 15 Minutes
 
@@ -53,10 +53,6 @@ export default function DashboardLayout({
     const savedName = localStorage.getItem("shule_name")
     if (savedName) setSchoolName(savedName)
 
-    const loadTimer = setTimeout(() => {
-      setIsInitialLoading(false)
-    }, 1500)
-
     const hours = new Date().getHours()
     let msg = "Good Morning"
     if (hours >= 12 && hours < 16) msg = "Good Afternoon"
@@ -68,7 +64,6 @@ export default function DashboardLayout({
     resetTimer()
     
     return () => {
-      clearTimeout(loadTimer)
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
       window.removeEventListener("mousemove", resetTimer)
       window.removeEventListener("keydown", resetTimer)
@@ -83,22 +78,7 @@ export default function DashboardLayout({
   ]
 
   if (isInitialLoading) {
-    return (
-      <div className="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center space-y-6">
-        <div className="relative">
-          <div className="h-20 w-20 rounded-[2rem] colorful-gradient flex items-center justify-center text-white shadow-2xl animate-bounce">
-            <ShieldCheck className="h-10 w-10" />
-          </div>
-          <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-lg">
-            <Loader2 className="h-5 w-5 text-primary animate-spin" />
-          </div>
-        </div>
-        <div className="text-center space-y-2 px-4">
-          <h1 className="text-xl font-headline font-black text-primary tracking-tighter truncate max-w-xs">{schoolName}</h1>
-          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.3em] animate-pulse">2026 Academic Node Online</p>
-        </div>
-      </div>
-    )
+    return <InstitutionalLoader onComplete={() => setIsInitialLoading(false)} />
   }
 
   return (
