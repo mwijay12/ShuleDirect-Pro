@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -34,7 +33,8 @@ import {
   FileText,
   MessageSquare,
   Zap,
-  Activity
+  Activity,
+  ArrowUpCircle
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -61,6 +61,12 @@ const transactions = [
   { id: "TX-9023", student: "Baraka Juma", type: "Stationery", amount: "45,000", method: "Cash", date: "2024-05-11", status: "Success", controlNo: "N/A" },
 ]
 
+const pettyCash = [
+  { id: "PC-001", item: "Laboratory Reagents", amount: "85,000", dept: "Science", status: "Approved" },
+  { id: "PC-002", item: "A4 Printing Paper", amount: "45,000", dept: "Admin", status: "Approved" },
+  { id: "PC-003", item: "Football Pump", amount: "12,000", dept: "Sports", status: "Pending" },
+]
+
 export default function FinancePage() {
   const { toast } = useToast()
   const [controlNo, setControlNo] = useState<string | null>(null)
@@ -69,7 +75,7 @@ export default function FinancePage() {
   const handleGenerateControlNumber = () => {
     const newNo = "99" + Math.floor(100000000 + Math.random() * 900000000).toString()
     setControlNo(newNo)
-    triggerN8nWebhook("fee-payment", { studentName: "Student", amount: "650000", controlNumber: newNo });
+    triggerN8nWebhook("fee-payment", { studentName: "Student Node", amount: "650000", controlNumber: newNo });
     toast({ title: "Control Number Generated", description: `Payment ID ${newNo} dispatched via n8n gateway.` })
   }
 
@@ -90,10 +96,9 @@ export default function FinancePage() {
             Financial Node • Audit Ready 2026
           </Badge>
           <h1 className="text-2xl sm:text-3xl font-headline font-black text-primary tracking-tight">Institutional Accounts</h1>
-          <p className="text-muted-foreground font-medium text-xs sm:text-sm max-w-xl">Revenue assurance and ClickPesa reconciliation node.</p>
+          <p className="text-muted-foreground font-medium text-xs sm:text-sm max-w-xl">Revenue assurance, ClickPesa reconciliation, and petty cash hub.</p>
         </div>
         
-        {/* Beem SMS Credits Node */}
         <Card className="border-none shadow-xl bg-accent text-white rounded-3xl p-6 min-w-[280px] overflow-hidden relative group">
            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
              <MessageSquare className="h-20 w-20" />
@@ -116,13 +121,13 @@ export default function FinancePage() {
           { title: "Revenue", value: "142.5M", icon: Banknote, color: "text-green-600" },
           { title: "Outstanding", value: "18.2M", icon: ArrowUpRight, color: "text-destructive" },
           { title: "Expenditure", value: "45.1M", icon: TrendingDown, color: "text-orange-600" },
-          { title: "Gateway", value: "ONLINE", icon: Activity, color: "text-primary" },
+          { title: "Petty Cash", value: "1.2M", icon: Wallet, color: "text-primary" },
         ].map((stat) => (
-          <Card key={stat.title} className="border-none shadow-xl rounded-[2rem] bg-white/60 backdrop-blur-md overflow-hidden">
+          <Card key={stat.title} className="border-none shadow-xl rounded-[2rem] bg-white/60 backdrop-blur-md overflow-hidden group hover:-translate-y-1 transition-all">
             <CardContent className="p-5 sm:p-6">
               <p className="text-[8px] sm:text-[10px] font-black uppercase text-muted-foreground tracking-widest">{stat.title}</p>
               <div className="flex items-baseline gap-1 mt-2">
-                <span className="text-[10px] font-black text-muted-foreground">{stat.title === "Gateway" ? "" : "TZS"}</span>
+                <span className="text-[10px] font-black text-muted-foreground">TZS</span>
                 <span className={cn("text-xl sm:text-2xl font-black truncate", stat.color)}>{stat.value}</span>
               </div>
             </CardContent>
@@ -130,97 +135,185 @@ export default function FinancePage() {
         ))}
       </div>
 
-      <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-card/60 backdrop-blur-md">
-        <CardHeader className="bg-muted/30 p-6 sm:p-10 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-          <div className="space-y-1">
-            <CardTitle className="text-xl font-black">Fee Reconciliation</CardTitle>
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Verified transactions via 2026 Node</CardDescription>
-          </div>
-          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-            <Button variant="outline" className="flex-1 sm:flex-none h-12 rounded-full border-none bg-white shadow-sm font-black text-[10px] uppercase text-primary px-6">
-              <Filter className="h-4 w-4 mr-2" /> Filter
-            </Button>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="flex-1 sm:flex-none h-12 rounded-full colorful-gradient font-black text-[10px] uppercase px-8 shadow-xl">
-                  <Plus className="h-4 w-4 mr-2" /> Create Invoice
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl max-w-md font-body">
-                <DialogHeader className="bg-primary/5 p-8 border-b">
-                  <DialogTitle className="text-xl font-black text-primary">Invoice Node</DialogTitle>
-                  <DialogDescription className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Generate official control numbers.</DialogDescription>
-                </DialogHeader>
-                <div className="p-8 space-y-6">
-                  <div className="space-y-2">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground">Target Student</Label>
-                    <Input placeholder="Search name..." className="h-12 rounded-xl bg-muted/20 border-none font-bold" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[9px] font-black uppercase text-muted-foreground">Category</Label>
-                      <Input defaultValue="Tuition Fee" className="h-12 rounded-xl bg-muted/20 border-none font-bold" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-[9px] font-black uppercase text-muted-foreground">Amount (TZS)</Label>
-                      <Input type="number" defaultValue="650000" className="h-12 rounded-xl bg-muted/20 border-none font-black text-primary" />
-                    </div>
-                  </div>
-                  {controlNo && (
-                    <div className="p-6 bg-green-50 border border-green-100 rounded-[2rem] text-center">
-                      <p className="text-[10px] text-green-700 font-black uppercase mb-2">Active Control No</p>
-                      <p className="text-3xl font-mono font-black text-green-900 tracking-tight">{controlNo}</p>
-                    </div>
-                  )}
-                </div>
-                <DialogFooter className="p-8 pt-0">
-                  <Button onClick={handleGenerateControlNumber} className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-xl group">
-                    <SmartphoneNfc className="mr-2 h-5 w-5" /> 
-                    Generate & SMS Parent
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <Table className="min-w-[800px]">
-            <TableHeader className="bg-muted/10">
-              <TableRow className="border-none h-14">
-                <TableHead className="pl-10 text-[9px] font-black uppercase tracking-widest">Student Payload</TableHead>
-                <TableHead className="text-[9px] font-black uppercase tracking-widest">Control Number</TableHead>
-                <TableHead className="text-[9px] font-black uppercase tracking-widest">Amount (TZS)</TableHead>
-                <TableHead className="text-[9px] font-black uppercase tracking-widest">Status</TableHead>
-                <TableHead className="text-right pr-10 text-[9px] font-black uppercase tracking-widest">Hub</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions.map((tx) => (
-                <TableRow key={tx.id} className="group border-b last:border-none hover:bg-primary/[0.02] transition-colors">
-                  <TableCell className="pl-10 py-6">
-                    <p className="font-black text-sm">{tx.student}</p>
-                    <p className="text-[9px] text-muted-foreground font-mono font-black uppercase">{tx.id}</p>
-                  </TableCell>
-                  <TableCell>
-                    <code className="text-[10px] font-black bg-muted px-3 py-1 rounded-lg text-foreground/70">{tx.controlNo}</code>
-                  </TableCell>
-                  <TableCell className="font-black text-sm">TZS {tx.amount}</TableCell>
-                  <TableCell>
-                    <Badge className="bg-green-100 text-green-700 border-none font-black text-[9px] px-4 py-1 rounded-full">SUCCESS</Badge>
-                  </TableCell>
-                  <TableCell className="text-right pr-10">
-                    <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 text-muted-foreground hover:text-primary">
-                      <ChevronRight className="h-5 w-5" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="fees" className="space-y-8">
+        <TabsList className="bg-muted/40 p-1 rounded-2xl h-12 flex w-full sm:w-fit overflow-x-auto shadow-inner">
+          <TabsTrigger value="fees" className="rounded-xl font-black px-8 text-[10px] uppercase tracking-widest">Fee Ledger</TabsTrigger>
+          <TabsTrigger value="petty" className="rounded-xl font-black px-8 text-[10px] uppercase tracking-widest">Petty Cash Node</TabsTrigger>
+        </TabsList>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-10 rounded-[3rem] bg-primary text-white shadow-2xl relative overflow-hidden">
+        <TabsContent value="fees" className="space-y-6">
+          <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-card/60 backdrop-blur-md">
+            <CardHeader className="bg-muted/30 p-6 sm:p-10 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+              <div className="space-y-1">
+                <CardTitle className="text-xl font-black">Fee Reconciliation</CardTitle>
+                <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Verified transactions via 2026 Node</CardDescription>
+              </div>
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                <Button variant="outline" className="flex-1 sm:flex-none h-12 rounded-full border-none bg-white shadow-sm font-black text-[10px] uppercase text-primary px-6">
+                  <Filter className="h-4 w-4 mr-2" /> Filter
+                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="flex-1 sm:flex-none h-12 rounded-full colorful-gradient font-black text-[10px] uppercase px-8 shadow-xl">
+                      <Plus className="h-4 w-4 mr-2" /> Create Invoice
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl max-w-md font-body">
+                    <DialogHeader className="bg-primary/5 p-8 border-b">
+                      <DialogTitle className="text-xl font-black text-primary">Invoice Node</DialogTitle>
+                      <DialogDescription className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Generate official control numbers.</DialogDescription>
+                    </DialogHeader>
+                    <div className="p-8 space-y-6">
+                      <div className="space-y-2">
+                        <Label className="text-[9px] font-black uppercase text-muted-foreground">Target Student</Label>
+                        <Input placeholder="Search name..." className="h-12 rounded-xl bg-muted/20 border-none font-bold" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-[9px] font-black uppercase text-muted-foreground">Category</Label>
+                          <Input defaultValue="Tuition Fee" className="h-12 rounded-xl bg-muted/20 border-none font-bold" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[9px] font-black uppercase text-muted-foreground">Amount (TZS)</Label>
+                          <Input type="number" defaultValue="650000" className="h-12 rounded-xl bg-muted/20 border-none font-black text-primary" />
+                        </div>
+                      </div>
+                      {controlNo && (
+                        <div className="p-6 bg-green-50 border border-green-100 rounded-[2rem] text-center">
+                          <p className="text-[10px] text-green-700 font-black uppercase mb-2">Active Control No</p>
+                          <p className="text-3xl font-mono font-black text-green-900 tracking-tight">{controlNo}</p>
+                        </div>
+                      )}
+                    </div>
+                    <DialogFooter className="p-8 pt-0">
+                      <Button onClick={handleGenerateControlNumber} className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-xl group">
+                        <SmartphoneNfc className="mr-2 h-5 w-5" /> 
+                        Generate & SMS Parent
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0 overflow-x-auto">
+              <Table className="min-w-[800px]">
+                <TableHeader className="bg-muted/10">
+                  <TableRow className="border-none h-14">
+                    <TableHead className="pl-10 text-[9px] font-black uppercase tracking-widest">Student Payload</TableHead>
+                    <TableHead className="text-[9px] font-black uppercase tracking-widest">Control Number</TableHead>
+                    <TableHead className="text-[9px] font-black uppercase tracking-widest">Amount (TZS)</TableHead>
+                    <TableHead className="text-[9px] font-black uppercase tracking-widest">Status</TableHead>
+                    <TableHead className="text-right pr-10 text-[9px] font-black uppercase tracking-widest">Hub</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {transactions.map((tx) => (
+                    <TableRow key={tx.id} className="group border-b last:border-none hover:bg-primary/[0.02] transition-colors">
+                      <TableCell className="pl-10 py-6">
+                        <p className="font-black text-sm">{tx.student}</p>
+                        <p className="text-[9px] text-muted-foreground font-mono font-black uppercase">{tx.id}</p>
+                      </TableCell>
+                      <TableCell>
+                        <code className="text-[10px] font-black bg-muted px-3 py-1 rounded-lg text-foreground/70">{tx.controlNo}</code>
+                      </TableCell>
+                      <TableCell className="font-black text-sm">TZS {tx.amount}</TableCell>
+                      <TableCell>
+                        <Badge className="bg-green-100 text-green-700 border-none font-black text-[9px] px-4 py-1 rounded-full">SUCCESS</Badge>
+                      </TableCell>
+                      <TableCell className="text-right pr-10">
+                        <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 text-muted-foreground hover:text-primary">
+                          <ChevronRight className="h-5 w-5" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="petty" className="space-y-6">
+           <div className="grid gap-6 lg:grid-cols-12">
+              <Card className="lg:col-span-8 border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white/60 backdrop-blur-md">
+                <CardHeader className="bg-muted/20 border-b p-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+                  <div className="space-y-1 text-center sm:text-left">
+                    <CardTitle className="text-xl font-black uppercase">Petty Cash Node</CardTitle>
+                    <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Institutional operational expenditure hub</CardDescription>
+                  </div>
+                  <Button className="rounded-full h-11 px-8 colorful-gradient font-black text-[10px] uppercase shadow-lg">
+                    <ArrowDownCircle className="mr-2 h-4 w-4" /> Log Expense
+                  </Button>
+                </CardHeader>
+                <CardContent className="p-0 overflow-x-auto">
+                  <Table className="min-w-[600px]">
+                    <TableHeader className="bg-muted/10">
+                      <TableRow className="border-none">
+                        <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Expense Node</TableHead>
+                        <TableHead className="text-[9px] font-black uppercase tracking-widest">Department</TableHead>
+                        <TableHead className="text-[9px] font-black uppercase tracking-widest">Amount</TableHead>
+                        <TableHead className="text-right pr-8 text-[9px] font-black uppercase tracking-widest">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pettyCash.map((item) => (
+                        <TableRow key={item.id} className="group hover:bg-primary/[0.02] border-b last:border-none transition-colors">
+                          <TableCell className="pl-8 py-6">
+                            <p className="font-black text-sm text-foreground/80">{item.item}</p>
+                            <p className="text-[9px] font-mono font-black text-muted-foreground uppercase">{item.id}</p>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="rounded-full font-black text-[8px] uppercase tracking-widest border-primary/10 bg-primary/5 text-primary">
+                              {item.dept} Node
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono font-black text-xs text-foreground/70">TZS {item.amount}</TableCell>
+                          <TableCell className="text-right pr-8">
+                            <Badge className={cn(
+                              "text-[9px] font-black uppercase px-3 py-0.5 rounded-full border-none",
+                              item.status === "Approved" ? "bg-green-100 text-green-700" : "bg-orange-50 text-orange-600"
+                            )}>
+                              {item.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+
+              <div className="lg:col-span-4 space-y-6">
+                 <Card className="border-none shadow-xl rounded-[2.5rem] bg-primary text-white p-8 relative overflow-hidden group">
+                    <Wallet className="absolute -right-4 -top-4 h-24 w-24 opacity-10 group-hover:rotate-12 transition-transform" />
+                    <div className="relative z-10 space-y-6">
+                       <div className="space-y-1">
+                         <p className="text-[9px] font-black uppercase tracking-widest text-white/60">Float Management</p>
+                         <h3 className="text-2xl font-black tracking-tight">Main Petty Float</h3>
+                       </div>
+                       <div className="p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10">
+                          <p className="text-[10px] font-black uppercase text-white/40 tracking-widest mb-1">Available Node Float</p>
+                          <p className="text-3xl font-black">TZS 1.2M</p>
+                       </div>
+                       <Button className="w-full h-12 rounded-2xl bg-white text-primary hover:bg-white/90 font-black text-[10px] uppercase tracking-widest shadow-2xl">Refill Float Node</Button>
+                    </div>
+                 </Card>
+
+                 <Card className="border-none shadow-xl rounded-[2.5rem] bg-accent/5 border border-accent/10 p-8">
+                    <div className="flex items-center gap-3 mb-4 text-accent">
+                       <Activity className="h-5 w-5" />
+                       <span className="text-[10px] font-black uppercase tracking-widest">Audit Notice</span>
+                    </div>
+                    <p className="text-xs font-medium text-accent/80 leading-relaxed">
+                      Operational expenditure for the 2026 Season must be reconciled weekly. Ensure all science lab reagents are logged via Petty Cash Node PC-X.
+                    </p>
+                 </Card>
+              </div>
+           </div>
+        </TabsContent>
+      </Tabs>
+
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-10 rounded-[3rem] bg-primary text-white shadow-2xl relative overflow-hidden mt-8">
         <div className="space-y-2 relative z-10 text-center sm:text-left">
           <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-none text-white">Generate Global Ledger</h2>
           <p className="text-white/70 font-medium text-[10px] uppercase tracking-widest">Official reporting node for 2026 academic audits.</p>

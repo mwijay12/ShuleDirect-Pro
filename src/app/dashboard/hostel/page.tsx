@@ -18,7 +18,8 @@ import {
   Droplets,
   MoreVertical,
   Activity,
-  AlertCircle
+  AlertCircle,
+  CheckCircle2
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -57,14 +58,13 @@ export default function HostelPage() {
 
   return (
     <div className="space-y-8 max-w-full mx-auto pb-24 overflow-x-hidden">
-      {/* Editorial Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 px-1">
         <div className="space-y-2">
           <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary px-4 py-1 h-6 text-[9px] font-black tracking-widest rounded-full uppercase">
             Logistics & Housing Node
           </Badge>
           <h1 className="text-3xl sm:text-4xl font-headline font-black text-primary tracking-tight">Hostel Management</h1>
-          <p className="text-muted-foreground font-medium text-sm">Institutional boarding infrastructure, room allocations, and safety audits.</p>
+          <p className="text-muted-foreground font-medium text-sm">Institutional boarding infrastructure, utility monitoring, and safety audits.</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto shrink-0">
           <Button variant="outline" className="flex-1 sm:flex-none rounded-full h-12 px-6 border-primary/20 text-primary font-black text-[10px] uppercase tracking-widest bg-white shadow-sm">
@@ -76,13 +76,12 @@ export default function HostelPage() {
         </div>
       </div>
 
-      {/* Pulse Stats Grid */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Total Boarders", value: "570", sub: "85% Capacity", icon: Users, color: "text-primary" },
           { label: "Empty Beds", value: "80", sub: "Across all Wings", icon: Bed, color: "text-accent" },
-          { label: "Avg Safety", value: "97%", sub: "Audit Score", icon: ShieldCheck, color: "text-green-600" },
-          { label: "Alerts", value: "0", sub: "All Clear Today", icon: Activity, color: "text-orange-600" },
+          { label: "LUKU Node", value: "TZS 450k", sub: "Electricity Hub", icon: Zap, color: "text-yellow-600" },
+          { label: "Water Level", value: "92%", sub: "Reserves Normal", icon: Droplets, color: "text-blue-600" },
         ].map((stat) => (
           <Card key={stat.label} className="border-none shadow-xl bg-white/60 backdrop-blur-md rounded-[2rem] overflow-hidden group hover:-translate-y-1 transition-all">
              <CardContent className="p-5 sm:p-6 relative">
@@ -90,8 +89,8 @@ export default function HostelPage() {
                   <stat.icon className="h-16 w-16 sm:h-20 sm:w-20" />
                 </div>
                 <p className="text-[8px] sm:text-[10px] uppercase font-black text-muted-foreground tracking-widest">{stat.label}</p>
-                <p className={cn("text-xl sm:text-3xl font-black mt-2 tracking-tighter", stat.color)}>{stat.value}</p>
-                <p className="text-[8px] text-muted-foreground font-black mt-1 uppercase tracking-widest">{stat.sub}</p>
+                <p className={cn("text-xl sm:text-2xl font-black mt-2 tracking-tighter truncate", stat.color)}>{stat.value}</p>
+                <p className="text-[8px] text-muted-foreground font-black mt-1 uppercase tracking-widest truncate">{stat.sub}</p>
              </CardContent>
           </Card>
         ))}
@@ -100,7 +99,7 @@ export default function HostelPage() {
       <Tabs defaultValue="wings" className="space-y-8">
         <TabsList className="bg-muted/40 p-1 rounded-2xl h-14 flex w-full sm:w-fit overflow-x-auto shadow-inner">
           <TabsTrigger value="wings" className="rounded-xl font-black px-8 py-2 text-xs uppercase tracking-widest">Hostel Wings</TabsTrigger>
-          <TabsTrigger value="students" className="rounded-xl font-black px-8 py-2 text-xs uppercase tracking-widest">Boarding Register</TabsTrigger>
+          <TabsTrigger value="utilities" className="rounded-xl font-black px-8 py-2 text-xs uppercase tracking-widest">Utility Pulse</TabsTrigger>
           <TabsTrigger value="maintenance" className="rounded-xl font-black px-8 py-2 text-xs uppercase tracking-widest">Facility Audit</TabsTrigger>
         </TabsList>
 
@@ -117,7 +116,7 @@ export default function HostelPage() {
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-black text-foreground/80">{hostel.occupied}</div>
-                    <div className="text-[10px] font-black text-muted-foreground uppercase tracking-tighter">Students Enrolled</div>
+                    <div className="text-[10px] font-black text-muted-foreground uppercase tracking-tighter">Enrolled Nodes</div>
                   </div>
                 </div>
               </CardHeader>
@@ -128,8 +127,8 @@ export default function HostelPage() {
                     <p className="text-sm font-bold text-foreground/70">{hostel.warden}</p>
                   </div>
                   <div className="space-y-1 text-right">
-                    <p className="text-[10px] uppercase font-black text-muted-foreground tracking-[0.2em]">Efficiency</p>
-                    <p className="text-sm font-bold text-green-600">Healthy Node</p>
+                    <p className="text-[10px] uppercase font-black text-muted-foreground tracking-[0.2em]">Safety Index</p>
+                    <p className="text-sm font-bold text-green-600">{hostel.safetyScore}%</p>
                   </div>
                 </div>
                 
@@ -142,14 +141,11 @@ export default function HostelPage() {
                 </div>
 
                 <div className="pt-4 border-t flex justify-between items-center">
-                  <div className="flex gap-2">
-                    <Badge variant="outline" className="h-6 px-3 text-[9px] font-black uppercase border-primary/10 bg-primary/5 text-primary">CCTV LIVE</Badge>
-                    <Badge variant="outline" className="h-6 px-3 text-[9px] font-black uppercase border-accent/10 bg-accent/5 text-accent">WI-FI ACTIVE</Badge>
-                  </div>
+                  <Badge variant="outline" className="h-6 px-3 text-[9px] font-black uppercase border-primary/10 bg-primary/5 text-primary">CCTV LIVE</Badge>
                   <Sheet>
                     <SheetTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-10 px-6 font-black text-[10px] uppercase tracking-widest text-primary rounded-full hover:bg-primary/5 transition-all group" onClick={() => setSelectedWing(hostel)}>
-                        Inspect Block <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                        Inspect Node <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     </SheetTrigger>
                     <SheetContent className="w-full sm:max-w-2xl overflow-y-auto border-l-0 shadow-2xl p-0 font-body">
@@ -178,7 +174,7 @@ export default function HostelPage() {
                           <TabsList className="grid w-full grid-cols-3 bg-muted/40 p-1 rounded-2xl h-14 shadow-inner">
                             <TabsTrigger value="overview" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Overview</TabsTrigger>
                             <TabsTrigger value="inspection" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Inspection</TabsTrigger>
-                            <TabsTrigger value="utilities" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Utilities</TabsTrigger>
+                            <TabsTrigger value="health" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Health</TabsTrigger>
                           </TabsList>
 
                           <TabsContent value="overview" className="space-y-10">
@@ -195,15 +191,17 @@ export default function HostelPage() {
 
                             <div className="space-y-6">
                               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2 px-2">
-                                <Stethoscope className="h-4 w-4 text-destructive shrink-0" /> Health & Medical Node
+                                <Zap className="h-4 w-4 text-yellow-500 shrink-0" /> LUKU Node Status
                               </h3>
-                              <Card className="border-none shadow-sm bg-destructive/5 p-6 rounded-[2rem] border border-destructive/10">
-                                <p className="text-xs text-destructive/80 font-medium leading-relaxed pr-4">
-                                  System Node: 3 students currently in the wing sickbay with minor symptoms. Warden has issued daily wellness logs.
-                                </p>
-                                <Button variant="outline" size="sm" className="mt-4 rounded-full font-black text-[9px] uppercase tracking-widest border-destructive/20 text-destructive hover:bg-destructive/5">
-                                  Access Health Logs
-                                </Button>
+                              <Card className="border-none shadow-sm bg-yellow-50/50 p-6 rounded-[2rem] border border-yellow-100">
+                                <div className="flex justify-between items-end mb-4">
+                                  <div>
+                                    <p className="text-xs font-bold text-yellow-900">Current Balance</p>
+                                    <p className="text-2xl font-black text-yellow-950">TZS 45,200</p>
+                                  </div>
+                                  <Badge className="bg-yellow-200 text-yellow-800 border-none font-black text-[8px] px-3 py-1 rounded-full uppercase">Est. 4 Days</Badge>
+                                </div>
+                                <Progress value={45} className="h-2 bg-yellow-200/50" />
                               </Card>
                             </div>
                           </TabsContent>
@@ -213,7 +211,7 @@ export default function HostelPage() {
                               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2">
                                 <ClipboardList className="h-4 w-4 text-primary shrink-0" /> Audit Checklist
                               </h3>
-                              <Badge className="bg-primary/10 text-primary border-none font-black text-[9px] px-4 py-1 rounded-full uppercase tracking-widest">Weekly Cycle</Badge>
+                              <Badge className="bg-primary/10 text-primary border-none font-black text-[9px] px-4 py-1 rounded-full uppercase tracking-widest">Weekly Node</Badge>
                             </div>
                             
                             <div className="space-y-3">
@@ -224,7 +222,7 @@ export default function HostelPage() {
                                 { task: "Evening Roll Call Node", icon: Users, status: "Done" },
                                 { task: "Emergency Exit Clearance", icon: ShieldCheck, status: "Pending" },
                               ].map((item, i) => (
-                                <div key={i} className="flex items-center justify-between p-5 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-muted/50 group hover:border-primary/20 transition-all cursor-pointer">
+                                <div key={i} className="flex items-center justify-between p-5 bg-white rounded-2xl shadow-sm border border-muted/50 group hover:border-primary/20 transition-all cursor-pointer">
                                   <div className="flex items-center gap-4">
                                     <div className="h-10 w-10 rounded-xl bg-muted/30 flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
                                       <item.icon className="h-5 w-5" />
@@ -244,49 +242,20 @@ export default function HostelPage() {
                               ))}
                             </div>
                             <Button className="w-full h-14 rounded-2xl colorful-gradient font-black uppercase text-xs tracking-[0.2em] shadow-xl group">
-                              Submit Wing Report <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                              Submit Audit <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                             </Button>
                           </TabsContent>
 
-                          <TabsContent value="utilities" className="space-y-10">
-                             <div className="space-y-6 p-8 rounded-[2.5rem] bg-yellow-50/50 border border-yellow-100 shadow-inner">
-                               <div className="flex items-center justify-between mb-4">
-                                 <div className="flex items-center gap-3">
-                                   <div className="h-10 w-10 rounded-xl bg-yellow-100 flex items-center justify-center text-yellow-600">
-                                     <Zap className="h-5 w-5" />
-                                   </div>
-                                   <div>
-                                     <p className="text-[10px] font-black uppercase tracking-widest text-yellow-800/60">Electricity Hub</p>
-                                     <p className="text-sm font-black text-yellow-900">LUKU Control Node</p>
-                                   </div>
-                                 </div>
-                                 <span className="text-xs font-mono font-black text-yellow-900">TZS 450,200</span>
+                          <TabsContent value="health" className="space-y-6">
+                             <div className="p-8 rounded-[2.5rem] bg-destructive/5 border border-destructive/10 text-center space-y-4">
+                               <Stethoscope className="h-10 w-10 text-destructive mx-auto animate-float" />
+                               <div className="space-y-1">
+                                 <p className="text-lg font-black text-destructive tracking-tight">Medical Sickbay Node</p>
+                                 <p className="text-xs font-medium text-destructive/70">3 Active health logs currently tracked in this wing.</p>
                                </div>
-                               <div className="h-3 w-full bg-yellow-200/50 rounded-full overflow-hidden">
-                                 <div className="h-full bg-yellow-500 animate-pulse-soft" style={{ width: '45%' }} />
-                               </div>
-                               <p className="text-[9px] font-black uppercase text-yellow-800/40 text-center tracking-widest">Est. 12 Days remaining based on current load</p>
-                             </div>
-
-                             <div className="space-y-6 p-8 rounded-[2.5rem] bg-blue-50/50 border border-blue-100 shadow-inner">
-                               <div className="flex items-center justify-between mb-4">
-                                 <div className="flex items-center gap-3">
-                                   <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
-                                     <Droplets className="h-5 w-5" />
-                                   </div>
-                                   <div>
-                                     <p className="text-[10px] font-black uppercase tracking-widest text-blue-800/60">Water Reserves</p>
-                                     <p className="text-sm font-black text-blue-900">Main Tank Node</p>
-                                   </div>
-                                 </div>
-                                 <span className="text-xs font-mono font-black text-blue-900">92% Capacity</span>
-                               </div>
-                               <div className="h-3 w-full bg-blue-200/50 rounded-full overflow-hidden">
-                                 <div className="h-full bg-blue-500" style={{ width: '92%' }} />
-                               </div>
-                               <div className="flex justify-center items-center gap-2 text-blue-600 font-black text-[9px] uppercase tracking-widest">
-                                 <CheckCircle2 className="h-3 w-3" /> Supply Normal Flow
-                               </div>
+                               <Button variant="outline" className="w-full rounded-full border-destructive/20 text-destructive font-black text-[9px] uppercase tracking-widest h-11">
+                                 View Sickbay Registry
+                               </Button>
                              </div>
                           </TabsContent>
                         </Tabs>
@@ -297,6 +266,54 @@ export default function HostelPage() {
               </CardContent>
             </Card>
           ))}
+        </TabsContent>
+
+        <TabsContent value="utilities" className="space-y-8">
+           <div className="grid gap-6 md:grid-cols-2">
+              <Card className="border-none shadow-2xl rounded-[3rem] bg-yellow-50/50 p-10 border border-yellow-100 overflow-hidden relative group">
+                 <Zap className="absolute -right-4 -top-4 h-32 w-32 text-yellow-200/40 group-hover:rotate-12 transition-transform" />
+                 <div className="relative z-10 space-y-6">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-yellow-800/60">Electricity Hub</p>
+                    <div className="space-y-1">
+                      <h3 className="text-3xl font-black text-yellow-900 tracking-tighter">LUKU Control Node</h3>
+                      <p className="text-sm font-medium text-yellow-800/70">Centralized institutional electricity management.</p>
+                    </div>
+                    <div className="flex items-center gap-4 py-4 border-y border-yellow-200/50">
+                       <div className="h-12 w-12 rounded-2xl bg-white shadow-xl flex items-center justify-center text-yellow-600">
+                         <Zap className="h-6 w-6" />
+                       </div>
+                       <div className="flex-1">
+                         <p className="text-[9px] font-black uppercase text-yellow-800/40 tracking-widest">Main Node Balance</p>
+                         <p className="text-xl font-black text-yellow-900">TZS 1,240,500</p>
+                       </div>
+                    </div>
+                    <Button className="w-full h-12 rounded-2xl bg-yellow-600 hover:bg-yellow-700 text-white font-black text-[10px] uppercase tracking-widest shadow-xl">Recharge Node</Button>
+                 </div>
+              </Card>
+
+              <Card className="border-none shadow-2xl rounded-[3rem] bg-blue-50/50 p-10 border border-blue-100 overflow-hidden relative group">
+                 <Droplets className="absolute -right-4 -top-4 h-32 w-32 text-blue-200/40 group-hover:rotate-12 transition-transform" />
+                 <div className="relative z-10 space-y-6">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-800/60">Water Infrastructure</p>
+                    <div className="space-y-1">
+                      <h3 className="text-3xl font-black text-blue-900 tracking-tighter">Reserves Tracking</h3>
+                      <p className="text-sm font-medium text-blue-800/70">Main Tank & Reservoir supply status.</p>
+                    </div>
+                    <div className="space-y-3">
+                       <div className="flex justify-between text-[10px] font-black uppercase text-blue-800/60 tracking-widest">
+                         <span>Tank Alpha</span>
+                         <span>92%</span>
+                       </div>
+                       <div className="h-3 w-full bg-blue-200/50 rounded-full overflow-hidden shadow-inner">
+                         <div className="h-full bg-blue-500 animate-pulse-soft" style={{ width: '92%' }} />
+                       </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-blue-600 font-black text-[9px] uppercase tracking-[0.2em] justify-center pt-2">
+                      <CheckCircle2 className="h-3 w-3" /> Supply Healthy
+                    </div>
+                 </div>
+              </Card>
+           </div>
         </TabsContent>
 
         <TabsContent value="maintenance" className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -326,7 +343,6 @@ export default function HostelPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Audit Alert */}
       <div className="p-10 rounded-[3rem] bg-primary/5 border-2 border-dashed border-primary/20 flex flex-col items-center text-center space-y-4 mx-1">
          <div className="h-14 w-14 rounded-full bg-white flex items-center justify-center shadow-xl text-primary border border-primary/10">
            <AlertCircle className="h-7 w-7" />

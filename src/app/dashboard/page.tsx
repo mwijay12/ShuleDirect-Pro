@@ -18,7 +18,10 @@ import {
   Building2,
   Layers,
   Zap,
-  AlertCircle
+  AlertCircle,
+  ShieldCheck,
+  RefreshCw,
+  Globe
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { 
@@ -55,10 +58,10 @@ const stats = [
     bg: "bg-primary/5",
   },
   {
-    title: "Academic Tiers",
-    value: "3 Levels",
-    description: "National Standard",
-    icon: Layers,
+    title: "Syllabus Coverage",
+    value: "78.4%",
+    description: "National Average",
+    icon: Target,
     color: "text-purple-600",
     bg: "bg-purple-100/50",
   },
@@ -80,13 +83,37 @@ const stats = [
   },
 ]
 
+// Target Icon needed for stats
+const Target = ({ className }: { className?: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="6" />
+    <circle cx="12" cy="12" r="2" />
+  </svg>
+)
+
 export default function DashboardPage() {
   const [note, setNote] = useState("")
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
 
   useEffect(() => {
     setIsLoaded(true)
   }, [])
+
+  const handleSyncNode = () => {
+    setIsSyncing(true)
+    setTimeout(() => setIsSyncing(false), 2000)
+  }
 
   return (
     <div className={cn("space-y-8 transition-all duration-700 pb-24 px-1", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
@@ -98,9 +125,16 @@ export default function DashboardPage() {
           <h1 className="text-2xl sm:text-3xl font-headline font-black text-primary tracking-tight uppercase">Management Pulse</h1>
           <p className="text-muted-foreground font-bold text-[10px] uppercase tracking-widest leading-none">Global institutional insights for the 2026 academic season.</p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Button size="sm" variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary font-black text-[10px] uppercase tracking-widest bg-white shadow-sm">
-            <Calendar className="mr-2 h-4 w-4" /> Season Map
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={handleSyncNode}
+            disabled={isSyncing}
+            className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary font-black text-[9px] uppercase tracking-widest bg-white shadow-sm"
+          >
+            {isSyncing ? <RefreshCw className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Globe className="mr-2 h-3.5 w-3.5" />}
+            {isSyncing ? "SYNCING NODE" : "SOVEREIGN SYNC"}
           </Button>
           <Button size="sm" className="flex-1 sm:flex-none rounded-full h-11 colorful-gradient font-black text-[10px] uppercase tracking-widest shadow-xl group">
             <Sparkles className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" /> AI Performance Hub
@@ -186,12 +220,12 @@ export default function DashboardPage() {
                <Card className="border-none shadow-xl bg-primary/5 overflow-hidden group hover:shadow-2xl transition-all p-8 rounded-[2.5rem]">
                   <div className="flex flex-col h-full justify-between gap-8">
                      <div>
-                       <Badge className="bg-primary text-white font-black text-[9px] px-4 py-1 rounded-full mb-4 uppercase tracking-widest shadow-lg">PERSONNEL</Badge>
-                       <h3 className="text-2xl font-black text-primary tracking-tighter uppercase leading-none">124 Staff</h3>
-                       <p className="text-[10px] font-bold text-primary/60 mt-3 uppercase tracking-widest leading-relaxed">Professional educators across 12 academic departments hub.</p>
+                       <Badge className="bg-primary text-white font-black text-[9px] px-4 py-1 rounded-full mb-4 uppercase tracking-widest shadow-lg">HOSTEL HUB</Badge>
+                       <h3 className="text-2xl font-black text-primary tracking-tighter uppercase leading-none">Utility Healthy</h3>
+                       <p className="text-[10px] font-bold text-primary/60 mt-3 uppercase tracking-widest leading-relaxed">LUKU and Water nodes monitored across 4 primary wings hub.</p>
                      </div>
                      <Button variant="ghost" className="w-fit text-primary font-black text-[10px] uppercase tracking-[0.2em] p-0 h-auto hover:bg-transparent group">
-                       Manage Directory <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                       Manage Housing <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                      </Button>
                   </div>
                </Card>
@@ -200,7 +234,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="lg:col-span-4 space-y-6">
-          {/* AI Early Warning System Feature */}
           <AnimatedContent distance={20} delay={0.4}>
             <Card className="border-none shadow-xl bg-destructive/5 border border-destructive/10 relative overflow-hidden group rounded-[2.5rem]">
               <div className="absolute -right-4 -top-4 opacity-5 group-hover:rotate-12 transition-transform">
@@ -263,8 +296,8 @@ export default function DashboardPage() {
                 <div className="space-y-6">
                   {[
                     { user: "H.M.", action: "Authorized Fee Batch", time: "12m ago", icon: CheckCircle2, color: "text-green-500" },
-                    { user: "Academics", action: "Stream Node Updated", time: "45m ago", icon: Clock, color: "text-primary" },
-                    { user: "System", action: "Beem Gateway Sync", time: "1h ago", icon: CheckCircle2, color: "text-accent" },
+                    { user: "Academics", action: "Syllabus Coverage Audit", time: "45m ago", icon: Target, color: "text-primary" },
+                    { user: "Warden", action: "LUKU Node Recharged", time: "1h ago", icon: Zap, color: "text-yellow-500" },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-4 group cursor-pointer transition-transform hover:translate-x-1">
                       <div className={cn("p-2.5 rounded-xl bg-muted/50 group-hover:bg-muted transition-colors shadow-inner", item.color)}>
