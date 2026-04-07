@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "School": {
@@ -45,7 +46,7 @@
         },
         "schoolId": {
           "type": "string",
-          "description": "Reference to the School the user is associated with. (Relationship: School 1:N User)"
+          "description": "Reference to the School the user is associated with."
         },
         "firstName": {
           "type": "string",
@@ -62,7 +63,7 @@
         },
         "role": {
           "type": "string",
-          "description": "The assigned role of the user within the school (e.g., 'SchoolOwner', 'Headmaster', 'Teacher', 'Bursar', 'Parent', 'MaintenanceStaff')."
+          "description": "The assigned role (e.g., 'ADMIN', 'BURSAR', 'TEACHER')."
         }
       },
       "required": [
@@ -78,124 +79,54 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Asset",
       "type": "object",
-      "description": "Represents a physical asset or property owned by the school, such as furniture, IT equipment, or supplies, requiring inventory and maintenance tracking.",
+      "description": "Represents a physical asset owned by the school.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Asset entity."
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School that owns this asset. (Relationship: School 1:N Asset)"
-        },
-        "qrCodeValue": {
-          "type": "string",
-          "description": "A unique string value generated for this asset, intended to be encoded in a QR code for quick identification and lookup when scanned."
-        },
-        "name": {
-          "type": "string",
-          "description": "The common name or title of the asset (e.g., 'Classroom Projector', 'Student Chair', 'Office Printer')."
-        },
-        "assetTag": {
-          "type": "string",
-          "description": "An optional alphanumeric tag or serial number physically affixed to the asset for additional identification."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description providing more context about the asset."
-        },
-        "category": {
-          "type": "string",
-          "description": "The classification category of the asset (e.g., 'IT Equipment', 'Classroom Furniture', 'Sports Equipment', 'Office Supplies')."
-        },
-        "location": {
-          "type": "string",
-          "description": "The specific physical location within the school where the asset is primarily kept or used (e.g., 'Room 101', 'Admin Office', 'Science Lab')."
-        },
-        "purchaseDate": {
-          "type": "string",
-          "description": "The date when the asset was acquired by the school.",
-          "format": "date-time"
-        },
-        "purchasePrice": {
-          "type": "number",
-          "description": "The monetary cost of the asset at the time of purchase."
-        },
-        "warrantyEndDate": {
-          "type": "string",
-          "description": "The date on which the manufacturer's or vendor's warranty for the asset expires.",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "The current operational condition or availability status of the asset (e.g., 'Operational', 'Under Maintenance', 'Faulty', 'Retired', 'Missing')."
-        }
+        "id": { "type": "string" },
+        "schoolId": { "type": "string" },
+        "qrCodeValue": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "location": { "type": "string" },
+        "status": { "type": "string" },
+        "condition": { "type": "string" }
       },
       "required": [
         "id",
         "schoolId",
-        "qrCodeValue",
         "name",
-        "category",
-        "location",
+        "qrCodeValue",
         "status"
       ]
     },
-    "MaintenanceLog": {
+    "Hostel": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "MaintenanceLog",
+      "title": "Hostel",
       "type": "object",
-      "description": "Records individual maintenance, repair, or inspection events performed on a specific school asset.",
+      "description": "Represents a residential wing or dormitory block.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the MaintenanceLog entity."
-        },
-        "assetId": {
-          "type": "string",
-          "description": "Reference to the Asset that this maintenance log entry pertains to. (Relationship: Asset 1:N MaintenanceLog)"
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School that owns the asset being maintained. (Relationship: School 1:N MaintenanceLog)"
-        },
-        "maintenanceDate": {
-          "type": "string",
-          "description": "The date and time when the maintenance activity was performed.",
-          "format": "date-time"
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed narrative describing the work done, issues found, or parts replaced during maintenance."
-        },
-        "performedByUserId": {
-          "type": "string",
-          "description": "Reference to the User (e.g., maintenance staff) who performed or oversaw the maintenance. (Relationship: User 1:N MaintenanceLog)"
-        },
-        "cost": {
-          "type": "number",
-          "description": "The monetary cost incurred for this specific maintenance event (e.g., labor, parts)."
-        },
-        "statusAfterMaintenance": {
-          "type": "string",
-          "description": "The operational status of the asset immediately following this maintenance event (e.g., 'Operational', 'Still Faulty', 'Repaired', 'Requires Further Action')."
-        }
+        "id": { "type": "string" },
+        "schoolId": { "type": "string" },
+        "name": { "type": "string" },
+        "block": { "type": "string" },
+        "type": { "type": "string", "enum": ["Boys", "Girls"] },
+        "capacity": { "type": "number" },
+        "occupied": { "type": "number" },
+        "rooms": { "type": "number" },
+        "warden": { "type": "string" },
+        "safetyScore": { "type": "number" }
       },
       "required": [
         "id",
-        "assetId",
         "schoolId",
-        "maintenanceDate",
-        "description",
-        "performedByUserId",
-        "statusAfterMaintenance"
+        "name",
+        "block",
+        "type"
       ]
     }
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "password"
     ]
   },
   "firestore": {
@@ -204,83 +135,34 @@
         "path": "/schools/{schoolId}",
         "definition": {
           "entityName": "School",
-          "schema": {
-            "$ref": "#/backend/entities/School"
-          },
-          "description": "Root collection for each school tenant. All data for a school is nested under its respective schoolId, ensuring strict multi-tenancy and data isolation.",
-          "params": [
-            {
-              "name": "schoolId",
-              "description": "The unique identifier for the School."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/School" },
+          "description": "Root tenant collection."
         }
       },
       {
         "path": "/schools/{schoolId}/users/{userId}",
         "definition": {
           "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profiles and roles specific to a school. The user's schoolId is implicitly denormalized from the path, and their role is stored within the document for DBAC.",
-          "params": [
-            {
-              "name": "schoolId",
-              "description": "The unique identifier of the School the user belongs to."
-            },
-            {
-              "name": "userId",
-              "description": "The unique identifier for the User, typically matching Firebase Authentication UID."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/User" },
+          "description": "Staff profiles."
         }
       },
       {
         "path": "/schools/{schoolId}/assets/{assetId}",
         "definition": {
           "entityName": "Asset",
-          "schema": {
-            "$ref": "#/backend/entities/Asset"
-          },
-          "description": "Stores details of physical assets belonging to a school. Includes schoolId for multi-tenancy. The qrCodeValue field facilitates lookups within the school's context.",
-          "params": [
-            {
-              "name": "schoolId",
-              "description": "The unique identifier of the School that owns this asset."
-            },
-            {
-              "name": "assetId",
-              "description": "The unique identifier for the Asset."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/Asset" },
+          "description": "Institutional property."
         }
       },
       {
-        "path": "/schools/{schoolId}/assets/{assetId}/maintenanceLogs/{maintenanceLogId}",
+        "path": "/schools/{schoolId}/hostels/{hostelId}",
         "definition": {
-          "entityName": "MaintenanceLog",
-          "schema": {
-            "$ref": "#/backend/entities/MaintenanceLog"
-          },
-          "description": "Records individual maintenance, repair, or inspection events performed on a specific school asset. Includes denormalized schoolId, assetId for path-based access, and denormalized 'performedByUserRole' and 'performedByUserSchoolId' for authorization independence.",
-          "params": [
-            {
-              "name": "schoolId",
-              "description": "The unique identifier of the School that owns the asset being maintained."
-            },
-            {
-              "name": "assetId",
-              "description": "The unique identifier for the Asset to which this log entry pertains."
-            },
-            {
-              "name": "maintenanceLogId",
-              "description": "The unique identifier for the MaintenanceLog entry."
-            }
-          ]
+          "entityName": "Hostel",
+          "schema": { "$ref": "#/backend/entities/Hostel" },
+          "description": "Dormitory wings."
         }
       }
-    ],
-    "reasoning": "The recommended Firestore structure for ShuleDirect Pro adopts a multi-tenant, hierarchical design, anchoring all school-specific data under a dedicated root collection for each school. This strategy is critical for ensuring data isolation, simplifying access control, and optimizing query performance in a multi-school environment. The core principle of Authorization Independence is achieved through strategic denormalization and path-based ownership.\n\n1.  **Multi-Tenancy and Structural Segregation:** The top-level `/schools/{schoolId}` collection serves as the tenant boundary. All subsequent collections, such as `users`, `assets`, and `maintenanceLogs`, are subcollections nested under a specific `schoolId`. This inherently segregates data by school, fulfilling the 'Structural Segregation' mandate by ensuring that documents within each subcollection pertain to a single tenant and share a homogeneous security posture. This dramatically simplifies security rules, as all rules can implicitly assume the `schoolId` from the path.\n\n2.  **Authorization Independence (CRITICAL):**\n    *   For `User` and `Asset` entities, the `schoolId` is included in their respective paths (`/schools/{schoolId}/users/{userId}` and `/schools/{schoolId}/assets/{assetId}`). This means that when checking access to a user or an asset, the `schoolId` can be directly accessed from the request path, eliminating the need for `get()` calls to a parent `School` document to establish the tenant context. This prevents hierarchical authorization dependencies.\n    *   For `MaintenanceLog` entries (`/schools/{schoolId}/assets/{assetId}/maintenanceLogs/{maintenanceLogId}`), the `schoolId` and `assetId` are available in the path. Crucially, to avoid a `get()` call to the `User` document to verify the `performedByUserId`'s role during a `create` or `update` operation, the `MaintenanceLog` document itself will include **denormalized fields `performedByUserRole` and `performedByUserSchoolId`**. The client application is responsible for writing these fields accurately based on the authenticated user's profile. Security rules will then validate that `request.auth.uid == request.resource.data.performedByUserId`, `request.resource.data.performedByUserRole == 'MaintenanceStaff'`, and `request.resource.data.performedByUserSchoolId == schoolId`, all without needing to perform a `get()` operation to verify the user's role in a separate document. This makes the `MaintenanceLog` document's authorization self-contained for the specific action.\n\n3.  **QAPs (Query/Access Pattern Support):**\n    *   **Secure `list` Operations:** By nesting data under `/schools/{schoolId}`, all queries for users, assets, or maintenance logs will be inherently scoped to a specific school. For instance, a query like `db.collection('schools').doc(schoolId).collection('assets')` will efficiently retrieve assets for only that school. This adheres to QAPs because security rules can enforce that `request.path.segments[1]` (the `schoolId` from the path) matches the authenticated user's `schoolId` (from their user profile) and role, thus preventing unauthorized data leakage through broad `list` queries.\n    *   **QR Code Scanning:** The `Asset` entity includes `qrCodeValue`. When a QR code is scanned, assuming the user is already authenticated within a `schoolId` context, an efficient query like `db.collection('schools').doc(schoolId).collection('assets').where('qrCodeValue', '==', scannedValue)` can quickly retrieve the asset details. This avoids the need for a global collection group query or an additional mapping collection, keeping the structure aligned with the provided entities.\n\n4.  **DBAC (Database Access Control):** User roles (`SchoolOwner`, `Headmaster`, `MaintenanceStaff`, etc.) are stored directly within each user's document at `/schools/{schoolId}/users/{userId}`. Security rules will use `request.auth.uid` to identify the current user and perform a `get()` call to *their own* user document to retrieve their `role` for granular permission checks (e.g., `allow read: if get(/databases/$(database)/documents/schools/$(schoolId)/users/$(request.auth.uid)).data.role == 'SchoolOwner'`). This is an accepted pattern for DBAC, as it checks the actor's authorization context rather than a hierarchical dependency on a separate data entity.\n\nIn summary, this structure provides a robust, scalable, and secure foundation by prioritizing multi-tenancy, strict authorization independence where critical, and efficient query patterns, all while aligning with the core design principles."
+    ]
   }
 }

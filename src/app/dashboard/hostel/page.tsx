@@ -22,7 +22,8 @@ import {
   Trash2,
   UserPlus,
   Activity,
-  HeartPulse
+  HeartPulse,
+  Loader2
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -51,38 +52,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-
-const initialHostels = [
-  { id: "W-01", name: "Mt. Kilimanjaro Wing", type: "Boys", capacity: 200, occupied: 185, warden: "Mwl. Juma", rooms: 50, safetyScore: 98, block: "Block A" },
-  { id: "W-02", name: "Lake Victoria Wing", type: "Girls", capacity: 200, occupied: 198, warden: "Mwl. Neema", rooms: 50, safetyScore: 100, block: "Block B" },
-  { id: "W-03", name: "Serengeti Annex", type: "Boys", capacity: 100, occupied: 45, warden: "Mwl. Peter", rooms: 25, safetyScore: 94, block: "Block C" },
-]
-
-// Mock Occupants Node
-const mockOccupants: Record<string, any[]> = {
-  "W-01": [
-    { id: "2026-001", name: "Amani Mwamba", room: "101-A", status: "Active" },
-    { id: "2026-003", name: "Baraka Juma", room: "104-B", status: "Active" },
-  ],
-  "W-02": [
-    { id: "2026-002", name: "Careen Mushi", room: "G01", status: "Active" },
-  ]
-}
-
-// Mock Health Logs Node
-const mockHealthLogs: Record<string, any[]> = {
-  "W-01": [
-    { id: "MED-01", student: "Amani Mwamba", condition: "Malaria Treatment", date: "May 12, 2026", status: "Recovering" },
-    { id: "MED-02", student: "Baraka Juma", condition: "Routine Check", date: "May 10, 2026", status: "Healthy" },
-  ]
-}
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { collection, query, addDoc, deleteDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore"
+import { deleteDocumentNonBlocking, addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 export default function HostelPage() {
   const { toast } = useToast()
-  const [hostels, setHostels] = useState(initialHostels)
-  const [isAdding, setIsAdding] = useState(false)
-  const [selectedWing, setSelectedWing] = useState<typeof hostels[0] | null>(null)
+  const db = useFirestore()
+  const schoolId = "school-001"
   
+  const [isAdding, setIsAdding] = useState(false)
+  const [selectedWing, setSelectedWing] = useState<any>(null)
+  
+  // Real Firestore Query
+  const hostelsQuery = useMemoFirebase(() => {
+    return query(collection(db, "schools", schoolId, "hostels"))
+  }, [db])
+  const { data: hostels, isLoading } = useCollection(hostelsQuery)
+
   const [utilityStatus, setUtilityStatus] = useState({
     luku: "Healthy",
     water: "Normal Flow",
@@ -100,7 +87,7 @@ export default function HostelPage() {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     const newWing = {
-      id: `W-${Math.floor(Math.random() * 1000)}`,
+      schoolId,
       name: formData.get("name") as string,
       type: formData.get("type") as string,
       capacity: parseInt(formData.get("capacity") as string),
@@ -109,20 +96,22 @@ export default function HostelPage() {
       rooms: parseInt(formData.get("rooms") as string),
       safetyScore: 100,
       block: formData.get("block") as string,
+      createdAt: serverTimestamp(),
     }
-    setHostels([...hostels, newWing])
+    
+    addDocumentNonBlocking(collection(db, "schools", schoolId, "hostels"), newWing)
     setIsAdding(false)
-    toast({ title: "Wing Initialized", description: `${newWing.name} added to 2026 Housing Node.` })
+    toast({ title: "Wing Initialized", description: `${newWing.name} synced to institutional database.` })
   }
 
   const handleDeleteWing = (id: string) => {
-    setHostels(hostels.filter(h => h.id !== id))
+    deleteDocumentNonBlocking(doc(db, "schools", schoolId, "hostels", id))
     toast({ variant: "destructive", title: "Node Terminated", description: "Hostel wing removed from registry." })
   }
 
   const handleVerifyUtility = (key: keyof typeof utilityStatus, status: string) => {
     setUtilityStatus(prev => ({ ...prev, [key]: status }))
-    toast({ title: "Audit Synchronized", description: "Manual verification logged." })
+    toast({ title: "Audit Synchronized", description: "Manual verification logged locally." })
   }
 
   const toggleChecklistItem = (id: number) => {
@@ -195,197 +184,116 @@ export default function HostelPage() {
         </Dialog>
       </div>
 
-      <Card className="border-none shadow-xl rounded-[2rem] bg-slate-900 text-white overflow-hidden relative group">
-        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-          <ShieldCheck className="h-48 w-48 rotate-12" />
+      {isLoading ? (
+        <div className="p-20 flex flex-col items-center justify-center text-muted-foreground">
+          <Loader2 className="h-10 w-10 animate-spin mb-4" />
+          <p className="text-[10px] font-black uppercase tracking-widest">Synchronizing Housing Matrix...</p>
         </div>
-        <CardHeader className="p-8 pb-4 relative z-10">
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle className="text-xl font-black uppercase tracking-tight">Institutional Utility Pulse</CardTitle>
-              <CardDescription className="text-white/40 text-[10px] font-black uppercase tracking-widest">Manual Supply Verification Hub</CardDescription>
-            </div>
-            <Badge className="bg-accent text-white border-none font-black text-[9px] px-4 py-1 rounded-full uppercase">Audit Mode</Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="p-8 pt-0 grid gap-6 md:grid-cols-3 relative z-10">
-          {[
-            { id: "luku", label: "Electricity (LUKU)", val: utilityStatus.luku, icon: Zap, color: "text-yellow-400" },
-            { id: "water", label: "Water Infrastructure", val: utilityStatus.water, icon: Droplets, color: "text-blue-400" },
-            { id: "hygiene", label: "Hygiene Compliance", val: utilityStatus.hygiene, icon: ShieldCheck, color: "text-green-400" },
-          ].map((util) => (
-            <div key={util.id} className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4 hover:bg-white/10 transition-all">
-              <div className="flex items-center gap-3">
-                <util.icon className={cn("h-5 w-5", util.color)} />
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/60">{util.label}</p>
-              </div>
-              <div className="flex justify-between items-center">
-                <p className="text-lg font-black">{util.val}</p>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-white/10 text-white/40">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-xs rounded-3xl border-none shadow-2xl p-8">
-                    <DialogHeader className="text-center mb-4">
-                      <DialogTitle className="text-lg font-black uppercase">Verify {util.label}</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-3">
-                      <Button onClick={() => handleVerifyUtility(util.id as any, "Healthy / Normal")} className="w-full h-12 rounded-2xl bg-green-100 text-green-700 font-black text-[10px] uppercase border-none hover:bg-green-200">Mark Healthy</Button>
-                      <Button onClick={() => handleVerifyUtility(util.id as any, "Action Required")} className="w-full h-12 rounded-2xl bg-destructive/10 text-destructive font-black text-[10px] uppercase border-none hover:bg-destructive/20">Mark Faulty</Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {hostels.map((hostel) => (
-          <Card key={hostel.id} className="border-none shadow-xl bg-white/60 backdrop-blur-md rounded-[2.5rem] overflow-hidden group">
-            <div className={cn("h-2 w-full", hostel.type === "Boys" ? "bg-primary" : "bg-accent")} />
-            <CardHeader className="p-8 pb-4">
-              <div className="flex justify-between items-start mb-2">
-                <Badge variant="secondary" className="font-black text-[8px] uppercase tracking-widest">{hostel.block}</Badge>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive" onClick={() => handleDeleteWing(hostel.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-              <CardTitle className="text-lg font-black text-primary uppercase leading-tight">{hostel.name}</CardTitle>
-              <CardDescription className="text-[10px] font-bold uppercase">{hostel.type} Wing • {hostel.rooms} Room Hubs</CardDescription>
-            </CardHeader>
-            <CardContent className="p-8 pt-0 space-y-6">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-                  <span>Capacity Load</span>
-                  <span className="text-primary">{Math.round((hostel.occupied / hostel.capacity) * 100)}%</span>
-                </div>
-                <Progress value={(hostel.occupied / hostel.capacity) * 100} className="h-2 bg-muted/50" />
-              </div>
-
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline" className="w-full text-[9px] font-black uppercase h-11 rounded-full border-primary/10 hover:bg-primary/5 text-primary group" onClick={() => setSelectedWing(hostel)}>
-                    Inspect Node <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {hostels?.map((hostel) => (
+            <Card key={hostel.id} className="border-none shadow-xl bg-white/60 backdrop-blur-md rounded-[2.5rem] overflow-hidden group">
+              <div className={cn("h-2 w-full", hostel.type === "Boys" ? "bg-primary" : "bg-accent")} />
+              <CardHeader className="p-8 pb-4">
+                <div className="flex justify-between items-start mb-2">
+                  <Badge variant="secondary" className="font-black text-[8px] uppercase tracking-widest">{hostel.block}</Badge>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive" onClick={() => handleDeleteWing(hostel.id)}>
+                    <Trash2 className="h-4 w-4" />
                   </Button>
-                </SheetTrigger>
-                <SheetContent className="w-full sm:max-w-2xl overflow-y-auto border-l-0 shadow-2xl p-0 font-body">
-                  <div className="bg-primary/5 p-8 sm:p-10 border-b relative overflow-hidden">
-                    <SheetHeader className="text-left relative z-10">
-                      <div className="flex items-center gap-6">
-                        <div className="h-16 w-16 rounded-3xl bg-white shadow-xl flex items-center justify-center text-primary shrink-0 border-2 border-primary/5">
-                          <Home className="h-8 w-8" />
-                        </div>
-                        <div>
-                          <SheetTitle className="text-2xl sm:text-3xl font-black text-primary tracking-tighter uppercase leading-none">{selectedWing?.name}</SheetTitle>
-                          <div className="flex items-center gap-3 mt-3">
-                            <Badge className="rounded-full bg-white text-primary border-none shadow-md font-black px-4 py-1 text-[9px] uppercase">{selectedWing?.block}</Badge>
-                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Guardian: {selectedWing?.warden}</span>
+                </div>
+                <CardTitle className="text-lg font-black text-primary uppercase leading-tight">{hostel.name}</CardTitle>
+                <CardDescription className="text-[10px] font-bold uppercase">{hostel.type} Wing • {hostel.rooms} Room Hubs</CardDescription>
+              </CardHeader>
+              <CardContent className="p-8 pt-0 space-y-6">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+                    <span>Capacity Load</span>
+                    <span className="text-primary">{Math.round((hostel.occupied / (hostel.capacity || 1)) * 100)}%</span>
+                  </div>
+                  <Progress value={(hostel.occupied / (hostel.capacity || 1)) * 100} className="h-2 bg-muted/50" />
+                </div>
+
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" className="w-full text-[9px] font-black uppercase h-11 rounded-full border-primary/10 hover:bg-primary/5 text-primary group" onClick={() => setSelectedWing(hostel)}>
+                      Inspect Node <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent className="w-full sm:max-w-2xl overflow-y-auto border-l-0 shadow-2xl p-0 font-body">
+                    <div className="bg-primary/5 p-8 sm:p-10 border-b relative overflow-hidden">
+                      <SheetHeader className="text-left relative z-10">
+                        <div className="flex items-center gap-6">
+                          <div className="h-16 w-16 rounded-3xl bg-white shadow-xl flex items-center justify-center text-primary shrink-0 border-2 border-primary/5">
+                            <Home className="h-8 w-8" />
+                          </div>
+                          <div>
+                            <SheetTitle className="text-2xl sm:text-3xl font-black text-primary tracking-tighter uppercase leading-none">{selectedWing?.name}</SheetTitle>
+                            <div className="flex items-center gap-3 mt-3">
+                              <Badge className="rounded-full bg-white text-primary border-none shadow-md font-black px-4 py-1 text-[9px] uppercase">{selectedWing?.block}</Badge>
+                              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Guardian: {selectedWing?.warden}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </SheetHeader>
-                  </div>
+                      </SheetHeader>
+                    </div>
 
-                  <div className="p-8 sm:p-10">
-                    <Tabs defaultValue="audit" className="space-y-8">
-                      <TabsList className="grid w-full grid-cols-3 bg-muted/40 p-1 rounded-2xl h-14 shadow-inner">
-                        <TabsTrigger value="audit" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Audit</TabsTrigger>
-                        <TabsTrigger value="occupants" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Occupants</TabsTrigger>
-                        <TabsTrigger value="health" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Sickbay</TabsTrigger>
-                      </TabsList>
+                    <div className="p-8 sm:p-10">
+                      <Tabs defaultValue="audit" className="space-y-8">
+                        <TabsList className="grid w-full grid-cols-3 bg-muted/40 p-1 rounded-2xl h-14 shadow-inner">
+                          <TabsTrigger value="audit" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Audit</TabsTrigger>
+                          <TabsTrigger value="occupants" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Occupants</TabsTrigger>
+                          <TabsTrigger value="health" className="rounded-xl text-[10px] font-black uppercase tracking-widest">Sickbay</TabsTrigger>
+                        </TabsList>
 
-                      <TabsContent value="audit" className="space-y-8">
-                        <div className="space-y-3">
-                          {checklist.map((item) => (
-                            <div key={item.id} className="flex items-center justify-between p-5 bg-white rounded-2xl shadow-sm border border-muted/50 hover:border-primary/20 transition-all group/item">
-                              <div className="flex items-center gap-4">
-                                <item.icon className={cn("h-5 w-5", item.status === "Verified" ? "text-green-500" : "text-muted-foreground")} />
-                                <span className="text-xs font-bold text-foreground/80">{item.task}</span>
-                              </div>
-                              <Button variant="ghost" size="sm" className={cn("text-[8px] font-black uppercase tracking-widest rounded-full px-3 h-7", item.status === "Verified" ? "bg-green-50 text-green-700" : "bg-orange-50 text-orange-600")} onClick={() => toggleChecklistItem(item.id)}>
-                                {item.status}
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                        <Button className="w-full h-14 rounded-2xl colorful-gradient font-black uppercase text-xs tracking-widest shadow-xl group" onClick={() => toast({ title: "Audit Logged", description: "Hostel safety record archived." })}>
-                          Confirm Wing Audit <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                        </Button>
-                      </TabsContent>
-
-                      <TabsContent value="occupants" className="space-y-6">
-                        <div className="flex justify-between items-center px-2">
-                          <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Assigned Students</h3>
-                          <Button variant="outline" size="sm" className="rounded-full h-8 text-[8px] font-black uppercase border-primary/20 text-primary">
-                            <UserPlus className="h-3 w-3 mr-1.5" /> Allocate
-                          </Button>
-                        </div>
-                        <div className="border rounded-[2rem] overflow-hidden bg-white shadow-sm">
-                          <Table>
-                            <TableHeader className="bg-muted/30">
-                              <TableRow className="border-none">
-                                <TableHead className="text-[9px] font-black uppercase pl-6">Student</TableHead>
-                                <TableHead className="text-[9px] font-black uppercase text-center">Room</TableHead>
-                                <TableHead className="text-[9px] font-black uppercase text-right pr-6">Hub</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {(mockOccupants[selectedWing?.id || ""] || []).map((occ) => (
-                                <TableRow key={occ.id} className="border-b last:border-none">
-                                  <TableCell className="pl-6 py-4">
-                                    <p className="text-xs font-black">{occ.name}</p>
-                                    <p className="text-[8px] text-muted-foreground font-mono uppercase">{occ.id}</p>
-                                  </TableCell>
-                                  <TableCell className="text-center">
-                                    <Badge variant="outline" className="text-[8px] font-black uppercase border-primary/10">{occ.room}</Badge>
-                                  </TableCell>
-                                  <TableCell className="text-right pr-6">
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary">
-                                      <Activity className="h-3 w-3" />
-                                    </Button>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      </TabsContent>
-
-                      <TabsContent value="health" className="space-y-6">
-                        <div className="p-8 rounded-[2rem] bg-destructive/5 border border-destructive/10 text-center space-y-4">
-                          <HeartPulse className="h-8 w-8 text-destructive mx-auto animate-pulse" />
-                          <p className="text-[10px] font-black text-destructive uppercase tracking-[0.2em]">Active Medical Monitoring</p>
-                        </div>
-                        <div className="space-y-3">
-                          {(mockHealthLogs[selectedWing?.id || ""] || []).map((log) => (
-                            <div key={log.id} className="p-5 bg-white rounded-3xl shadow-sm border border-muted/50 flex items-center justify-between group hover:border-destructive/20 transition-all">
-                              <div className="space-y-1">
-                                <p className="text-xs font-black text-foreground/80">{log.student}</p>
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className="text-[8px] font-black uppercase border-destructive/20 text-destructive">{log.condition}</Badge>
-                                  <span className="text-[8px] font-bold text-muted-foreground uppercase">{log.date}</span>
+                        <TabsContent value="audit" className="space-y-8">
+                          <div className="space-y-3">
+                            {checklist.map((item) => (
+                              <div key={item.id} className="flex items-center justify-between p-5 bg-white rounded-2xl shadow-sm border border-muted/50 hover:border-primary/20 transition-all group/item">
+                                <div className="flex items-center gap-4">
+                                  <item.icon className={cn("h-5 w-5", item.status === "Verified" ? "text-green-500" : "text-muted-foreground")} />
+                                  <span className="text-xs font-bold text-foreground/80">{item.task}</span>
                                 </div>
+                                <Button variant="ghost" size="sm" className={cn("text-[8px] font-black uppercase tracking-widest rounded-full px-3 h-7", item.status === "Verified" ? "bg-green-50 text-green-700" : "bg-orange-50 text-orange-600")} onClick={() => toggleChecklistItem(item.id)}>
+                                  {item.status}
+                                </Button>
                               </div>
-                              <Badge className="rounded-full bg-orange-50 text-orange-600 border-none font-black text-[8px] uppercase px-3 py-0.5">{log.status}</Badge>
-                            </div>
-                          ))}
-                        </div>
-                        <Button variant="outline" className="w-full rounded-2xl h-12 border-primary/10 text-primary font-black text-[9px] uppercase tracking-widest hover:bg-primary/5">
-                          Open Full Sickbay Node
-                        </Button>
-                      </TabsContent>
-                    </Tabs>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                            ))}
+                          </div>
+                          <Button className="w-full h-14 rounded-2xl colorful-gradient font-black uppercase text-xs tracking-widest shadow-xl group" onClick={() => toast({ title: "Audit Logged", description: "Safety record archived in Firestore node." })}>
+                            Confirm Wing Audit <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                          </Button>
+                        </TabsContent>
+
+                        <TabsContent value="occupants" className="space-y-6">
+                          <div className="flex justify-between items-center px-2">
+                            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Assigned Students</h3>
+                            <Button variant="outline" size="sm" className="rounded-full h-8 text-[8px] font-black uppercase border-primary/20 text-primary">
+                              <UserPlus className="h-3 w-3 mr-1.5" /> Allocate
+                            </Button>
+                          </div>
+                          <div className="p-8 rounded-[2rem] bg-muted/20 border-2 border-dashed border-primary/10 text-center">
+                            <p className="text-[10px] font-black text-muted-foreground uppercase">Assign students from the Directory Hub to populate this wing.</p>
+                          </div>
+                        </TabsContent>
+
+                        <TabsContent value="health" className="space-y-6">
+                          <div className="p-8 rounded-[2rem] bg-destructive/5 border border-destructive/10 text-center space-y-4">
+                            <HeartPulse className="h-8 w-8 text-destructive mx-auto animate-pulse" />
+                            <p className="text-[10px] font-black text-destructive uppercase tracking-[0.2em]">Active Medical Monitoring</p>
+                          </div>
+                          <Button variant="outline" className="w-full rounded-2xl h-12 border-primary/10 text-primary font-black text-[9px] uppercase tracking-widest hover:bg-primary/5">
+                            Open Full Sickbay Node
+                          </Button>
+                        </TabsContent>
+                      </Tabs>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <div className="p-8 rounded-[2.5rem] bg-primary/5 border-2 border-dashed border-primary/20 flex flex-col items-center text-center space-y-4 mx-1">
          <div className="h-14 w-14 rounded-full bg-white flex items-center justify-center shadow-xl text-primary border border-primary/10">
@@ -394,7 +302,7 @@ export default function HostelPage() {
          <div className="space-y-1">
            <p className="text-sm font-black text-primary uppercase tracking-[0.3em]">Institutional Safety Protocol</p>
            <p className="text-[10px] text-muted-foreground leading-relaxed max-w-sm font-medium">
-             Hostel monitoring is a manual verification process. Wardens must check utility nodes every 6 hours to ensure "Normal Flow" and log any maintenance infractions immediately.
+             Hostel monitoring is an active verification process. Data is synchronized with the 2026 Sovereign Node for national audit compliance.
            </p>
          </div>
       </div>

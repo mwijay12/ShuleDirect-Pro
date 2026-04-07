@@ -44,14 +44,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { QRCodeSVG } from "qrcode.react"
 import { Html5QrcodeScanner } from "html5-qrcode"
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, addDoc, deleteDoc, doc, updateDoc, serverTimestamp, query, where } from "firebase/firestore"
-import { errorEmitter } from "@/firebase/error-emitter"
-import { FirestorePermissionError } from "@/firebase/errors"
+import { collection, doc, serverTimestamp, query } from "firebase/firestore"
+import { addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 export default function AssetsPage() {
   const { toast } = useToast()
   const db = useFirestore()
-  const schoolId = "school-001" // Static for prototype context
+  const schoolId = "school-001"
   
   const [isScanning, setIsScanning] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
@@ -59,7 +58,7 @@ export default function AssetsPage() {
   const [isLogModalOpen, setIsMaintenanceModalOpen] = useState(false)
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
 
-  // Firestore Queries
+  // Real Firestore Query
   const assetsQuery = useMemoFirebase(() => {
     return query(collection(db, "schools", schoolId, "assets"))
   }, [db])
@@ -72,18 +71,15 @@ export default function AssetsPage() {
       scanner.render((decodedText) => {
         setIsScanning(false)
         scanner.clear()
-        // Process scanned ID
         const asset = assets?.find(a => a.id === decodedText || a.qrCodeValue === decodedText)
         if (asset) {
           setSelectedAsset(asset)
           setIsMaintenanceModalOpen(true)
           toast({ title: "Asset Node Identified", description: `Found: ${asset.name}` })
         } else {
-          toast({ variant: "destructive", title: "Unknown Node", description: "This QR code is not registered in ShuleDirect 2026." })
+          toast({ variant: "destructive", title: "Unknown Node", description: "This QR code is not registered in the system." })
         }
-      }, (error) => {
-        // quiet fail during search
-      })
+      }, (error) => {})
       scannerRef.current = scanner
     }, 100)
   }
@@ -95,7 +91,7 @@ export default function AssetsPage() {
     setIsScanning(false)
   }
 
-  const handleAddAsset = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAddAsset = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     const newAsset = {
@@ -110,42 +106,20 @@ export default function AssetsPage() {
       createdAt: serverTimestamp(),
     }
 
-    try {
-      await addDoc(collection(db, "schools", schoolId, "assets"), newAsset)
-      setIsAdding(false)
-      toast({ title: "Asset Registered", description: "Institutional property added to 2026 Node." })
-    } catch (err) {
-      errorEmitter.emit("permission-error", new FirestorePermissionError({
-        path: `schools/${schoolId}/assets`,
-        operation: "create",
-        requestResourceData: newAsset
-      }))
-    }
+    addDocumentNonBlocking(collection(db, "schools", schoolId, "assets"), newAsset)
+    setIsAdding(false)
+    toast({ title: "Asset Registered", description: "Institutional property synced to 2026 database." })
   }
 
-  const handleDeleteAsset = async (id: string) => {
-    try {
-      await deleteDoc(doc(db, "schools", schoolId, "assets", id))
-      toast({ title: "Node Terminated", description: "Asset removed from registry." })
-    } catch (err) {
-      errorEmitter.emit("permission-error", new FirestorePermissionError({
-        path: `schools/${schoolId}/assets/${id}`,
-        operation: "delete"
-      }))
-    }
+  const handleDeleteAsset = (id: string) => {
+    deleteDocumentNonBlocking(doc(db, "schools", schoolId, "assets", id))
+    toast({ title: "Node Terminated", description: "Asset removed from database." })
   }
 
-  const updateAssetStatus = async (id: string, status: string, condition: string) => {
-    try {
-      await updateDoc(doc(db, "schools", schoolId, "assets", id), { status, condition })
-      setIsMaintenanceModalOpen(false)
-      toast({ title: "Status Synchronized", description: "Asset condition updated across nodes." })
-    } catch (err) {
-      errorEmitter.emit("permission-error", new FirestorePermissionError({
-        path: `schools/${schoolId}/assets/${id}`,
-        operation: "update"
-      }))
-    }
+  const updateAssetStatus = (id: string, status: string, condition: string) => {
+    updateDocumentNonBlocking(doc(db, "schools", schoolId, "assets", id), { status, condition })
+    setIsMaintenanceModalOpen(false)
+    toast({ title: "Status Synchronized", description: "Database updated with new conditions." })
   }
 
   const faultyCount = assets?.filter(a => a.status === "Faulty" || a.condition === "Broken").length || 0
@@ -369,7 +343,6 @@ export default function AssetsPage() {
         </CardContent>
       </Card>
 
-      {/* Maintenance Management Node */}
       <Dialog open={isLogModalOpen} onOpenChange={setIsMaintenanceModalOpen}>
         <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden max-w-lg border-none shadow-2xl">
           <DialogHeader className="bg-primary/5 p-10 border-b">
@@ -423,38 +396,6 @@ export default function AssetsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden group">
-          <CardHeader className="p-8 pb-4">
-            <CardTitle className="text-xl font-black flex items-center gap-3">
-              <Download className="h-6 w-6 text-accent" /> Export Node
-            </CardTitle>
-            <CardDescription className="text-white/40 text-[10px] font-black uppercase tracking-widest">Official Audit Documentation</CardDescription>
-          </CardHeader>
-          <CardContent className="p-8 pt-0 space-y-6">
-            <p className="text-sm text-white/60 leading-relaxed font-medium">Generate high-fidelity institutional ledgers for financial audits and annual property verification.</p>
-            <div className="flex gap-2">
-              <Button className="flex-1 rounded-2xl h-12 bg-white text-slate-900 hover:bg-white/90 font-black text-[10px] uppercase tracking-widest shadow-xl">Excel Ledger</Button>
-              <Button variant="outline" className="flex-1 rounded-2xl h-12 border-white/20 hover:bg-white/10 text-white font-black text-[10px] uppercase tracking-widest">PDF Node</Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-xl rounded-[2.5rem] bg-primary text-white overflow-hidden relative group">
-           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-             <QrCode className="h-48 w-48 rotate-12" />
-           </div>
-           <CardHeader className="p-8 pb-4 relative z-10">
-             <CardTitle className="text-xl font-black">QR Tagging Protocol</CardTitle>
-             <CardDescription className="text-white/60 text-[10px] font-black uppercase tracking-widest">Instant Node Identification</CardDescription>
-           </CardHeader>
-           <CardContent className="p-8 pt-0 relative z-10">
-             <p className="text-sm text-white/80 leading-relaxed font-medium mb-6">Each institutional asset is assigned a unique 2026 QR node for rapid scanning and verification.</p>
-             <Button className="w-full rounded-2xl h-12 bg-accent text-white hover:bg-accent/90 font-black text-[10px] uppercase tracking-widest shadow-2xl">Print QR Batch</Button>
-           </CardContent>
-        </Card>
-      </div>
     </div>
   )
 }

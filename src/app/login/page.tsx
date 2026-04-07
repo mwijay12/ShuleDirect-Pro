@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -9,8 +10,11 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useAuth, initiateEmailSignIn } from "@/firebase"
+import { onAuthStateChanged } from "firebase/auth"
 
 export default function LoginPage() {
+  const auth = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [schoolName, setSchoolName] = useState("Institutional Node")
@@ -21,33 +25,29 @@ export default function LoginPage() {
   useEffect(() => {
     const saved = localStorage.getItem("shule_name")
     if (saved) setSchoolName(saved)
-  }, [])
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        localStorage.setItem("shule_user", user.email || "")
+        router.push("/dashboard")
+      }
+    })
+    return () => unsubscribe()
+  }, [auth, router])
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
-    // Institutional Verification Node
-    setTimeout(() => {
-      // Internal Hard-locked Admin Credentials
-      if (email === "admin@shule.pro" && password === "admin123") {
-        localStorage.setItem("shule_role", "ADMIN")
-        localStorage.setItem("shule_user", email)
-        router.push("/dashboard")
-      } else if (email === "bursar@shule.pro" && password === "bursar123") {
-        localStorage.setItem("shule_role", "BURSAR")
-        localStorage.setItem("shule_user", email)
-        router.push("/dashboard")
-      } else if (email === "teacher@shule.pro" && password === "teacher123") {
-        localStorage.setItem("shule_role", "TEACHER")
-        localStorage.setItem("shule_user", email)
-        router.push("/dashboard")
-      } else {
-        setError("Invalid institutional credentials. Please contact your system node manager.")
-        setLoading(false)
-      }
-    }, 1200)
+    // Real Firebase Auth Node
+    try {
+      initiateEmailSignIn(auth, email, password)
+      // Success is handled by onAuthStateChanged listener above
+    } catch (err: any) {
+      setError("Invalid institutional credentials.")
+      setLoading(false)
+    }
   }
 
   return (
@@ -90,7 +90,7 @@ export default function LoginPage() {
                   <Input 
                     id="email"
                     type="email" 
-                    placeholder="e.g. admin@school.pro" 
+                    placeholder="e.g. admin@shule.pro" 
                     className="pl-14 h-14 rounded-2xl border-none bg-muted/30 focus-visible:ring-4 focus-visible:ring-primary/10 focus-visible:bg-white text-sm font-bold shadow-inner"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
