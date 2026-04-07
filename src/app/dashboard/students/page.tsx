@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -25,7 +26,8 @@ import {
   Star,
   Trophy,
   AlertCircle,
-  MinusCircle
+  MinusCircle,
+  Home
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -53,13 +55,15 @@ import { useToast } from "@/hooks/use-toast"
 import { generateStudentProgressSummary } from "@/ai/flows/generate-student-progress-summary-flow"
 import { exportToExcel, exportReportCardToWord } from "@/lib/export-utils"
 import { triggerN8nWebhook } from "@/lib/n8n"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const initialStudents = [
-  { id: "2026-001", name: "Amani Mwamba", class: "O-Level Stream A", status: "Active", contact: "+255 712 000 001", attendance: "98%", conductPoints: 85, trend: "up" },
-  { id: "2026-002", name: "Careen Mushi", class: "Primary Node 7", status: "Active", contact: "+255 754 000 002", attendance: "92%", conductPoints: 94, trend: "up" },
-  { id: "2026-003", name: "Baraka Juma", class: "A-Level PCM", status: "Active", contact: "+255 621 000 003", attendance: "85%", conductPoints: 72, trend: "down" },
-  { id: "2026-004", name: "Doreen Peter", class: "O-Level Stream C", status: "Inactive", contact: "+255 788 000 004", attendance: "60%", conductPoints: 45, trend: "down" },
-  { id: "2026-005", name: "Emanuel Lema", class: "A-Level HGL", status: "Active", contact: "+255 713 000 005", attendance: "95%", conductPoints: 88, trend: "up" },
+  { id: "2026-001", name: "Amani Mwamba", class: "O-Level Stream A", status: "Active", contact: "+255 712 000 001", attendance: "98%", conductPoints: 85, trend: "up", hostel: "Mt. Kilimanjaro Wing" },
+  { id: "2026-002", name: "Careen Mushi", class: "Primary Node 7", status: "Active", contact: "+255 754 000 002", attendance: "92%", conductPoints: 94, trend: "up", hostel: "Lake Victoria Wing" },
+  { id: "2026-003", name: "Baraka Juma", class: "A-Level PCM", status: "Active", contact: "+255 621 000 003", attendance: "85%", conductPoints: 72, trend: "down", hostel: "Mt. Kilimanjaro Wing" },
+  { id: "2026-004", name: "Doreen Peter", class: "O-Level Stream C", status: "Inactive", contact: "+255 788 000 004", attendance: "60%", conductPoints: 45, trend: "down", hostel: "N/A" },
+  { id: "2026-005", name: "Emanuel Lema", class: "A-Level HGL", status: "Active", contact: "+255 713 000 005", attendance: "95%", conductPoints: 88, trend: "up", hostel: "N/A" },
 ]
 
 export default function StudentsPage() {
@@ -121,6 +125,11 @@ export default function StudentsPage() {
     toast({ title: "Hard Copy Generated", description: "Official Word transcript downloaded." })
   }
 
+  const updateStudentHostel = (id: string, hostel: string) => {
+    setStudents(prev => prev.map(s => s.id === id ? { ...s, hostel } : s))
+    toast({ title: "Allocation Updated", description: "Hostel node assigned successfully." })
+  }
+
   return (
     <div className="space-y-6 pb-20 px-1">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-1">
@@ -176,8 +185,8 @@ export default function StudentsPage() {
               <TableRow className="border-none h-14">
                 <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Student Node</TableHead>
                 <TableHead className="text-[9px] font-black uppercase tracking-widest">Academic Hub</TableHead>
+                <TableHead className="text-[9px] font-black uppercase tracking-widest">Hostel Node</TableHead>
                 <TableHead className="text-[9px] font-black uppercase tracking-widest text-center">Conduct</TableHead>
-                <TableHead className="text-[9px] font-black uppercase tracking-widest text-center">Trend</TableHead>
                 <TableHead className="text-right pr-8 text-[9px] font-black uppercase tracking-widest">Control</TableHead>
               </TableRow>
             </TableHeader>
@@ -199,6 +208,12 @@ export default function StudentsPage() {
                   <TableCell>
                     <Badge variant="secondary" className="font-black text-[8px] bg-muted/80 text-muted-foreground uppercase px-4 py-1 rounded-full">{student.class}</Badge>
                   </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Home className="h-3.5 w-3.5 text-primary/40" />
+                      <span className="text-[10px] font-black text-foreground/60 uppercase">{student.hostel}</span>
+                    </div>
+                  </TableCell>
                   <TableCell className="text-center">
                     <span className={cn(
                       "text-[10px] font-black px-3 py-1 rounded-full",
@@ -207,16 +222,6 @@ export default function StudentsPage() {
                     )}>
                       {student.conductPoints} PTS
                     </span>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {student.trend === "up" ? (
-                      <TrendingUp className="h-4 w-4 text-green-500 mx-auto" />
-                    ) : (
-                      <div className="flex items-center justify-center text-destructive">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        <span className="text-[8px] font-black uppercase">Alert</span>
-                      </div>
-                    )}
                   </TableCell>
                   <TableCell className="text-right pr-8">
                     <div className="flex justify-end items-center gap-2">
@@ -247,12 +252,12 @@ export default function StudentsPage() {
                           </div>
 
                           <div className="p-8 sm:p-10 space-y-10">
-                            <Tabs defaultValue="conduct" className="space-y-10">
+                            <Tabs defaultValue="overview" className="space-y-10">
                               <TabsList className="grid w-full grid-cols-4 bg-muted/40 p-1 rounded-2xl h-14 shadow-inner">
                                 <TabsTrigger value="overview" className="rounded-xl text-[9px] font-black uppercase tracking-widest">AI Node</TabsTrigger>
                                 <TabsTrigger value="conduct" className="rounded-xl text-[9px] font-black uppercase tracking-widest">Conduct</TabsTrigger>
+                                <TabsTrigger value="allocation" className="rounded-xl text-[9px] font-black uppercase tracking-widest">Housing</TabsTrigger>
                                 <TabsTrigger value="academic" className="rounded-xl text-[9px] font-black uppercase tracking-widest">Reports</TabsTrigger>
-                                <TabsTrigger value="comms" className="rounded-xl text-[9px] font-black uppercase tracking-widest">Gateway</TabsTrigger>
                               </TabsList>
 
                               <TabsContent value="overview" className="space-y-10">
@@ -302,36 +307,24 @@ export default function StudentsPage() {
                                     <span className="text-[9px] font-black uppercase tracking-widest">Log Infraction (-5)</span>
                                   </Button>
                                 </div>
-
-                                <div className="space-y-3">
-                                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-2">Recent Conduct Logs</p>
-                                  {[
-                                    { msg: "Exemplary Leadership in Science Lab", pts: "+10", date: "May 12, 2026" },
-                                    { msg: "Late for Morning Assembly Node", pts: "-5", date: "May 10, 2026" },
-                                  ].map((log, i) => (
-                                    <div key={i} className="flex items-center justify-between p-5 bg-white rounded-3xl shadow-sm border border-muted/50">
-                                      <div>
-                                        <p className="text-xs font-black text-foreground/80">{log.msg}</p>
-                                        <p className="text-[9px] text-muted-foreground font-black uppercase mt-1">{log.date}</p>
-                                      </div>
-                                      <span className={cn("text-[10px] font-black", log.pts.includes('+') ? "text-green-600" : "text-destructive")}>{log.pts}</span>
-                                    </div>
-                                  ))}
-                                </div>
                               </TabsContent>
 
-                              <TabsContent value="comms" className="space-y-6">
-                                <div className="grid grid-cols-2 gap-3">
-                                  <Button className="flex flex-col gap-2 h-24 rounded-3xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 border-none transition-all">
-                                    <MessageCircle className="h-6 w-6" />
-                                    <span className="text-[9px] font-black uppercase tracking-widest">WhatsApp Hub</span>
-                                  </Button>
-                                  <Button className="flex flex-col gap-2 h-24 rounded-3xl bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border-none transition-all">
-                                    <Smartphone className="h-6 w-6" />
-                                    <span className="text-[9px] font-black uppercase tracking-widest">SMS Beem Node</span>
-                                  </Button>
+                              <TabsContent value="allocation" className="space-y-6">
+                                <div className="space-y-4">
+                                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Hostel Allocation Node</Label>
+                                  <Select defaultValue={selectedStudent?.hostel} onValueChange={(val) => updateStudentHostel(selectedStudent!.id, val)}>
+                                    <SelectTrigger className="h-14 rounded-2xl bg-muted/20 border-none font-bold shadow-inner px-6">
+                                      <SelectValue placeholder="Select Wing..." />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl">
+                                      <SelectItem value="Mt. Kilimanjaro Wing">Mt. Kilimanjaro Wing (Boys)</SelectItem>
+                                      <SelectItem value="Lake Victoria Wing">Lake Victoria Wing (Girls)</SelectItem>
+                                      <SelectItem value="Serengeti Annex">Serengeti Annex (Boys)</SelectItem>
+                                      <SelectItem value="N/A">Unassigned / Day Student</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <p className="text-[9px] font-medium text-muted-foreground text-center italic">Assignment to a housing node synchronizes the student with the wing warden's audit ledger.</p>
                                 </div>
-                                <p className="text-[9px] font-medium text-muted-foreground text-center italic">Institutional zero-app gateway active for parents.</p>
                               </TabsContent>
 
                               <TabsContent value="academic" className="space-y-8">
