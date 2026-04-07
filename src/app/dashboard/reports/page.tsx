@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -22,7 +23,10 @@ import {
   Link as LinkIcon,
   BookOpen,
   FileText,
-  Zap
+  Zap,
+  LayoutGrid,
+  Trophy,
+  PieChart
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -137,8 +141,8 @@ export default function ReportsPage() {
           <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary px-3 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-full">
             <Globe className="h-2.5 w-2.5 mr-1.5" /> Tanzanian National Hub
           </Badge>
-          <h1 className="text-2xl sm:text-3xl font-headline font-black text-primary tracking-tight uppercase">Official NECTA Hub</h1>
-          <p className="text-muted-foreground text-[10px] sm:text-xs font-bold uppercase tracking-widest leading-none">Sync center numbers and initiate AI study gen.</p>
+          <h1 className="text-xl sm:text-2xl font-black text-primary tracking-tight uppercase">Official NECTA Hub</h1>
+          <p className="text-muted-foreground text-[10px] sm:text-xs font-bold uppercase tracking-widest leading-none">Global benchmarking and AI study synthesis.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <Button variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm text-[10px] font-black uppercase tracking-widest" asChild>
@@ -149,10 +153,33 @@ export default function ReportsPage() {
         </div>
       </div>
 
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: "National Rank", value: "#14", sub: "Regional Top 10", icon: Trophy, color: "text-orange-600" },
+          { label: "Matrix Sync", value: "Verified", sub: "2026 Season", icon: Database, color: "text-primary" },
+          { label: "AI Synth", value: "Active", sub: "Content Node", icon: Zap, color: "text-accent" },
+          { label: "Archives", value: "12 Yrs", sub: "Historical Hub", icon: History, color: "text-green-600" },
+        ].map((stat) => (
+          <Card key={stat.label} className="border-none shadow-sm bg-white/60 backdrop-blur-md rounded-2xl overflow-hidden group">
+             <CardContent className="p-5 flex items-center justify-between">
+                <div>
+                  <p className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">{stat.label}</p>
+                  <p className={cn("text-lg font-black mt-1", stat.color)}>{stat.value}</p>
+                  <p className="text-[8px] text-muted-foreground font-bold mt-0.5 uppercase">{stat.sub}</p>
+                </div>
+                <div className="h-10 w-10 rounded-xl bg-muted/30 flex items-center justify-center text-muted-foreground group-hover:scale-110 transition-transform">
+                  <stat.icon className="h-5 w-5" />
+                </div>
+             </CardContent>
+          </Card>
+        ))}
+      </div>
+
       <Tabs defaultValue="necta-explorer" className="space-y-6">
-        <TabsList className="bg-muted/40 p-1 rounded-2xl w-full sm:w-fit overflow-x-auto flex h-auto gap-1 shadow-inner">
+        <TabsList className="bg-muted/40 p-1 rounded-2xl w-full sm:w-fit overflow-x-auto flex h-auto gap-1 shadow-inner border border-muted/50">
           <TabsTrigger value="necta-explorer" className="rounded-xl font-black py-2.5 px-6 text-[10px] uppercase tracking-widest">Results Retrieval</TabsTrigger>
           <TabsTrigger value="ai-lab" className="rounded-xl font-black py-2.5 px-6 text-[10px] uppercase tracking-widest">AI Content Lab</TabsTrigger>
+          <TabsTrigger value="analytics" className="rounded-xl font-black py-2.5 px-6 text-[10px] uppercase tracking-widest">Benchmarking</TabsTrigger>
           <TabsTrigger value="portals" className="rounded-xl font-black py-2.5 px-6 text-[10px] uppercase tracking-widest">Archives</TabsTrigger>
         </TabsList>
 
@@ -160,12 +187,12 @@ export default function ReportsPage() {
           <Card className="border-none shadow-xl overflow-hidden bg-card/60 backdrop-blur-md rounded-[2.5rem]">
             <CardHeader className="bg-primary/5 border-b border-primary/10 p-8">
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner border border-primary/5">
                   <Database className="h-6 w-6" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl font-black uppercase">Online Results Inquiry</CardTitle>
-                  <CardDescription className="text-[10px] font-black uppercase tracking-widest text-primary/60">Official PReMS Node Synchronization</CardDescription>
+                  <CardTitle className="text-xl font-black uppercase tracking-tight">Online Results Inquiry</CardTitle>
+                  <CardDescription className="text-[10px] font-black uppercase tracking-widest text-primary/60 leading-none">Official PReMS Node Synchronization</CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -200,7 +227,7 @@ export default function ReportsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleFetchNectaResults} disabled={fetchingNecta} className="h-12 rounded-xl colorful-gradient font-black shadow-lg text-[10px] uppercase tracking-widest">
+                <Button onClick={handleFetchNectaResults} disabled={fetchingNecta} className="h-12 rounded-xl colorful-gradient font-black shadow-lg text-[10px] uppercase tracking-widest transition-transform active:scale-95">
                   {fetchingNecta ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />} Sync Matrix
                 </Button>
               </div>
@@ -214,7 +241,7 @@ export default function ReportsPage() {
                       { label: "Total Node", value: "142", color: "text-foreground/80", bg: "bg-muted/30" },
                       { label: "Matrix GPA", value: nectaResults.summary.gpa, color: "text-orange-600", bg: "bg-orange-50" },
                     ].map((s) => (
-                      <div key={s.label} className={cn("p-6 rounded-[2rem] border border-transparent flex flex-col items-center text-center", s.bg)}>
+                      <div key={s.label} className={cn("p-6 rounded-[2rem] border border-transparent flex flex-col items-center text-center shadow-sm", s.bg)}>
                         <p className="text-[8px] uppercase font-black text-muted-foreground tracking-widest mb-1">{s.label}</p>
                         <p className={cn("text-2xl font-black", s.color)}>{s.value}</p>
                       </div>
@@ -233,7 +260,7 @@ export default function ReportsPage() {
                       </TableHeader>
                       <TableBody>
                         {nectaResults.topStudents.map((student: any, i: number) => (
-                          <TableRow key={i} className="group transition-colors border-b last:border-none">
+                          <TableRow key={i} className="group transition-colors border-b last:border-none hover:bg-primary/[0.02]">
                             <TableCell className="pl-8 py-5">
                               <div className="flex items-center gap-4">
                                 <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center text-primary font-black text-[10px]">{i + 1}</div>
@@ -263,7 +290,7 @@ export default function ReportsPage() {
                 <CardTitle className="text-xl font-black flex items-center gap-3">
                   <Zap className="h-6 w-6 text-accent fill-accent" /> AI CONTENT LAB
                 </CardTitle>
-                <CardDescription className="text-[10px] font-black uppercase tracking-widest text-accent/60">Generate Official Learning Nodes</CardDescription>
+                <CardDescription className="text-[10px] font-black uppercase tracking-widest text-accent/60 leading-none">Generate Official Learning Nodes</CardDescription>
               </CardHeader>
               <form onSubmit={handleGenerateAiResource} className="p-8 space-y-6">
                 <div className="space-y-2">
@@ -302,7 +329,7 @@ export default function ReportsPage() {
                     </Select>
                   </div>
                 </div>
-                <Button type="submit" disabled={isGeneratingLab} className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase tracking-widest shadow-2xl group">
+                <Button type="submit" disabled={isGeneratingLab} className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase tracking-widest shadow-2xl group transition-all active:scale-95">
                   {isGeneratingLab ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />}
                   Generate Node
                 </Button>
@@ -312,13 +339,13 @@ export default function ReportsPage() {
             <Card className="lg:col-span-8 border-none shadow-xl bg-white rounded-[2.5rem] overflow-hidden min-h-[500px]">
               <CardHeader className="bg-muted/30 border-b p-8 flex flex-row justify-between items-center">
                 <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-xl bg-white shadow-md flex items-center justify-center text-primary">
+                  <div className="h-10 w-10 rounded-xl bg-white shadow-md flex items-center justify-center text-primary border border-primary/5">
                     <FileText className="h-5 w-5" />
                   </div>
-                  <CardTitle className="text-lg font-black uppercase">Generated Lab Payload</CardTitle>
+                  <CardTitle className="text-lg font-black uppercase tracking-tight">Generated Lab Payload</CardTitle>
                 </div>
                 {labContent && (
-                  <Button variant="outline" size="sm" className="rounded-full font-black text-[9px] uppercase px-6 h-9" onClick={() => { navigator.clipboard.writeText(labContent); toast({title: "Copied", description: "Content node saved to clipboard."}) }}>
+                  <Button variant="outline" size="sm" className="rounded-full font-black text-[9px] uppercase px-6 h-9 hover:bg-primary hover:text-white transition-all" onClick={() => { navigator.clipboard.writeText(labContent); toast({title: "Copied", description: "Content node saved to clipboard."}) }}>
                     <Copy className="mr-2 h-3 w-3" /> Copy Node
                   </Button>
                 )}
@@ -327,7 +354,7 @@ export default function ReportsPage() {
                 {!labContent && !isGeneratingLab && (
                   <div className="flex flex-col items-center justify-center h-[300px] text-center space-y-4 text-muted-foreground">
                     <BookOpen className="h-16 w-16 opacity-10" />
-                    <p className="text-xs font-bold uppercase tracking-widest">Initialize AI Lab Node to begin content synthesis.</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em]">Initialize AI Lab Node to begin synthesis</p>
                   </div>
                 )}
                 {isGeneratingLab && (
@@ -339,7 +366,7 @@ export default function ReportsPage() {
                   </div>
                 )}
                 {labContent && (
-                  <div className="prose prose-sm max-w-none font-medium text-foreground/80 leading-relaxed whitespace-pre-wrap">
+                  <div className="prose prose-sm max-w-none font-medium text-foreground/80 leading-relaxed whitespace-pre-wrap animate-in fade-in duration-700">
                     {labContent}
                   </div>
                 )}
@@ -348,23 +375,81 @@ export default function ReportsPage() {
           </div>
         </TabsContent>
 
+        <TabsContent value="analytics" className="space-y-6">
+           <Card className="border-none shadow-xl bg-white rounded-[2.5rem] overflow-hidden p-8">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="h-12 w-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center border border-orange-100">
+                  <BarChart className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black uppercase tracking-tight">Institutional Benchmarking</h3>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1">Comparison against national NECTA averages</p>
+                </div>
+              </div>
+              
+              <div className="grid gap-6 md:grid-cols-2">
+                 <div className="space-y-6 p-8 rounded-[2rem] bg-muted/20 border border-muted/50">
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Regional Ranking Node</h4>
+                    <div className="space-y-4">
+                       {[
+                         { school: "Our Institution", score: 94, isMain: true },
+                         { school: "Feza Boys Sec", score: 92, isMain: false },
+                         { school: "Marian Girls", score: 89, isMain: false },
+                         { school: "Canossa Sec", score: 85, isMain: false },
+                       ].map((item, i) => (
+                         <div key={i} className="space-y-2">
+                            <div className="flex justify-between items-end">
+                               <span className={cn("text-xs font-black", item.isMain ? "text-primary" : "text-muted-foreground")}>{item.school}</span>
+                               <span className="text-[10px] font-mono font-black">{item.score}%</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-white rounded-full overflow-hidden">
+                               <div className={cn("h-full transition-all duration-1000", item.isMain ? "colorful-gradient" : "bg-muted-foreground/30")} style={{ width: `${item.score}%` }} />
+                            </div>
+                         </div>
+                       ))}
+                    </div>
+                 </div>
+
+                 <div className="space-y-6 p-8 rounded-[2rem] bg-accent/5 border border-accent/10">
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-accent">Subject Proficiency Node</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                       {[
+                         { subject: "Mathematics", level: "High", color: "text-green-600", bg: "bg-green-100" },
+                         { subject: "Physics", level: "Optimal", color: "text-blue-600", bg: "bg-blue-100" },
+                         { subject: "Chemistry", level: "Steady", color: "text-orange-600", bg: "bg-orange-100" },
+                         { subject: "Kiswahili", level: "Peak", color: "text-purple-600", bg: "bg-purple-100" },
+                       ].map((item, i) => (
+                         <div key={i} className="p-4 rounded-2xl bg-white shadow-sm border border-accent/10 flex flex-col gap-1 items-center text-center">
+                            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-tighter">{item.subject}</p>
+                            <Badge variant="outline" className={cn("rounded-full border-none font-black text-[8px] uppercase px-3", item.bg, item.color)}>{item.level}</Badge>
+                         </div>
+                       ))}
+                    </div>
+                    <Button variant="outline" className="w-full rounded-xl h-11 border-accent/20 text-accent font-black text-[9px] uppercase tracking-widest hover:bg-accent/5">
+                      Export Analysis Node
+                    </Button>
+                 </div>
+              </div>
+           </Card>
+        </TabsContent>
+
         <TabsContent value="portals" className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[
             { name: "CSEE 2024 Archive", url: "https://onlinesys.necta.go.tz/results/2024/csee/index.htm", level: "Form 4" },
             { name: "CSEE 2025 Portal", url: "https://matokeo.necta.go.tz/results/2025/csee/index.html", level: "Form 4" },
             { name: "FTNA 2025 Hub", url: "https://onlinesys.necta.go.tz/results/2025/ftna/ftna.html", level: "Form 2" },
           ].map((portal, i) => (
-            <Card key={i} className="border-none shadow-sm hover:shadow-xl transition-all group overflow-hidden rounded-3xl bg-white/60 backdrop-blur-md">
-               <div className="h-1.5 w-full bg-primary/20 group-hover:bg-primary transition-colors" />
+            <Card key={i} className="border-none shadow-sm hover:shadow-xl transition-all group overflow-hidden rounded-[2rem] bg-white/60 backdrop-blur-md border border-muted/50">
+               <div className="h-1.5 w-full bg-primary/20 group-hover:colorful-gradient transition-all" />
                <CardHeader className="pb-4 pt-6">
-                 <CardTitle className="text-sm font-black flex items-center justify-between uppercase">
+                 <CardTitle className="text-sm font-black flex items-center justify-between uppercase tracking-tight">
                    {portal.name}
                    <ExternalLink className="h-4 w-4 opacity-30 group-hover:opacity-100 transition-opacity" />
                  </CardTitle>
-                 <CardDescription className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/60">{portal.level} Node</CardDescription>
+                 <CardDescription className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/60 leading-none">{portal.level} Node</CardDescription>
                </CardHeader>
                <CardContent className="pb-6">
-                 <Button variant="outline" size="sm" className="w-full rounded-full text-[9px] font-black uppercase h-10 border-primary/10 hover:bg-primary/5 text-primary" asChild>
+                 <Button variant="outline" size="sm" className="w-full rounded-full text-[9px] font-black uppercase h-10 border-primary/10 hover:bg-primary/5 text-primary transition-all group-hover:border-primary/30" asChild>
                    <a href={portal.url} target="_blank" rel="noreferrer">Open Gov Node</a>
                  </Button>
                </CardContent>

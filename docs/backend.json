@@ -162,6 +162,14 @@
           "schema": { "$ref": "#/backend/entities/Hostel" },
           "description": "Dormitory wings."
         }
+      },
+      {
+        "path": "/schools/{schoolId}/config/{configId}",
+        "definition": {
+          "entityName": "SystemConfig",
+          "schema": { "type": "object" },
+          "description": "Utility and system configurations."
+        }
       }
     ]
   }
