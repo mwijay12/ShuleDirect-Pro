@@ -65,11 +65,21 @@ export default function HostelPage() {
   const [hostels, setHostels] = useState(initialHostels)
   const [isAdding, setIsAdding] = useState(false)
   const [selectedWing, setSelectedWing] = useState<typeof hostels[0] | null>(null)
+  
+  // Manual Utility States
   const [utilityStatus, setUtilityStatus] = useState({
     luku: "Healthy",
     water: "Normal Flow",
     hygiene: "Verified Today"
   })
+
+  // Manual Checklist States (Simulated for current session)
+  const [checklist, setChecklist] = useState([
+    { id: 1, task: "Room Hygiene Audit", icon: ShieldCheck, status: "Verified" },
+    { id: 2, task: "Electrical & Lighting", icon: Lightbulb, status: "Inspected" },
+    { id: 3, task: "Plumbing Integrity", icon: Droplets, status: "Done" },
+    { id: 4, task: "Evening Roll Call", icon: Users, status: "Pending" },
+  ])
 
   const handleAddWing = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -92,12 +102,25 @@ export default function HostelPage() {
 
   const handleDeleteWing = (id: string) => {
     setHostels(hostels.filter(h => h.id !== id))
-    toast({ title: "Node Terminated", description: "Hostel wing removed from institutional registry." })
+    toast({ variant: "destructive", title: "Node Terminated", description: "Hostel wing removed from institutional registry." })
   }
 
   const handleVerifyUtility = (key: keyof typeof utilityStatus, status: string) => {
     setUtilityStatus(prev => ({ ...prev, [key]: status }))
     toast({ title: "Audit Synchronized", description: "Manual verification logged in 2026 Ledger." })
+  }
+
+  const toggleChecklistItem = (id: number) => {
+    setChecklist(prev => prev.map(item => {
+      if (item.id === id) {
+        return { ...item, status: item.status === "Pending" ? "Verified" : "Pending" }
+      }
+      return item
+    }))
+  }
+
+  const handleConfirmAudit = () => {
+    toast({ title: "Inspection Complete", description: "Full wing audit has been archived in the Institutional Vault." })
   }
 
   return (
@@ -297,22 +320,26 @@ export default function HostelPage() {
                         </div>
                         
                         <div className="space-y-3">
-                          {[
-                            { task: "Room Hygiene Audit", icon: ShieldCheck, status: "Verified" },
-                            { task: "Electrical & Lighting", icon: Lightbulb, status: "Inspected" },
-                            { task: "Plumbing Integrity", icon: Droplets, status: "Done" },
-                            { task: "Evening Roll Call", icon: Users, status: "Pending" },
-                          ].map((item, i) => (
-                            <div key={i} className="flex items-center justify-between p-5 bg-white rounded-2xl shadow-sm border border-muted/50 hover:border-primary/20 transition-all">
+                          {checklist.map((item) => (
+                            <div key={item.id} className="flex items-center justify-between p-5 bg-white rounded-2xl shadow-sm border border-muted/50 hover:border-primary/20 transition-all group/item">
                               <div className="flex items-center gap-4">
-                                <item.icon className="h-5 w-5 text-muted-foreground" />
+                                <item.icon className={cn("h-5 w-5 transition-colors", item.status === "Verified" ? "text-green-500" : "text-muted-foreground")} />
                                 <span className="text-xs font-bold text-foreground/80">{item.task}</span>
                               </div>
-                              <Badge variant={item.status === "Pending" ? "outline" : "secondary"} className={cn("text-[9px] font-black uppercase tracking-widest px-3 h-6 rounded-full border-none", item.status === "Pending" ? "bg-orange-50 text-orange-600" : "bg-green-50 text-green-600")}>{item.status}</Badge>
+                              <div className="flex items-center gap-2">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className={cn("text-[8px] font-black uppercase tracking-widest rounded-full px-3 h-7", item.status === "Verified" ? "bg-green-50 text-green-700" : "bg-orange-50 text-orange-600")}
+                                  onClick={() => toggleChecklistItem(item.id)}
+                                >
+                                  {item.status}
+                                </Button>
+                              </div>
                             </div>
                           ))}
                         </div>
-                        <Button className="w-full h-14 rounded-2xl colorful-gradient font-black uppercase text-xs tracking-widest shadow-xl group">
+                        <Button className="w-full h-14 rounded-2xl colorful-gradient font-black uppercase text-xs tracking-widest shadow-xl group" onClick={handleConfirmAudit}>
                           Confirm Wing Audit <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                         </Button>
                       </TabsContent>
