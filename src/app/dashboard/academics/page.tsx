@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -32,16 +33,18 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Slider } from "@/components/ui/slider"
 
 const initialResults = [
-  { id: "S001", name: "Amani Mwamba", math: 82, eng: 74, kisw: 91, points: 9, division: "I" },
-  { id: "S002", name: "Baraka Juma", math: 42, eng: 51, kisw: 64, points: 24, division: "III" },
-  { id: "S003", name: "Careen Mushi", math: 75, eng: 88, kisw: 92, points: 7, division: "I" },
+  { id: "PS0206098-001", name: "ALEXANDER MLAWA CALLSON", math: 82, sci: 74, eng: 91, avg: "B" },
+  { id: "PS0206098-002", name: "ALVIN MICHAEL GILLA", math: 78, sci: 82, eng: 88, avg: "B" },
+  { id: "PS0206098-003", name: "AYESIGA LAUREAN LEONIDAS", math: 95, sci: 98, eng: 92, avg: "A" },
+  { id: "PS0206098-004", name: "BILL EDMUND TARABA", math: 88, sci: 85, eng: 90, avg: "A" },
+  { id: "PS0206098-007", name: "DAVID ERICK MWIJAGE", math: 96, sci: 94, eng: 98, avg: "A" },
 ]
 
 const initialSyllabus = [
-  { id: 1, subject: "Mathematics", level: "O-Level Form 4", covered: 85, status: "On Track" },
-  { id: 2, subject: "Physics", level: "O-Level Form 4", covered: 62, status: "Delayed" },
-  { id: 3, subject: "Kiswahili", level: "O-Level Form 4", covered: 94, status: "Peak" },
-  { id: 4, subject: "Chemistry", level: "O-Level Form 4", covered: 78, status: "On Track" },
+  { id: 1, subject: "Mathematics", level: "Primary Std 7", covered: 85, status: "On Track" },
+  { id: 2, subject: "Science", level: "Primary Std 7", covered: 62, status: "Delayed" },
+  { id: 3, subject: "Kiswahili", level: "Primary Std 7", covered: 94, status: "Peak" },
+  { id: 4, subject: "English", level: "Primary Std 7", covered: 78, status: "On Track" },
 ]
 
 export default function AcademicsPage() {
@@ -68,11 +71,10 @@ export default function AcademicsPage() {
         })
         setResults(prev => [...prev, {
           id: result.examNumber,
-          name: "Synced Candidate",
+          name: "Matched from Registry",
           math: result.score,
-          eng: 0, kisw: 0,
-          division: "TBD",
-          points: 0
+          sci: 0, eng: 0,
+          avg: "TBD"
         }])
       } catch (err) {
         toast({ variant: "destructive", title: "Scan Failed", description: "Could not read exam paper." })
@@ -85,7 +87,7 @@ export default function AcademicsPage() {
 
   const updateCoverage = (id: number, val: number) => {
     setSyllabus(prev => prev.map(s => s.id === id ? { ...s, covered: val } : s))
-    toast({ title: "Coverage Synced", description: "Teacher progress recorded in the 2026 Matrix." })
+    toast({ title: "Coverage Synced", description: "Standard 7 progress recorded." })
   }
 
   const handlePremsSync = () => {
@@ -94,7 +96,7 @@ export default function AcademicsPage() {
       setIsSyncingPrems(false)
       toast({
         title: "PReMS Node Synced",
-        description: "Institutional records successfully pushed to national gateway.",
+        description: "Standard 7 records successfully pushed to national gateway.",
       })
     }, 2000)
   }
@@ -107,7 +109,7 @@ export default function AcademicsPage() {
             <Database className="h-2.5 w-2.5 mr-1.5" /> 2026 Academic Node
           </Badge>
           <h1 className="text-xl sm:text-2xl font-black text-primary">Academic Matrix</h1>
-          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">NECTA grading & syllabus accountability hub.</p>
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Doris Primary Grading & Syllabus Hub.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <Dialog>
@@ -149,9 +151,9 @@ export default function AcademicsPage() {
         <TabsContent value="ledger" className="space-y-6">
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
             {[
-              { label: "Grading Model", value: "NECTA Matrix", color: "text-primary" },
-              { label: "Mean Points", value: "14.2", color: "text-green-600" },
-              { label: "Total Scans", value: "482", color: "text-accent" },
+              { label: "Grading Model", value: "PSLE Matrix", color: "text-primary" },
+              { label: "Mean Points", value: "199.2", color: "text-green-600" },
+              { label: "Total Candidates", value: "67", color: "text-accent" },
               { label: "Audit Node", value: "Verified", color: "text-orange-600" },
             ].map((item) => (
               <Card key={item.label} className="border-none shadow-xl bg-white/60 backdrop-blur-md rounded-[2rem]">
@@ -165,7 +167,7 @@ export default function AcademicsPage() {
 
           <Card className="border-none shadow-xl overflow-hidden bg-card/60 backdrop-blur-md rounded-[2.5rem]">
             <CardHeader className="bg-muted/20 border-b p-6 sm:p-8">
-              <CardTitle className="text-lg font-black uppercase">Academic Ledger 2026</CardTitle>
+              <CardTitle className="text-lg font-black uppercase">Standard 7 Ledger 2026</CardTitle>
             </CardHeader>
             <CardContent className="p-0 overflow-x-auto">
               <Table className="min-w-[800px]">
@@ -173,9 +175,9 @@ export default function AcademicsPage() {
                   <TableRow className="border-none">
                     <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Student Payload</TableHead>
                     <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Math</TableHead>
-                    <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Eng</TableHead>
-                    <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Points</TableHead>
-                    <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Division</TableHead>
+                    <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Science</TableHead>
+                    <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">English</TableHead>
+                    <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Grade</TableHead>
                     <TableHead className="text-right pr-8 text-[9px] font-black uppercase tracking-widest">Hub</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -187,15 +189,13 @@ export default function AcademicsPage() {
                         <p className="text-[9px] font-mono font-black text-muted-foreground uppercase">{r.id}</p>
                       </TableCell>
                       <TableCell className="text-center font-mono font-bold text-xs">{r.math}</TableCell>
+                      <TableCell className="text-center font-mono font-bold text-xs">{r.sci}</TableCell>
                       <TableCell className="text-center font-mono font-bold text-xs">{r.eng}</TableCell>
-                      <TableCell className="text-center">
-                        <span className="text-[10px] font-black text-primary bg-primary/5 px-3 py-1 rounded-full">{r.points}</span>
-                      </TableCell>
                       <TableCell className="text-center">
                         <Badge className={cn(
                           "text-[9px] py-0.5 px-3 font-black rounded-full border-none",
-                          r.division === "I" ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"
-                        )}>DIV {r.division}</Badge>
+                          r.avg === "A" ? "bg-green-100 text-green-700" : "bg-blue-50 text-blue-600"
+                        )}>GRADE {r.avg}</Badge>
                       </TableCell>
                       <TableCell className="text-right pr-8">
                         <Button variant="ghost" size="sm" className="font-black text-primary text-[10px] uppercase rounded-full">Details</Button>
@@ -252,7 +252,7 @@ export default function AcademicsPage() {
                             onValueChange={(val) => updateCoverage(selectedSubject?.id, val[0])}
                           />
                         </div>
-                        <p className="text-[9px] font-medium text-center text-muted-foreground italic">Updating this node synchronizes teacher logs with the institutional pulse.</p>
+                        <p className="text-[9px] font-medium text-center text-muted-foreground italic">Updating this node synchronizes Doris Primary logs.</p>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -260,22 +260,6 @@ export default function AcademicsPage() {
               </Card>
             ))}
           </div>
-
-          <Card className="border-none shadow-xl rounded-[3rem] bg-slate-900 text-white p-10 overflow-hidden relative group">
-             <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:scale-110 transition-transform">
-               <BookOpen className="h-48 w-48 rotate-12" />
-             </div>
-             <div className="relative z-10 space-y-6 max-w-xl">
-                <Badge className="bg-accent text-white border-none font-black text-[10px] px-6 py-1.5 rounded-full uppercase tracking-widest shadow-lg">MANAGEMENT HUB</Badge>
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-black tracking-tight leading-none">Curriculum Pulse 2026</h3>
-                  <p className="text-white/60 font-medium text-sm leading-relaxed">
-                    Monitor institutional progress against national NECTA syllabi in real-time. Identify lagging subject nodes and deploy remedial strategies before assessment season.
-                  </p>
-                </div>
-                <Button className="rounded-2xl h-12 px-10 bg-white text-slate-900 hover:bg-white/90 font-black text-[10px] uppercase shadow-2xl">Deploy Audit Node</Button>
-             </div>
-          </Card>
         </TabsContent>
       </Tabs>
     </div>

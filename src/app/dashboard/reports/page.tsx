@@ -41,7 +41,7 @@ import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { createLearningResource } from "@/ai/flows/create-learning-resource-flow"
 
-// High-Fidelity Doris Primary Demo Data (PSLE 2018)
+// Official Doris Primary Data Population (PSLE 2018)
 const dorisMockResults = {
   center: "DORIS PRIMARY SCHOOL - PS0206098",
   stats: {
@@ -52,28 +52,35 @@ const dorisMockResults = {
     nationalRank: "221 / 10090"
   },
   candidates: [
-    { id: "PS0206098-001", name: "ALEXANDER MLAWA CALLSON", subjects: "Kiswahili-B, English-A, Maarifa-B, Hisabati-B, Science-B", avg: "B" },
-    { id: "PS0206098-002", name: "ALVIN MICHAEL GILLA", subjects: "Kiswahili-A, English-A, Maarifa-C, Hisabati-B, Science-B", avg: "B" },
-    { id: "PS0206098-003", name: "AYESIGA LAUREAN LEONIDAS", subjects: "Kiswahili-A, English-A, Maarifa-A, Hisabati-A, Science-A", avg: "A" },
-    { id: "PS0206098-004", name: "BILL EDMUND TARABA", subjects: "Kiswahili-B, English-A, Maarifa-B, Hisabati-A, Science-B", avg: "A" },
-    { id: "PS0206098-007", name: "DAVID ERICK MWIJAGE", subjects: "Kiswahili-A, English-A, Maarifa-A, Hisabati-A, Science-A", avg: "A" },
-    { id: "PS0206098-013", name: "GERALD KENETH KANDIMBA", subjects: "Kiswahili-A, English-A, Maarifa-A, Hisabati-A, Science-A", avg: "A" },
-    { id: "PS0206098-017", name: "IKUTWAGA BURTON MWAKAMBONJA", subjects: "Kiswahili-A, English-A, Maarifa-A, Hisabati-A, Science-A", avg: "A" },
-    { id: "PS0206098-022", name: "LEONARD FRANCIS MANONI", subjects: "Kiswahili-A, English-A, Maarifa-A, Hisabati-A, Science-A", avg: "A" },
-    { id: "PS0206098-034", name: "ZINDA BENARD JOHN", subjects: "Kiswahili-A, English-A, Maarifa-A, Hisabati-A, Science-A", avg: "A" }
+    { id: "PS0206098-001", name: "ALEXANDER MLAWA CALLSON", subjects: "Ksw-B, Eng-A, Maa-B, His-B, Sci-B", avg: "B" },
+    { id: "PS0206098-002", name: "ALVIN MICHAEL GILLA", subjects: "Ksw-A, Eng-A, Maa-C, His-B, Sci-B", avg: "B" },
+    { id: "PS0206098-003", name: "AYESIGA LAUREAN LEONIDAS", subjects: "Ksw-A, Eng-A, Maa-A, His-A, Sci-A", avg: "A" },
+    { id: "PS0206098-004", name: "BILL EDMUND TARABA", subjects: "Ksw-B, Eng-A, Maa-B, His-A, Sci-B", avg: "A" },
+    { id: "PS0206098-005", name: "BRIAN JULIUS KISOMBE", subjects: "Ksw-C, Eng-B, Maa-C, His-C, Sci-C", avg: "C" },
+    { id: "PS0206098-006", name: "BRYAN NICOLAUS SHIRIMA", subjects: "Ksw-A, Eng-A, Maa-B, His-A, Sci-B", avg: "A" },
+    { id: "PS0206098-007", name: "DAVID ERICK MWIJAGE", subjects: "Ksw-A, Eng-A, Maa-A, His-A, Sci-A", avg: "A" },
+    { id: "PS0206098-008", name: "DERICK HAGAI SAMSON", subjects: "Ksw-A, Eng-A, Maa-B, His-A, Sci-B", avg: "A" },
+    { id: "PS0206098-009", name: "ELIA MICHAEL MWALONGO", subjects: "Ksw-B, Eng-A, Maa-B, His-A, Sci-A", avg: "A" },
+    { id: "PS0206098-010", name: "ELTON SIMON MMBAGA", subjects: "Ksw-B, Eng-A, Maa-B, His-A, Sci-B", avg: "A" },
+    { id: "PS0206098-013", name: "GERALD KENETH KANDIMBA", subjects: "Ksw-A, Eng-A, Maa-A, His-A, Sci-A", avg: "A" },
+    { id: "PS0206098-017", name: "IKUTWAGA BURTON MWAKAMBONJA", subjects: "Ksw-A, Eng-A, Maa-A, His-A, Sci-A", avg: "A" },
+    { id: "PS0206098-022", name: "LEONARD FRANCIS MANONI", subjects: "Ksw-A, Eng-A, Maa-A, His-A, Sci-A", avg: "A" },
+    { id: "PS0206098-034", name: "ZINDA BENARD JOHN", subjects: "Ksw-A, Eng-A, Maa-A, His-A, Sci-A", avg: "A" },
+    { id: "PS0206098-037", name: "DEBORA DAMAS RUGANGIRA", subjects: "Ksw-A, Eng-A, Maa-B, His-A, Sci-A", avg: "A" },
+    { id: "PS0206098-043", name: "FAIDHA ABDUL MBWANA", subjects: "Ksw-A, Eng-A, Maa-A, His-A, Sci-B", avg: "A" },
+    { id: "PS0206098-048", name: "JOYCE IRENE SEMAHIMBO", subjects: "Ksw-A, Eng-A, Maa-A, His-A, Sci-A", avg: "A" },
+    { id: "PS0206098-051", name: "LILIAN STANFORD MUHIDIN", subjects: "Ksw-A, Eng-A, Maa-B, His-A, Sci-A", avg: "A" },
+    { id: "PS0206098-065", name: "VALERIA IGNAS ACHINAMPATE", subjects: "Ksw-A, Eng-A, Maa-B, His-A, Sci-A", avg: "A" },
+    { id: "PS0206098-067", name: "YUZLA ALLY MSHAM", subjects: "Ksw-A, Eng-A, Maa-C, His-A, Sci-B", avg: "A" },
   ]
 }
 
-// Predictable NECTA Portal Mapping
 const getNectaUrl = (level: string, year: string, centerId: string) => {
   const cleanId = centerId.replace('.', '').toLowerCase();
   if (level === "PSLE") {
     return `https://maktaba.tetea.org/exam-results/PSLE${year}/shl_${cleanId}.htm`;
   }
-  if (level === "CSEE") {
-    return `https://matokeo.necta.go.tz/results/${year}/csee/results/${cleanId}.htm`;
-  }
-  return "https://www.necta.go.tz/results/";
+  return `https://matokeo.necta.go.tz/results/${year}/${level.toLowerCase()}/results/${cleanId}.htm`;
 }
 
 export default function ReportsPage() {
@@ -81,12 +88,10 @@ export default function ReportsPage() {
   const [fetchingNecta, setFetchingNecta] = useState(false)
   const [activeResults, setActiveResults] = useState<any>(null)
   
-  // Center Config from LocalStorage
   const [centerNo, setCenterNo] = useState("PS0206098")
   const [examYear, setExamYear] = useState("2018")
   const [examLevel, setExamLevel] = useState("PSLE")
 
-  // AI Lab State
   const [isGeneratingLab, setIsGeneratingLab] = useState(false)
   const [labContent, setLabContent] = useState<string | null>(null)
 
@@ -99,13 +104,12 @@ export default function ReportsPage() {
     setFetchingNecta(true)
     setActiveResults(null)
     
-    // Simulate Fetching Doris Data if matching demo parameters
     setTimeout(() => {
       if (centerNo === "PS0206098" && examYear === "2018") {
         setActiveResults(dorisMockResults)
         toast({ title: "Official Sync Successful", description: "Linked 67 candidates to Doris Primary Registry." })
       } else {
-        toast({ variant: "destructive", title: "Center Not Verified", description: "Please ensure Center ID is registered in the 2026 Sovereign Node." })
+        toast({ variant: "destructive", title: "Center Not Verified", description: "Standard fetch failed. Demo is locked to PS0206098." })
       }
       setFetchingNecta(false)
     }, 1500)
@@ -123,9 +127,9 @@ export default function ReportsPage() {
         resourceType: formData.get("type") as any,
       })
       setLabContent(result.resourceContent)
-      toast({ title: "Resource Generated", description: "AI has successfully prepared your teaching node." })
+      toast({ title: "Resource Generated", description: "AI has prepared your teaching node." })
     } catch (err) {
-      toast({ variant: "destructive", title: "AI Generation Failed", description: "Could not initialize AI Content Node." })
+      toast({ variant: "destructive", title: "AI Generation Failed", description: "Check Genkit connection." })
     } finally {
       setIsGeneratingLab(false)
     }
@@ -283,7 +287,7 @@ export default function ReportsPage() {
                               </div>
                             </TableCell>
                             <TableCell className="text-center">
-                              <Badge className={cn("px-4 py-1 rounded-full text-[9px] font-black border-none", c.avg === "A" ? "bg-green-100 text-green-700" : "bg-orange-50 text-orange-600")}>{c.avg}</Badge>
+                              <Badge className={cn("px-4 py-1 rounded-full text-[9px] font-black border-none", c.avg === "A" ? "bg-green-100 text-green-700" : c.avg === "B" ? "bg-blue-50 text-blue-600" : "bg-orange-50 text-orange-600")}>{c.avg}</Badge>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -406,9 +410,9 @@ export default function ReportsPage() {
                     <div className="space-y-4">
                        {[
                          { school: "Our Institution", score: 94, isMain: true },
-                         { school: "Feza Boys Sec", score: 92, isMain: false },
-                         { school: "Marian Girls", score: 89, isMain: false },
-                         { school: "Canossa Sec", score: 85, isMain: false },
+                         { school: "Mbezi Beach Pri", score: 92, isMain: false },
+                         { school: "Feza Primary", score: 89, isMain: false },
+                         { school: "St. Mary's", score: 85, isMain: false },
                        ].map((item, i) => (
                          <div key={i} className="space-y-2">
                             <div className="flex justify-between items-end">
@@ -427,9 +431,9 @@ export default function ReportsPage() {
                     <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-accent">Subject Proficiency Node</h4>
                     <div className="grid grid-cols-2 gap-4">
                        {[
-                         { subject: "Mathematics", level: "High", color: "text-green-600", bg: "bg-green-100" },
-                         { subject: "Physics", level: "Optimal", color: "text-blue-600", bg: "bg-blue-100" },
-                         { subject: "Chemistry", level: "Steady", color: "text-orange-600", bg: "bg-orange-100" },
+                         { subject: "English", level: "High", color: "text-green-600", bg: "bg-green-100" },
+                         { subject: "Hisabati", level: "Optimal", color: "text-blue-600", bg: "bg-blue-100" },
+                         { subject: "Science", level: "Steady", color: "text-orange-600", bg: "bg-orange-100" },
                          { subject: "Kiswahili", level: "Peak", color: "text-purple-600", bg: "bg-purple-100" },
                        ].map((item, i) => (
                          <div key={i} className="p-4 rounded-2xl bg-white shadow-sm border border-accent/10 flex flex-col gap-1 items-center text-center">

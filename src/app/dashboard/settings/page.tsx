@@ -42,7 +42,7 @@ import {
 
 export default function SettingsPage() {
   const { toast } = useToast()
-  const [schoolName, setSchoolName] = useState("ShuleDirect Pro")
+  const [schoolName, setSchoolName] = useState("Doris Primary School")
   const [systemName, setSystemName] = useState("ShuleDirect")
   const [systemVersion, setSystemVersion] = useState("2.0.26")
   const [centerNo, setCenterNo] = useState("PS0206098")
@@ -54,9 +54,8 @@ export default function SettingsPage() {
   
   // Personnel State
   const [staff, setStaff] = useState([
-    { id: "STAFF-001", name: "Davie Mwijage", email: "admin@shule.pro", role: "ADMIN", status: "Active" },
-    { id: "STAFF-002", name: "Sarah Neema", email: "bursar@shule.pro", role: "BURSAR", status: "Active" },
-    { id: "STAFF-003", name: "John Peter", email: "teacher@shule.pro", role: "TEACHER", status: "Active" },
+    { id: "STAFF-001", name: "Administrator Node", email: "admin@shule.pro", role: "ADMIN", status: "Active" },
+    { id: "STAFF-002", name: "Bursar Personnel", email: "bursar@shule.pro", role: "BURSAR", status: "Active" },
   ])
 
   useEffect(() => {
