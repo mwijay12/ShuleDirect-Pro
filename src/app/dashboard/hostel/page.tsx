@@ -2,26 +2,19 @@
 "use client"
 
 import * as React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { 
-  Bed, 
   Home, 
-  Users, 
-  Search,
   Plus,
   ArrowRight,
   ShieldCheck,
   Zap,
-  Stethoscope,
-  ClipboardList,
   Lightbulb,
   Droplets,
   Settings,
   AlertCircle,
-  CheckCircle2,
   Trash2,
   UserPlus,
-  Activity,
   HeartPulse,
   Loader2
 } from "lucide-react"
@@ -51,10 +44,9 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, query, addDoc, deleteDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore"
-import { deleteDocumentNonBlocking, addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+import { useFirestore, useCollection, useDoc, useMemoFirebase } from "@/firebase"
+import { collection, query, doc, serverTimestamp } from "firebase/firestore"
+import { deleteDocumentNonBlocking, addDocumentNonBlocking, updateDocumentNonBlocking, setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 export default function HostelPage() {
   const { toast } = useToast()
@@ -63,25 +55,31 @@ export default function HostelPage() {
   
   const [isAdding, setIsAdding] = useState(false)
   const [selectedWing, setSelectedWing] = useState<any>(null)
+  const [isVerifying, setIsVerifying] = useState<string | null>(null)
   
-  // Real Firestore Query
+  // Real Firestore Query for Hostels
   const hostelsQuery = useMemoFirebase(() => {
     return query(collection(db, "schools", schoolId, "hostels"))
   }, [db])
   const { data: hostels, isLoading } = useCollection(hostelsQuery)
 
-  const [utilityStatus, setUtilityStatus] = useState({
+  // Real Firestore Doc for Utility Statuses
+  const utilitiesRef = useMemoFirebase(() => {
+    return doc(db, "schools", schoolId, "config", "utilities")
+  }, [db])
+  const { data: utilities } = useDoc(utilitiesRef)
+
+  const utilityData = utilities || {
     luku: "Healthy",
     water: "Normal Flow",
     hygiene: "Verified Today"
-  })
+  }
 
-  const [checklist, setChecklist] = useState([
+  const checklist = [
     { id: 1, task: "Room Hygiene Audit", icon: ShieldCheck, status: "Verified" },
     { id: 2, task: "Electrical & Lighting", icon: Lightbulb, status: "Inspected" },
     { id: 3, task: "Plumbing Integrity", icon: Droplets, status: "Done" },
-    { id: 4, task: "Evening Roll Call", icon: Users, status: "Pending" },
-  ])
+  ]
 
   const handleAddWing = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -109,13 +107,10 @@ export default function HostelPage() {
     toast({ variant: "destructive", title: "Node Terminated", description: "Hostel wing removed from registry." })
   }
 
-  const handleVerifyUtility = (key: keyof typeof utilityStatus, status: string) => {
-    setUtilityStatus(prev => ({ ...prev, [key]: status }))
-    toast({ title: "Audit Synchronized", description: "Manual verification logged locally." })
-  }
-
-  const toggleChecklistItem = (id: number) => {
-    setChecklist(prev => prev.map(item => item.id === id ? { ...item, status: item.status === "Pending" ? "Verified" : "Pending" } : item))
+  const handleUpdateUtility = (key: string, value: string) => {
+    setDocumentNonBlocking(utilitiesRef, { [key]: value }, { merge: true })
+    setIsVerifying(null)
+    toast({ title: "Audit Synchronized", description: `${key.toUpperCase()} node updated in Firestore.` })
   }
 
   return (
@@ -184,6 +179,52 @@ export default function HostelPage() {
         </Dialog>
       </div>
 
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+        {[
+          { label: "Electricity (LUKU)", value: utilityData.luku, icon: Zap, key: "luku" },
+          { label: "Water Infrastructure", value: utilityData.water, icon: Droplets, key: "water" },
+          { label: "Hygiene Compliance", value: utilityData.hygiene, icon: ShieldCheck, key: "hygiene" },
+        ].map((item) => (
+          <Card key={item.key} className="border-none shadow-lg bg-white/60 backdrop-blur-md rounded-[2rem] overflow-hidden group">
+            <CardContent className="p-6 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">{item.label}</p>
+                  <p className="text-sm font-black text-primary">{item.value}</p>
+                </div>
+              </div>
+              <Dialog open={isVerifying === item.key} onOpenChange={(open) => setIsVerifying(open ? item.key : null)}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-primary">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="rounded-[2rem] max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle className="font-black uppercase text-center">Verify {item.key}</DialogTitle>
+                  </DialogHeader>
+                  <div className="p-6 space-y-4">
+                    <Input id="utility-val" placeholder="e.g. Normal Flow" className="h-12 rounded-xl" />
+                    <Button 
+                      className="w-full h-12 rounded-xl colorful-gradient font-black uppercase text-[10px]"
+                      onClick={() => {
+                        const val = (document.getElementById('utility-val') as HTMLInputElement).value;
+                        if(val) handleUpdateUtility(item.key, val);
+                      }}
+                    >
+                      Update Node
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
       {isLoading ? (
         <div className="p-20 flex flex-col items-center justify-center text-muted-foreground">
           <Loader2 className="h-10 w-10 animate-spin mb-4" />
@@ -248,18 +289,16 @@ export default function HostelPage() {
                         <TabsContent value="audit" className="space-y-8">
                           <div className="space-y-3">
                             {checklist.map((item) => (
-                              <div key={item.id} className="flex items-center justify-between p-5 bg-white rounded-2xl shadow-sm border border-muted/50 hover:border-primary/20 transition-all group/item">
+                              <div key={item.id} className="flex items-center justify-between p-5 bg-white rounded-2xl shadow-sm border border-muted/50 group/item">
                                 <div className="flex items-center gap-4">
-                                  <item.icon className={cn("h-5 w-5", item.status === "Verified" ? "text-green-500" : "text-muted-foreground")} />
+                                  <item.icon className="h-5 w-5 text-muted-foreground" />
                                   <span className="text-xs font-bold text-foreground/80">{item.task}</span>
                                 </div>
-                                <Button variant="ghost" size="sm" className={cn("text-[8px] font-black uppercase tracking-widest rounded-full px-3 h-7", item.status === "Verified" ? "bg-green-50 text-green-700" : "bg-orange-50 text-orange-600")} onClick={() => toggleChecklistItem(item.id)}>
-                                  {item.status}
-                                </Button>
+                                <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest rounded-full px-3 h-7 bg-muted/20">READY</Badge>
                               </div>
                             ))}
                           </div>
-                          <Button className="w-full h-14 rounded-2xl colorful-gradient font-black uppercase text-xs tracking-widest shadow-xl group" onClick={() => toast({ title: "Audit Logged", description: "Safety record archived in Firestore node." })}>
+                          <Button className="w-full h-14 rounded-2xl colorful-gradient font-black uppercase text-xs tracking-widest shadow-xl group" onClick={() => toast({ title: "Audit Logged", description: "Manual safety record archived." })}>
                             Confirm Wing Audit <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                           </Button>
                         </TabsContent>
