@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { 
   FileSpreadsheet, 
   Download, 
@@ -26,7 +26,8 @@ import {
   Zap,
   LayoutGrid,
   Trophy,
-  PieChart
+  PieChart,
+  UserCheck
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -40,76 +41,74 @@ import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { createLearningResource } from "@/ai/flows/create-learning-resource-flow"
 
-// Official NECTA Portal Mapping Logic
-const getNectaUrl = (level: string, year: string) => {
-  if (level === "CSEE") {
-    if (year === "2024") return "https://onlinesys.necta.go.tz/results/2024/csee/index.htm"
-    if (year === "2025") return "https://matokeo.necta.go.tz/results/2025/csee/index.html"
-    if (year === "2023") return "https://onlinesys.necta.go.tz/results/2023/csee/index.htm"
-  }
-  if (level === "FTNA") {
-    return `https://onlinesys.necta.go.tz/results/${year}/ftna/ftna.html`
-  }
-  if (level === "ACSEE") {
-    return `https://onlinesys.necta.go.tz/results/${year}/acsee/index.html`
-  }
-  return "https://www.necta.go.tz/results/"
+// High-Fidelity Doris Primary Demo Data (PSLE 2018)
+const dorisMockResults = {
+  center: "DORIS PRIMARY SCHOOL - PS0206098",
+  stats: {
+    total: 67,
+    average: "199.2537",
+    districtRank: "5 / 91",
+    regionalRank: "50 / 448",
+    nationalRank: "221 / 10090"
+  },
+  candidates: [
+    { id: "PS0206098-001", name: "ALEXANDER MLAWA CALLSON", subjects: "Kiswahili-B, English-A, Maarifa-B, Hisabati-B, Science-B", avg: "B" },
+    { id: "PS0206098-002", name: "ALVIN MICHAEL GILLA", subjects: "Kiswahili-A, English-A, Maarifa-C, Hisabati-B, Science-B", avg: "B" },
+    { id: "PS0206098-003", name: "AYESIGA LAUREAN LEONIDAS", subjects: "Kiswahili-A, English-A, Maarifa-A, Hisabati-A, Science-A", avg: "A" },
+    { id: "PS0206098-004", name: "BILL EDMUND TARABA", subjects: "Kiswahili-B, English-A, Maarifa-B, Hisabati-A, Science-B", avg: "A" },
+    { id: "PS0206098-007", name: "DAVID ERICK MWIJAGE", subjects: "Kiswahili-A, English-A, Maarifa-A, Hisabati-A, Science-A", avg: "A" },
+    { id: "PS0206098-013", name: "GERALD KENETH KANDIMBA", subjects: "Kiswahili-A, English-A, Maarifa-A, Hisabati-A, Science-A", avg: "A" },
+    { id: "PS0206098-017", name: "IKUTWAGA BURTON MWAKAMBONJA", subjects: "Kiswahili-A, English-A, Maarifa-A, Hisabati-A, Science-A", avg: "A" },
+    { id: "PS0206098-022", name: "LEONARD FRANCIS MANONI", subjects: "Kiswahili-A, English-A, Maarifa-A, Hisabati-A, Science-A", avg: "A" },
+    { id: "PS0206098-034", name: "ZINDA BENARD JOHN", subjects: "Kiswahili-A, English-A, Maarifa-A, Hisabati-A, Science-A", avg: "A" }
+  ]
 }
 
-const nectaMockResultsByLevel: Record<string, any> = {
-  "CSEE": {
-    summary: { gpa: "2.1", divisionI: 42, divisionII: 38, divisionIII: 25, divisionIV: 12, division0: 0, passRate: "100%" },
-    topStudents: [
-      { name: "Amani Mwamba", points: 7, division: "I", grades: "A,A,A,A,A,A,A" },
-      { name: "Careen Mushi", points: 8, division: "I", grades: "A,A,A,A,A,A,B" },
-      { name: "Emanuel Lema", points: 9, division: "I", grades: "A,A,A,A,A,B,B" },
-      { name: "Baraka Juma", points: 11, division: "I", grades: "A,A,B,B,B,B,B" },
-      { name: "Sarah Neema", points: 12, division: "I", grades: "A,B,B,B,B,B,B" },
-      { name: "John Peter", points: 14, division: "I", grades: "B,B,B,B,B,B,B" },
-      { name: "Faith Mushi", points: 15, division: "I", grades: "B,B,B,B,B,C,C" },
-      { name: "Kelvin Masawe", points: 17, division: "I", grades: "C,C,C,C,C,C,C" },
-    ]
-  },
-  "FTNA": {
-    summary: { gpa: "1.8", divisionI: 55, divisionII: 25, divisionIII: 10, divisionIV: 5, division0: 0, passRate: "100%" },
-    topStudents: [
-      { name: "Neema Peter", points: 7, division: "I", grades: "A,A,A,A,A,A,A" },
-      { name: "Said Bakari", points: 7, division: "I", grades: "A,A,A,A,A,A,A" },
-      { name: "Jane Doe", points: 9, division: "I", grades: "A,A,A,A,A,B,B" },
-      { name: "Richard Mrema", points: 10, division: "I", grades: "A,A,A,B,B,B,B" },
-    ]
-  },
-  "ACSEE": {
-    summary: { gpa: "2.4", divisionI: 12, divisionII: 18, divisionIII: 20, divisionIV: 4, division0: 1, passRate: "98.2%" },
-    topStudents: [
-      { name: "Richard Mrema", points: 3, division: "I", grades: "A,A,A" },
-      { name: "Sarah John", points: 4, division: "I", grades: "A,A,B" },
-      { name: "Kelvin Peter", points: 6, division: "I", grades: "A,B,B" },
-      { name: "Aisha Bakari", points: 7, division: "I", grades: "B,B,B" },
-    ]
+// Predictable NECTA Portal Mapping
+const getNectaUrl = (level: string, year: string, centerId: string) => {
+  const cleanId = centerId.replace('.', '').toLowerCase();
+  if (level === "PSLE") {
+    return `https://maktaba.tetea.org/exam-results/PSLE${year}/shl_${cleanId}.htm`;
   }
+  if (level === "CSEE") {
+    return `https://matokeo.necta.go.tz/results/${year}/csee/results/${cleanId}.htm`;
+  }
+  return "https://www.necta.go.tz/results/";
 }
 
 export default function ReportsPage() {
   const { toast } = useToast()
   const [fetchingNecta, setFetchingNecta] = useState(false)
-  const [nectaResults, setNectaResults] = useState<any>(null)
-  const [centerNo, setCenterNo] = useState("S.1234")
-  const [examYear, setExamYear] = useState("2024")
-  const [examLevel, setExamLevel] = useState("CSEE")
+  const [activeResults, setActiveResults] = useState<any>(null)
+  
+  // Center Config from LocalStorage
+  const [centerNo, setCenterNo] = useState("PS0206098")
+  const [examYear, setExamYear] = useState("2018")
+  const [examLevel, setExamLevel] = useState("PSLE")
 
   // AI Lab State
   const [isGeneratingLab, setIsGeneratingLab] = useState(false)
   const [labContent, setLabContent] = useState<string | null>(null)
 
+  useEffect(() => {
+    const savedId = localStorage.getItem("shule_center_id")
+    if (savedId) setCenterNo(savedId)
+  }, [])
+
   const handleFetchNectaResults = () => {
     setFetchingNecta(true)
-    setNectaResults(null)
+    setActiveResults(null)
+    
+    // Simulate Fetching Doris Data if matching demo parameters
     setTimeout(() => {
-      setNectaResults(nectaMockResultsByLevel[examLevel] || nectaMockResultsByLevel["CSEE"])
+      if (centerNo === "PS0206098" && examYear === "2018") {
+        setActiveResults(dorisMockResults)
+        toast({ title: "Official Sync Successful", description: "Linked 67 candidates to Doris Primary Registry." })
+      } else {
+        toast({ variant: "destructive", title: "Center Not Verified", description: "Please ensure Center ID is registered in the 2026 Sovereign Node." })
+      }
       setFetchingNecta(false)
-      toast({ title: "Sync Successful", description: `Official records retrieved for ${examLevel} ${examYear}.` })
-    }, 2000)
+    }, 1500)
   }
 
   const handleGenerateAiResource = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -132,22 +131,22 @@ export default function ReportsPage() {
     }
   }
 
-  const officialUrl = getNectaUrl(examLevel, examYear)
+  const officialUrl = getNectaUrl(examLevel, examYear, centerNo)
 
   return (
     <div className="space-y-6 max-w-full mx-auto pb-24 px-1">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-1">
           <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary px-3 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-full">
-            <Globe className="h-2.5 w-2.5 mr-1.5" /> Tanzanian National Hub
+            <Globe className="h-2.5 w-2.5 mr-1.5" /> NECTA NATIONAL HUB
           </Badge>
-          <h1 className="text-xl sm:text-2xl font-black text-primary tracking-tight uppercase">Official NECTA Hub</h1>
-          <p className="text-muted-foreground text-[10px] sm:text-xs font-bold uppercase tracking-widest leading-none">Global benchmarking and AI study synthesis.</p>
+          <h1 className="text-xl sm:text-2xl font-black text-primary tracking-tight uppercase">Sovereign Results Hub</h1>
+          <p className="text-muted-foreground text-[10px] sm:text-xs font-bold uppercase tracking-widest leading-none">Automated Candidate-to-Name Mapping Node.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <Button variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm text-[10px] font-black uppercase tracking-widest" asChild>
             <a href={officialUrl} target="_blank" rel="noreferrer">
-              <Globe className="mr-2 h-4 w-4" /> Official Portal
+              <ExternalLink className="mr-2 h-4 w-4" /> Official Portal
             </a>
           </Button>
         </div>
@@ -155,10 +154,10 @@ export default function ReportsPage() {
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "National Rank", value: "#14", sub: "Regional Top 10", icon: Trophy, color: "text-orange-600" },
-          { label: "Matrix Sync", value: "Verified", sub: "2026 Season", icon: Database, color: "text-primary" },
-          { label: "AI Synth", value: "Active", sub: "Content Node", icon: Zap, color: "text-accent" },
-          { label: "Archives", value: "12 Yrs", sub: "Historical Hub", icon: History, color: "text-green-600" },
+          { label: "Center ID", value: centerNo, sub: "Verified Node", icon: ShieldCheck, color: "text-primary" },
+          { label: "Matrix Mapping", value: "Active", sub: "Names Linked", icon: UserCheck, color: "text-green-600" },
+          { label: "AI Synth", value: "Operational", sub: "Analysis Ready", icon: Zap, color: "text-accent" },
+          { label: "Sync Status", value: "Online", sub: "NECTA Gateway", icon: Globe, color: "text-orange-600" },
         ].map((stat) => (
           <Card key={stat.label} className="border-none shadow-sm bg-white/60 backdrop-blur-md rounded-2xl overflow-hidden group">
              <CardContent className="p-5 flex items-center justify-between">
@@ -177,10 +176,9 @@ export default function ReportsPage() {
 
       <Tabs defaultValue="necta-explorer" className="space-y-6">
         <TabsList className="bg-muted/40 p-1 rounded-2xl w-full sm:w-fit overflow-x-auto flex h-auto gap-1 shadow-inner border border-muted/50">
-          <TabsTrigger value="necta-explorer" className="rounded-xl font-black py-2.5 px-6 text-[10px] uppercase tracking-widest">Results Retrieval</TabsTrigger>
+          <TabsTrigger value="necta-explorer" className="rounded-xl font-black py-2.5 px-6 text-[10px] uppercase tracking-widest">Online Inquiry</TabsTrigger>
           <TabsTrigger value="ai-lab" className="rounded-xl font-black py-2.5 px-6 text-[10px] uppercase tracking-widest">AI Content Lab</TabsTrigger>
-          <TabsTrigger value="analytics" className="rounded-xl font-black py-2.5 px-6 text-[10px] uppercase tracking-widest">Benchmarking</TabsTrigger>
-          <TabsTrigger value="portals" className="rounded-xl font-black py-2.5 px-6 text-[10px] uppercase tracking-widest">Archives</TabsTrigger>
+          <TabsTrigger value="analytics" className="rounded-xl font-black py-2.5 px-6 text-[10px] uppercase tracking-widest">National Audit</TabsTrigger>
         </TabsList>
 
         <TabsContent value="necta-explorer" className="space-y-6">
@@ -191,16 +189,16 @@ export default function ReportsPage() {
                   <Database className="h-6 w-6" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl font-black uppercase tracking-tight">Online Results Inquiry</CardTitle>
-                  <CardDescription className="text-[10px] font-black uppercase tracking-widest text-primary/60 leading-none">Official PReMS Node Synchronization</CardDescription>
+                  <CardTitle className="text-xl font-black uppercase tracking-tight">Institutional Matrix Retrieval</CardTitle>
+                  <CardDescription className="text-[10px] font-black uppercase tracking-widest text-primary/60 leading-none">Map NECTA numbers to registered students automatically.</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-8 space-y-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
                 <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Center ID</Label>
-                  <Input value={centerNo} onChange={(e) => setCenterNo(e.target.value)} className="h-12 rounded-xl bg-muted/20 border-none shadow-inner font-mono font-black px-5" />
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Center Number</Label>
+                  <Input value={centerNo} onChange={(e) => setCenterNo(e.target.value)} className="h-12 rounded-xl bg-muted/20 border-none shadow-inner font-mono font-black px-5" placeholder="e.g. PS0206098" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Season</Label>
@@ -209,18 +207,19 @@ export default function ReportsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
-                      <SelectItem value="2025">2025 (Official)</SelectItem>
-                      <SelectItem value="2024">2024 (Official)</SelectItem>
+                      <SelectItem value="2024">2024 (Current)</SelectItem>
+                      <SelectItem value="2018">2018 (Archive Demo)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Level</Label>
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Academic Tier</Label>
                   <Select value={examLevel} onValueChange={setExamLevel}>
                     <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-black text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
+                      <SelectItem value="PSLE">Primary (PSLE)</SelectItem>
                       <SelectItem value="FTNA">Form Two (FTNA)</SelectItem>
                       <SelectItem value="CSEE">Form Four (CSEE)</SelectItem>
                       <SelectItem value="ACSEE">Form Six (ACSEE)</SelectItem>
@@ -232,46 +231,60 @@ export default function ReportsPage() {
                 </Button>
               </div>
 
-              {nectaResults && (
+              {activeResults && (
                 <div className="space-y-8 pt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[
-                      { label: "Pass Rate", value: nectaResults.summary.passRate, color: "text-primary", bg: "bg-primary/5" },
-                      { label: "Division I", value: nectaResults.summary.divisionI, color: "text-green-600", bg: "bg-green-50" },
-                      { label: "Total Node", value: "142", color: "text-foreground/80", bg: "bg-muted/30" },
-                      { label: "Matrix GPA", value: nectaResults.summary.gpa, color: "text-orange-600", bg: "bg-orange-50" },
-                    ].map((s) => (
-                      <div key={s.label} className={cn("p-6 rounded-[2rem] border border-transparent flex flex-col items-center text-center shadow-sm", s.bg)}>
-                        <p className="text-[8px] uppercase font-black text-muted-foreground tracking-widest mb-1">{s.label}</p>
-                        <p className={cn("text-2xl font-black", s.color)}>{s.value}</p>
+                  <div className="p-6 rounded-[2rem] bg-muted/20 border-2 border-dashed border-primary/10">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                      <div className="text-center md:text-left">
+                        <h3 className="font-black text-lg text-primary">{activeResults.center}</h3>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Official PSLE {examYear} Audit Node</p>
                       </div>
-                    ))}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <div className="text-center p-3 bg-white rounded-2xl shadow-sm">
+                          <p className="text-[8px] font-black text-muted-foreground">GPA</p>
+                          <p className="text-sm font-black text-primary">{activeResults.stats.average}</p>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded-2xl shadow-sm">
+                          <p className="text-[8px] font-black text-muted-foreground">REGIONAL</p>
+                          <p className="text-sm font-black text-accent">{activeResults.stats.regionalRank}</p>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded-2xl shadow-sm">
+                          <p className="text-[8px] font-black text-muted-foreground">NATIONAL</p>
+                          <p className="text-sm font-black text-orange-600">{activeResults.stats.nationalRank}</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="overflow-hidden rounded-[2rem] border bg-white shadow-xl">
                     <Table>
                       <TableHeader className="bg-muted/10">
                         <TableRow className="border-none h-14">
-                          <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Candidate Payload</TableHead>
-                          <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Points</TableHead>
-                          <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Division</TableHead>
-                          <TableHead className="hidden md:table-cell text-[9px] font-black uppercase tracking-widest">Official Sequence</TableHead>
+                          <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Candidate ID</TableHead>
+                          <TableHead className="text-[9px] font-black uppercase tracking-widest">Linked Student Name</TableHead>
+                          <TableHead className="text-[9px] font-black uppercase tracking-widest">Subject Matrix</TableHead>
+                          <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Avg</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {nectaResults.topStudents.map((student: any, i: number) => (
+                        {activeResults.candidates.map((c: any, i: number) => (
                           <TableRow key={i} className="group transition-colors border-b last:border-none hover:bg-primary/[0.02]">
                             <TableCell className="pl-8 py-5">
-                              <div className="flex items-center gap-4">
-                                <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center text-primary font-black text-[10px]">{i + 1}</div>
-                                <span className="font-black text-sm text-foreground/80">{student.name}</span>
+                              <code className="text-[10px] font-mono font-black text-primary/60 bg-primary/5 px-2 py-1 rounded">{c.id}</code>
+                            </TableCell>
+                            <TableCell>
+                              <span className="font-black text-sm text-foreground/80">{c.name}</span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-wrap gap-1">
+                                {c.subjects.split(', ').map((s: string, idx: number) => (
+                                  <Badge key={idx} variant="outline" className="text-[8px] px-2 py-0 h-5 font-bold uppercase border-muted-foreground/20">{s}</Badge>
+                                ))}
                               </div>
                             </TableCell>
-                            <TableCell className="text-center font-mono font-black text-xs">{student.points}</TableCell>
                             <TableCell className="text-center">
-                              <Badge className={cn("px-4 py-1 rounded-full text-[9px] font-black border-none shadow-sm", student.division === "I" ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground")}>DIV {student.division}</Badge>
+                              <Badge className={cn("px-4 py-1 rounded-full text-[9px] font-black border-none", c.avg === "A" ? "bg-green-100 text-green-700" : "bg-orange-50 text-orange-600")}>{c.avg}</Badge>
                             </TableCell>
-                            <TableCell className="hidden md:table-cell text-[10px] font-mono text-muted-foreground italic">{student.grades}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -330,7 +343,7 @@ export default function ReportsPage() {
                   </div>
                 </div>
                 <Button type="submit" disabled={isGeneratingLab} className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase tracking-widest shadow-2xl group transition-all active:scale-95">
-                  {isGeneratingLab ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />}
+                  {isGeneratingLab ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                   Generate Node
                 </Button>
               </form>
@@ -431,30 +444,6 @@ export default function ReportsPage() {
                  </div>
               </div>
            </Card>
-        </TabsContent>
-
-        <TabsContent value="portals" className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[
-            { name: "CSEE 2024 Archive", url: "https://onlinesys.necta.go.tz/results/2024/csee/index.htm", level: "Form 4" },
-            { name: "CSEE 2025 Portal", url: "https://matokeo.necta.go.tz/results/2025/csee/index.html", level: "Form 4" },
-            { name: "FTNA 2025 Hub", url: "https://onlinesys.necta.go.tz/results/2025/ftna/ftna.html", level: "Form 2" },
-          ].map((portal, i) => (
-            <Card key={i} className="border-none shadow-sm hover:shadow-xl transition-all group overflow-hidden rounded-[2rem] bg-white/60 backdrop-blur-md border border-muted/50">
-               <div className="h-1.5 w-full bg-primary/20 group-hover:colorful-gradient transition-all" />
-               <CardHeader className="pb-4 pt-6">
-                 <CardTitle className="text-sm font-black flex items-center justify-between uppercase tracking-tight">
-                   {portal.name}
-                   <ExternalLink className="h-4 w-4 opacity-30 group-hover:opacity-100 transition-opacity" />
-                 </CardTitle>
-                 <CardDescription className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/60 leading-none">{portal.level} Node</CardDescription>
-               </CardHeader>
-               <CardContent className="pb-6">
-                 <Button variant="outline" size="sm" className="w-full rounded-full text-[9px] font-black uppercase h-10 border-primary/10 hover:bg-primary/5 text-primary transition-all group-hover:border-primary/30" asChild>
-                   <a href={portal.url} target="_blank" rel="noreferrer">Open Gov Node</a>
-                 </Button>
-               </CardContent>
-            </Card>
-          ))}
         </TabsContent>
       </Tabs>
     </div>

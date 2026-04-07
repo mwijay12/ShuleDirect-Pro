@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -44,6 +45,9 @@ export default function SettingsPage() {
   const [schoolName, setSchoolName] = useState("ShuleDirect Pro")
   const [systemName, setSystemName] = useState("ShuleDirect")
   const [systemVersion, setSystemVersion] = useState("2.0.26")
+  const [centerNo, setCenterNo] = useState("PS0206098")
+  const [region, setRegion] = useState("Dar es Salaam")
+  const [district, setDistrict] = useState("Kinondoni")
   const [n8nUrl, setN8nUrl] = useState("")
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [isResetting, setIsResetting] = useState(false)
@@ -61,18 +65,27 @@ export default function SettingsPage() {
     const savedVersion = localStorage.getItem("shule_version")
     const savedN8n = localStorage.getItem("shule_n8n_url")
     const savedLogo = localStorage.getItem("shule_logo")
+    const savedCenter = localStorage.getItem("shule_center_id")
+    const savedRegion = localStorage.getItem("shule_region")
+    const savedDistrict = localStorage.getItem("shule_district")
     
     if (savedName) setSchoolName(savedName)
     if (savedSystemName) setSystemName(savedSystemName)
     if (savedVersion) setSystemVersion(savedVersion)
     if (savedN8n) setN8nUrl(savedN8n)
     if (savedLogo) setLogoPreview(savedLogo)
+    if (savedCenter) setCenterNo(savedCenter)
+    if (savedRegion) setRegion(savedRegion)
+    if (savedDistrict) setDistrict(savedDistrict)
   }, [])
 
   const handleSave = () => {
     localStorage.setItem("shule_name", schoolName)
     localStorage.setItem("shule_system_name", systemName)
     localStorage.setItem("shule_version", systemVersion)
+    localStorage.setItem("shule_center_id", centerNo)
+    localStorage.setItem("shule_region", region)
+    localStorage.setItem("shule_district", district)
     localStorage.setItem("shule_n8n_url", n8nUrl)
     toast({ title: "System Node Synced", description: "Institutional configurations updated." })
     setTimeout(() => window.location.reload(), 800)
@@ -170,7 +183,7 @@ export default function SettingsPage() {
                   <CardTitle className="text-base font-black uppercase">Institutional Identity</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="p-8">
+              <CardContent className="p-8 space-y-6">
                 <div className="grid gap-6 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Official School Name</Label>
@@ -178,7 +191,17 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">NECTA Center ID</Label>
-                    <Input defaultValue="S.1234" className="rounded-xl h-12 bg-muted/20 border-none font-mono font-black text-primary shadow-inner" />
+                    <Input value={centerNo} onChange={(e) => setCenterNo(e.target.value)} className="rounded-xl h-12 bg-muted/20 border-none font-mono font-black text-primary shadow-inner" />
+                  </div>
+                </div>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Center Region</Label>
+                    <Input value={region} onChange={(e) => setRegion(e.target.value)} className="rounded-xl h-12 bg-muted/20 border-none font-black shadow-inner" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Center District</Label>
+                    <Input value={district} onChange={(e) => setDistrict(e.target.value)} className="rounded-xl h-12 bg-muted/20 border-none font-black shadow-inner" />
                   </div>
                 </div>
               </CardContent>

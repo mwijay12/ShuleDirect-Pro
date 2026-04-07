@@ -27,6 +27,18 @@
         "contactPhone": {
           "type": "string",
           "description": "The primary contact phone number for the school."
+        },
+        "centerId": {
+          "type": "string",
+          "description": "NECTA Center Number (e.g. S.1234 or PS0206098)."
+        },
+        "region": {
+          "type": "string",
+          "description": "The administrative region of the center."
+        },
+        "district": {
+          "type": "string",
+          "description": "The administrative district of the center."
         }
       },
       "required": [
