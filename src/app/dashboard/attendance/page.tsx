@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { 
   Search, 
   Smartphone, 
@@ -25,18 +25,29 @@ import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
+// Synchronized authentic roster
 const initialStudents = [
-  { id: "2024-001", name: "Amani Mwamba", class: "O-Level Stream A", status: "Present", lastUpdated: "07:45 AM", parentContact: "+255712000001" },
-  { id: "2024-002", name: "Careen Mushi", class: "Primary Node 7", status: "Absent", lastUpdated: "N/A", parentContact: "+255754000002" },
-  { id: "2024-003", name: "Baraka Juma", class: "A-Level PCM", status: "Present", lastUpdated: "07:30 AM", parentContact: "+255621000003" },
-  { id: "2024-004", name: "Doreen Peter", class: "O-Level Stream C", status: "Late", lastUpdated: "08:15 AM", parentContact: "+255788000004" },
-  { id: "2024-005", name: "Emanuel Lema", class: "A-Level HGL", status: "Present", lastUpdated: "07:50 AM", parentContact: "+255713000005" },
+  { id: "PS0206098-001", name: "ALEXANDER MLAWA CALLSON", class: "Standard 7", status: "Present", lastUpdated: "07:45 AM", parentContact: "+255712000001" },
+  { id: "PS0206098-002", name: "ALVIN MICHAEL GILLA", class: "Standard 7", status: "Absent", lastUpdated: "N/A", parentContact: "+255754000002" },
+  { id: "PS0206098-003", name: "AYESIGA LAUREAN LEONIDAS", class: "Standard 7", status: "Present", lastUpdated: "07:30 AM", parentContact: "+255621000003" },
+  { id: "S4939-0001", name: "AGNES FRED KILIMA", class: "Form 2A", status: "Present", lastUpdated: "07:50 AM", parentContact: "+255713000005" },
+  { id: "S4939-0002", name: "AGNES NKUNDWE MWAMBALASWA", class: "Form 2A", status: "Present", lastUpdated: "07:55 AM", parentContact: "+255713000006" },
+  { id: "S4939-0112", name: "DAVID ERICK MWIJAGE", class: "Form 2B", status: "Present", lastUpdated: "08:00 AM", parentContact: "+255713000007" },
+  { id: "S4939-0200", name: "WILBERT RWECHUNGURA MUNYAGA", class: "Form 2B", status: "Present", lastUpdated: "08:05 AM", parentContact: "+255713000008" },
 ]
 
 export default function AttendancePage() {
   const { toast } = useToast()
   const [students, setStudents] = useState(initialStudents)
+  const [searchTerm, setSearchTerm] = useState("")
   const [activeDate] = useState(new Date().toLocaleDateString('en-GB'))
+
+  const filteredStudents = useMemo(() => {
+    return students.filter(s => 
+      s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.id.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }, [searchTerm, students])
 
   const handleStatusChange = (id: string, newStatus: string) => {
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -114,7 +125,12 @@ export default function AttendancePage() {
             <div className="flex gap-2 shrink-0">
               <div className="relative flex-1 sm:min-w-[250px] group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors z-10" />
-                <Input placeholder="Find student..." className="pl-12 h-12 rounded-full border-none bg-white shadow-inner font-bold text-sm" />
+                <Input 
+                  placeholder="Find student..." 
+                  className="pl-12 h-12 rounded-full border-none bg-white shadow-inner font-bold text-sm" 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
               <Button variant="outline" size="icon" className="h-12 w-12 rounded-full bg-white border-none shadow-sm shrink-0">
                 <Filter className="h-5 w-5" />
@@ -124,7 +140,7 @@ export default function AttendancePage() {
         </CardHeader>
         <CardContent className="p-0 overflow-x-auto">
           <div className="divide-y divide-muted/50 min-w-[600px]">
-            {students.map((student) => (
+            {filteredStudents.map((student) => (
               <div key={student.id} className="p-4 sm:p-6 lg:px-10 flex items-center justify-between gap-4 sm:gap-6 hover:bg-primary/[0.02] transition-all group">
                 <div className="flex items-center gap-4 sm:gap-6 min-w-0">
                   <div className={cn(

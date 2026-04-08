@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useRef } from "react"
 import { 
   Plus, 
   Search, 
@@ -20,7 +20,8 @@ import {
   Home,
   Bus,
   Save,
-  Trash2
+  Trash2,
+  Upload
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,7 +34,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/avatar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { 
   Sheet, 
@@ -50,23 +51,20 @@ import { generateStudentProgressSummary } from "@/ai/flows/generate-student-prog
 import { exportToExcel, exportReportCardToWord } from "@/lib/export-utils"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import * as XLSX from 'xlsx'
 
+// authentic roster start (Doris & Centennial)
 const initialStudents = [
   { id: "PS0206098-001", name: "ALEXANDER MLAWA CALLSON", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 712 000 001", attendance: "98%", conductPoints: 85, hostel: "Mt. Kilimanjaro Wing", route: "N/A" },
   { id: "PS0206098-002", name: "ALVIN MICHAEL GILLA", class: "Standard 7", status: "Active", type: "Day", contact: "+255 754 000 002", attendance: "92%", conductPoints: 94, hostel: "N/A", route: "Mbezi Beach - Kawe" },
   { id: "PS0206098-003", name: "AYESIGA LAUREAN LEONIDAS", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 621 000 003", attendance: "100%", conductPoints: 100, hostel: "Serengeti Annex", route: "N/A" },
-  { id: "PS0206098-004", name: "BILL EDMUND TARABA", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 713 000 004", attendance: "97%", conductPoints: 90, hostel: "Mt. Kilimanjaro Wing", route: "N/A" },
-  { id: "PS0206098-005", name: "BRIAN JULIUS KISOMBE", class: "Standard 7", status: "Active", type: "Day", contact: "+255 713 000 005", attendance: "91%", conductPoints: 88, hostel: "N/A", route: "Kijitonyama - Sinza" },
-  { id: "PS0206098-006", name: "BRYAN NICOLAUS SHIRIMA", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 713 000 006", attendance: "99%", conductPoints: 95, hostel: "Serengeti Annex", route: "N/A" },
   { id: "PS0206098-007", name: "DAVID ERICK MWIJAGE", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 713 000 007", attendance: "99%", conductPoints: 92, hostel: "Mt. Kilimanjaro Wing", route: "N/A" },
-  { id: "PS0206098-008", name: "DERICK HAGAI SAMSON", class: "Standard 7", status: "Active", type: "Day", contact: "+255 713 000 008", attendance: "95%", conductPoints: 91, hostel: "N/A", route: "Mbezi Beach - Kawe" },
   { id: "S4939-0001", name: "AGNES FRED KILIMA", class: "Form 2A", status: "Active", type: "Boarder", contact: "+255 711 111 001", attendance: "97%", conductPoints: 98, hostel: "Lake Victoria Wing", route: "N/A" },
   { id: "S4939-0002", name: "AGNES NKUNDWE MWAMBALASWA", class: "Form 2A", status: "Active", type: "Boarder", contact: "+255 711 111 002", attendance: "99%", conductPoints: 100, hostel: "Lake Victoria Wing", route: "N/A" },
   { id: "S4939-0112", name: "DAVID ERICK MWIJAGE", class: "Form 2B", status: "Active", type: "Boarder", contact: "+255 711 111 112", attendance: "99%", conductPoints: 99, hostel: "Serengeti Annex", route: "N/A" },
   { id: "S4939-0200", name: "WILBERT RWECHUNGURA MUNYAGA", class: "Form 2B", status: "Active", type: "Boarder", contact: "+255 711 111 200", attendance: "99%", conductPoints: 100, hostel: "Serengeti Annex", route: "N/A" },
 ]
 
-// Note: In a real app, these would be dozens of records. Here we simulate the searchable registry of 267.
 export default function StudentsPage() {
   const { toast } = useToast()
   const [students, setStudents] = useState(initialStudents)
@@ -75,6 +73,7 @@ export default function StudentsPage() {
   const [isGeneratingAi, setIsGeneratingAi] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [aiSummary, setAiSummary] = useState("")
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const filteredStudents = useMemo(() => {
     return students.filter(s => 
@@ -82,6 +81,38 @@ export default function StudentsPage() {
       s.id.toLowerCase().includes(searchTerm.toLowerCase())
     )
   }, [searchTerm, students])
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (evt) => {
+      const bstr = evt.target?.result
+      const wb = XLSX.read(bstr, { type: 'binary' })
+      const wsname = wb.SheetNames[0]
+      const ws = wb.Sheets[wsname]
+      const data = XLSX.utils.sheet_to_json(ws)
+      
+      // Map data to match internal schema
+      const importedStudents = data.map((item: any) => ({
+        id: item.id || `NEW-${Math.random().toString(36).substr(2, 9)}`,
+        name: item.name || "Unknown Name",
+        class: item.class || "Standard 7",
+        status: item.status || "Active",
+        type: item.type || "Day",
+        contact: item.contact || "N/A",
+        attendance: item.attendance || "0%",
+        conductPoints: item.conductPoints || 100,
+        hostel: item.hostel || "N/A",
+        route: item.route || "N/A"
+      }))
+
+      setStudents(prev => [...prev, ...importedStudents])
+      toast({ title: "Ledger Synced", description: `${importedStudents.length} student nodes added to the 2026 Registry.` })
+    }
+    reader.readAsBinaryString(file)
+  }
 
   const handleUpdateStudent = (field: string, value: any) => {
     if (!selectedStudent) return
@@ -91,7 +122,7 @@ export default function StudentsPage() {
   }
 
   const handleSaveStudentNode = () => {
-    toast({ title: "Sovereign Identity Synced", description: `${selectedStudent.name} records updated in the 2026 Vault.` })
+    toast({ title: "Sovereign Identity Synced", description: `${selectedStudent.name} records updated.` })
   }
 
   const handleGenerateAiSummary = async () => {
@@ -110,7 +141,7 @@ export default function StudentsPage() {
       setAiSummary(result.summary)
       toast({ title: "Narrative Ready", description: "AI Progress report successfully synthesized." })
     } catch (err) {
-      toast({ variant: "destructive", title: "AI Sync Failed", description: "Check Genkit connectivity." })
+      toast({ variant: "destructive", title: "AI Sync Failed", description: "Check Genkit node." })
     } finally {
       setIsGeneratingAi(false)
     }
@@ -121,7 +152,7 @@ export default function StudentsPage() {
     if (selectedStudent?.id === id) {
       setSelectedStudent((prev: any) => ({ ...prev, conductPoints: Math.min(100, Math.max(0, prev.conductPoints + amount)) }))
     }
-    toast({ title: amount > 0 ? "Merit Awarded" : "Infraction Logged", description: `${amount > 0 ? '+' : ''}${amount} conduct points recorded.` })
+    toast({ title: amount > 0 ? "Merit Awarded" : "Infraction Logged" })
   }
 
   const handleExportReportCard = async () => {
@@ -130,7 +161,7 @@ export default function StudentsPage() {
     const schoolName = localStorage.getItem("shule_name") || "Doris Primary School"
     await exportReportCardToWord(selectedStudent, schoolName)
     setIsExporting(false)
-    toast({ title: "Document Generated", description: "Official transcript node saved locally." })
+    toast({ title: "Document Generated" })
   }
 
   return (
@@ -141,9 +172,13 @@ export default function StudentsPage() {
             Institutional Registry Hub 2026
           </Badge>
           <h1 className="text-xl sm:text-2xl font-black text-primary uppercase">Student Directory</h1>
-          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Management of 267 active candidates & logistic nodes.</p>
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Management of 267 active students & logistic hubs.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
+          <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".xlsx, .xls, .csv" />
+          <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase tracking-widest">
+            <Upload className="mr-2 h-4 w-4" /> Import Ledger
+          </Button>
           <Button onClick={() => exportToExcel(students, "Institutional_Registry")} variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase tracking-widest">
             <Download className="mr-2 h-4 w-4" /> Export Ledger
           </Button>
@@ -176,7 +211,7 @@ export default function StudentsPage() {
             <div className="relative flex-1 max-w-sm group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
               <Input 
-                placeholder="Search students by name or ID..." 
+                placeholder="Search by name or ID..." 
                 className="pl-12 bg-white border-none rounded-full h-12 shadow-inner font-bold text-xs" 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -244,7 +279,7 @@ export default function StudentsPage() {
                               <div className="flex flex-col sm:flex-row items-center gap-8">
                                 <Avatar className="h-32 w-28 ring-8 ring-white shadow-2xl rounded-[2.5rem] shrink-0">
                                   <AvatarImage src={`https://picsum.photos/seed/${student.id}/200`} />
-                                  <AvatarFallback className="text-5xl font-black bg-primary/5">{student.name.charAt(0)}</AvatarFallback>
+                                  <AvatarFallback className="text-5xl font-black bg-primary/5">{student.name?.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div className="space-y-3 text-center sm:text-left flex-1 min-w-0">
                                   <div className="flex flex-col gap-1">
@@ -284,7 +319,7 @@ export default function StudentsPage() {
                                     </Button>
                                   </div>
                                   <div className="bg-white/90 rounded-[2rem] p-8 text-xs leading-relaxed text-foreground/80 border-2 border-dashed border-accent/20 font-medium italic">
-                                    {aiSummary || "Initiate academic analysis to generate a 2026 performance narrative and NECTA division prediction node."}
+                                    {aiSummary || "Initiate academic analysis to generate a 2026 performance narrative."}
                                   </div>
                                 </Card>
                               </TabsContent>
