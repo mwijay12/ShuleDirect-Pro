@@ -55,20 +55,36 @@ import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { generateStudentProgressSummary } from "@/ai/flows/generate-student-progress-summary-flow"
 import { exportToExcel, exportReportCardToWord } from "@/lib/export-utils"
-import { triggerN8nWebhook } from "@/lib/n8n"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const initialStudents = [
-  // Consolidated Roster (Primary & Secondary unified in one school)
+  // --- STANDARD 7 NODE (PS0206098) ---
   { id: "PS0206098-001", name: "ALEXANDER MLAWA CALLSON", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 712 000 001", parentName: "Callson Mlawa", attendance: "98%", conductPoints: 85, hostel: "Mt. Kilimanjaro Wing", route: "N/A" },
   { id: "PS0206098-002", name: "ALVIN MICHAEL GILLA", class: "Standard 7", status: "Active", type: "Day", contact: "+255 754 000 002", parentName: "Michael Gilla", attendance: "92%", conductPoints: 94, hostel: "N/A", route: "Mbezi Beach - Kawe" },
   { id: "PS0206098-003", name: "AYESIGA LAUREAN LEONIDAS", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 621 000 003", parentName: "Leonidas Laurean", attendance: "100%", conductPoints: 100, hostel: "Serengeti Annex", route: "N/A" },
-  { id: "PS0206098-007", name: "DAVID ERICK MWIJAGE", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 713 000 005", parentName: "Erick Mwijage", attendance: "99%", conductPoints: 92, hostel: "Mt. Kilimanjaro Wing", route: "N/A" },
+  { id: "PS0206098-004", name: "BILL EDMUND TARABA", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 713 000 004", parentName: "Edmund Taraba", attendance: "97%", conductPoints: 90, hostel: "Mt. Kilimanjaro Wing", route: "N/A" },
+  { id: "PS0206098-005", name: "BRIAN JULIUS KISOMBE", class: "Standard 7", status: "Active", type: "Day", contact: "+255 713 000 005", parentName: "Julius Kisombe", attendance: "91%", conductPoints: 88, hostel: "N/A", route: "Kijitonyama - Sinza" },
+  { id: "PS0206098-006", name: "BRYAN NICOLAUS SHIRIMA", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 713 000 006", parentName: "Nicolaus Shirima", attendance: "99%", conductPoints: 95, hostel: "Serengeti Annex", route: "N/A" },
+  { id: "PS0206098-007", name: "DAVID ERICK MWIJAGE", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 713 000 007", parentName: "Erick Mwijage", attendance: "99%", conductPoints: 92, hostel: "Mt. Kilimanjaro Wing", route: "N/A" },
+  { id: "PS0206098-008", name: "DERICK HAGAI SAMSON", class: "Standard 7", status: "Active", type: "Day", contact: "+255 713 000 008", parentName: "Hagai Samson", attendance: "95%", conductPoints: 91, hostel: "N/A", route: "Mbezi Beach - Kawe" },
+  { id: "PS0206098-009", name: "ELIA MICHAEL MWALONGO", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 713 000 009", parentName: "Michael Mwalongo", attendance: "98%", conductPoints: 96, hostel: "Mt. Kilimanjaro Wing", route: "N/A" },
+  { id: "PS0206098-010", name: "ELTON SIMON MMBAGA", class: "Standard 7", status: "Active", type: "Day", contact: "+255 713 000 010", parentName: "Simon Mmbaga", attendance: "94%", conductPoints: 89, hostel: "N/A", route: "Mikocheni - Msasani" },
+  
+  // --- FORM 2 NODE (S4939) ---
   { id: "S4939-0001", name: "AGNES FRED KILIMA", class: "Form 2A", status: "Active", type: "Boarder", contact: "+255 711 111 001", parentName: "Fred Kilima", attendance: "97%", conductPoints: 98, hostel: "Lake Victoria Wing", route: "N/A" },
   { id: "S4939-0002", name: "AGNES NKUNDWE MWAMBALASWA", class: "Form 2A", status: "Active", type: "Boarder", contact: "+255 711 111 002", parentName: "Nkundwe Mwambalaswa", attendance: "99%", conductPoints: 100, hostel: "Lake Victoria Wing", route: "N/A" },
+  { id: "S4939-0003", name: "AIDA HAGGAI MWAKASENDO", class: "Form 2A", status: "Active", type: "Boarder", contact: "+255 711 111 003", parentName: "Haggai Mwakasendo", attendance: "98%", conductPoints: 95, hostel: "Lake Victoria Wing", route: "N/A" },
+  { id: "S4939-0004", name: "AMANDA JAMES KILABUKO", class: "Form 2A", status: "Active", type: "Day", contact: "+255 711 111 004", parentName: "James Kilabuko", attendance: "96%", conductPoints: 92, hostel: "N/A", route: "Mbezi Beach - Kawe" },
+  { id: "S4939-0005", name: "ANEL ANDREW TEMU", class: "Form 2A", status: "Active", type: "Boarder", contact: "+255 711 111 005", parentName: "Andrew Temu", attendance: "100%", conductPoints: 100, hostel: "Lake Victoria Wing", route: "N/A" },
+  { id: "S4939-0080", name: "ABEL-RONALD APOLLO NSENGA", class: "Form 2B", status: "Active", type: "Boarder", contact: "+255 711 111 080", parentName: "Apollo Nsenga", attendance: "95%", conductPoints: 94, hostel: "Serengeti Annex", route: "N/A" },
+  { id: "S4939-0081", name: "ADRIAN THEOPHILO KANZA", class: "Form 2B", status: "Active", type: "Day", contact: "+255 711 111 081", parentName: "Theophilo Kanza", attendance: "92%", conductPoints: 91, hostel: "N/A", route: "Mikocheni - Msasani" },
+  { id: "S4939-0112", name: "DAVID ERICK MWIJAGE", class: "Form 2B", status: "Active", type: "Boarder", contact: "+255 711 111 112", parentName: "Erick Mwijage", attendance: "99%", conductPoints: 99, hostel: "Serengeti Annex", route: "N/A" },
   { id: "S4939-0140", name: "IAN RICHARD CYIZA", class: "Form 2B", status: "Active", type: "Day", contact: "+255 711 111 140", parentName: "Richard Cyiza", attendance: "96%", conductPoints: 92, hostel: "N/A", route: "Mikocheni - Msasani" },
   { id: "S4939-0200", name: "WILBERT RWECHUNGURA MUNYAGA", class: "Form 2B", status: "Active", type: "Boarder", contact: "+255 711 111 200", parentName: "Rwechungura Munyaga", attendance: "99%", conductPoints: 100, hostel: "Serengeti Annex", route: "N/A" },
+  { id: "S4939-0161", name: "KENNEDY DISMAS RWIHULA", class: "Form 2B", status: "Active", type: "Boarder", contact: "+255 711 111 161", parentName: "Dismas Rwihula", attendance: "98%", conductPoints: 97, hostel: "Serengeti Annex", route: "N/A" },
+  { id: "S4939-0162", name: "LARRY LAURENT LEMERI", class: "Form 2B", status: "Active", type: "Day", contact: "+255 711 111 162", parentName: "Laurent Lemeri", attendance: "94%", conductPoints: 90, hostel: "N/A", route: "Kijitonyama - Sinza" },
+  { id: "S4939-0175", name: "NATHAN MARCO AIDANO", class: "Form 2B", status: "Active", type: "Boarder", contact: "+255 711 111 175", parentName: "Marco Aidano", attendance: "100%", conductPoints: 100, hostel: "Serengeti Annex", route: "N/A" },
 ]
 
 export default function StudentsPage() {
@@ -114,7 +130,7 @@ export default function StudentsPage() {
   const handleExportReportCard = async () => {
     if (!selectedStudent) return
     setIsExporting(true)
-    const schoolName = localStorage.getItem("shule_name") || "Institutional Sovereign Hub"
+    const schoolName = localStorage.getItem("shule_name") || "Doris Primary School"
     await exportReportCardToWord(selectedStudent, schoolName)
     setIsExporting(false)
     toast({ title: "Document Generated", description: "Official transcript saved locally." })
@@ -128,7 +144,7 @@ export default function StudentsPage() {
             Institutional Registry 2026
           </Badge>
           <h1 className="text-xl sm:text-2xl font-black text-primary uppercase">Student Directory</h1>
-          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Management of active students & logistic hubs.</p>
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Management of 267 active students & logistic hubs.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <Button onClick={() => exportToExcel(students, "Institutional_Registry")} variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase tracking-widest">
@@ -145,7 +161,7 @@ export default function StudentsPage() {
           { label: "Population", value: "2,480", color: "text-primary", sub: "Global Node" },
           { label: "Boarders", value: "1,140", color: "text-green-600", sub: "Hostel Hub" },
           { label: "Day Students", value: "1,340", color: "text-accent", sub: "Fleet Hub" },
-          { label: "Attendance", value: "96.2%", color: "text-orange-600", sub: "Peak Sync" },
+          { label: "Candidates", value: "267", color: "text-orange-600", sub: "NECTA Pool" },
         ].map((stat) => (
           <Card key={stat.label} className="border-none shadow-lg rounded-[2rem] bg-white/60 backdrop-blur-md overflow-hidden group hover:-translate-y-1 transition-all">
             <CardHeader className="p-5 sm:p-6">
@@ -162,7 +178,7 @@ export default function StudentsPage() {
           <div className="flex flex-col sm:flex-row justify-between gap-4">
             <div className="relative flex-1 max-w-sm group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-              <Input placeholder="Search students..." className="pl-12 bg-white border-none rounded-full h-12 shadow-inner font-bold text-xs" />
+              <Input placeholder="Search 267 students..." className="pl-12 bg-white border-none rounded-full h-12 shadow-inner font-bold text-xs" />
             </div>
             <Button variant="outline" className="h-12 rounded-full px-8 bg-white border-none shadow-sm font-black text-[9px] uppercase tracking-widest text-primary">
               <Filter className="mr-2 h-4 w-4" /> Filters
@@ -173,11 +189,11 @@ export default function StudentsPage() {
           <Table className="min-w-[800px]">
             <TableHeader className="bg-muted/30">
               <TableRow className="border-none h-14">
-                <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Student</TableHead>
-                <TableHead className="text-[9px] font-black uppercase tracking-widest">Type</TableHead>
+                <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Student Payload</TableHead>
+                <TableHead className="text-[9px] font-black uppercase tracking-widest">Academic Tier</TableHead>
                 <TableHead className="text-[9px] font-black uppercase tracking-widest">Logistic Hub</TableHead>
                 <TableHead className="text-[9px] font-black uppercase tracking-widest text-center">Conduct</TableHead>
-                <TableHead className="text-right pr-8 text-[9px] font-black uppercase tracking-widest">Action</TableHead>
+                <TableHead className="text-right pr-8 text-[9px] font-black uppercase tracking-widest">Hub</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -198,8 +214,8 @@ export default function StudentsPage() {
                   <TableCell>
                     <Badge className={cn(
                       "text-[8px] font-black uppercase px-3 py-0.5 rounded-full border-none",
-                      student.type === "Boarder" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
-                    )}>{student.type}</Badge>
+                      student.class.includes("Standard") ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+                    )}>{student.class}</Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -211,7 +227,7 @@ export default function StudentsPage() {
                   <TableCell className="text-right pr-8">
                     <Sheet onOpenChange={(open) => { if (open) setSelectedStudent(student); else setAiSummary(""); }}>
                       <SheetTrigger asChild>
-                        <Button variant="ghost" className="text-[10px] font-black text-primary uppercase tracking-widest rounded-full hover:bg-primary/5 h-10 px-6">Hub Access</Button>
+                        <Button variant="ghost" className="text-[10px] font-black text-primary uppercase tracking-widest rounded-full hover:bg-primary/5 h-10 px-6">Access Hub</Button>
                       </SheetTrigger>
                       <SheetContent className="w-full sm:max-w-2xl overflow-y-auto p-0 font-body border-l-0 shadow-2xl">
                         <div className="bg-primary/5 p-8 sm:p-10 border-b">
@@ -315,7 +331,7 @@ export default function StudentsPage() {
                             <TabsContent value="reports" className="space-y-8">
                                <Button onClick={handleExportReportCard} disabled={isExporting} className="w-full rounded-3xl h-16 bg-white border-2 border-primary text-primary hover:bg-primary/5 font-black text-sm shadow-xl uppercase tracking-widest">
                                  {isExporting ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : <FileText className="mr-3 h-6 w-6" />}
-                                 Official Transcript
+                                 Generate Sovereign Transcript
                                </Button>
                             </TabsContent>
                           </Tabs>

@@ -37,7 +37,17 @@ const initialResults = [
   { id: "PS0206098-002", name: "ALVIN MICHAEL GILLA", math: 78, sci: 82, eng: 88, avg: "B" },
   { id: "PS0206098-003", name: "AYESIGA LAUREAN LEONIDAS", math: 95, sci: 98, eng: 92, avg: "A" },
   { id: "PS0206098-004", name: "BILL EDMUND TARABA", math: 88, sci: 85, eng: 90, avg: "A" },
+  { id: "PS0206098-005", name: "BRIAN JULIUS KISOMBE", math: 65, sci: 68, eng: 72, avg: "C" },
+  { id: "PS0206098-006", name: "BRYAN NICOLAUS SHIRIMA", math: 92, sci: 88, eng: 94, avg: "A" },
   { id: "PS0206098-007", name: "DAVID ERICK MWIJAGE", math: 96, sci: 94, eng: 98, avg: "A" },
+  { id: "PS0206098-008", name: "DERICK HAGAI SAMSON", math: 88, sci: 82, eng: 90, avg: "A" },
+  { id: "PS0206098-009", name: "ELIA MICHAEL MWALONGO", math: 94, sci: 92, eng: 96, avg: "A" },
+  { id: "PS0206098-010", name: "ELTON SIMON MMBAGA", math: 85, sci: 80, eng: 88, avg: "A" },
+  { id: "PS0206098-011", name: "ERICK IBRAHIM MAKUHI", math: 74, sci: 70, eng: 78, avg: "B" },
+  { id: "PS0206098-012", name: "FRANCIS GELIANO MBILINYI", math: 91, sci: 88, eng: 93, avg: "A" },
+  { id: "PS0206098-013", name: "GERALD KENETH KANDIMBA", math: 98, sci: 96, eng: 99, avg: "A" },
+  { id: "PS0206098-014", name: "HAMAD KASSIM KAMBI", math: 72, sci: 68, eng: 75, avg: "B" },
+  { id: "PS0206098-015", name: "IBRAHIM RAMIA MGANGA", math: 89, sci: 84, eng: 91, avg: "A" },
 ]
 
 const initialSyllabus = [
@@ -109,7 +119,7 @@ export default function AcademicsPage() {
             <Database className="h-2.5 w-2.5 mr-1.5" /> 2026 Academic Node
           </Badge>
           <h1 className="text-xl sm:text-2xl font-black text-primary">Academic Matrix</h1>
-          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Institutional Grading & Syllabus Hub.</p>
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Institutional Grading & Syllabus Hub • 267 Candidates</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <Dialog>
@@ -153,7 +163,7 @@ export default function AcademicsPage() {
             {[
               { label: "Grading Model", value: "PSLE Matrix", color: "text-primary" },
               { label: "Mean Points", value: "199.2", color: "text-green-600" },
-              { label: "Total Candidates", value: "67", color: "text-accent" },
+              { label: "Total Candidates", value: "267", color: "text-accent" },
               { label: "Audit Node", value: "Verified", color: "text-orange-600" },
             ].map((item) => (
               <Card key={item.label} className="border-none shadow-xl bg-white/60 backdrop-blur-md rounded-[2rem]">
