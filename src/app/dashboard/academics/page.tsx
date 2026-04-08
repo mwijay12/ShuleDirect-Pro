@@ -37,9 +37,6 @@ const initialResults = [
   { id: "PS0206098-008", name: "DERICK HAGAI SAMSON", math: 88, sci: 82, eng: 90, avg: "A" },
   { id: "PS0206098-009", name: "ELIA MICHAEL MWALONGO", math: 94, sci: 92, eng: 96, avg: "A" },
   { id: "PS0206098-010", name: "ELTON SIMON MMBAGA", math: 85, sci: 80, eng: 88, avg: "A" },
-  { id: "PS0206098-011", name: "ERICK IBRAHIM MAKUHI", math: 74, sci: 70, eng: 78, avg: "B" },
-  { id: "PS0206098-012", name: "FRANCIS GELIANO MBILINYI", math: 91, sci: 88, eng: 93, avg: "A" },
-  { id: "PS0206098-013", name: "GERALD KENETH KANDIMBA", math: 98, sci: 96, eng: 99, avg: "A" },
 ]
 
 const initialSyllabus = [
@@ -87,7 +84,7 @@ export default function AcademicsPage() {
           avg: "TBD"
         }])
       } catch (err) {
-        toast({ variant: "destructive", title: "Scan Failed", description: "Could not read exam paper." })
+        toast({ variant: "destructive", title: "Scan Failed", description: "Could not read exam paper node." })
       } finally {
         setIsScanning(false)
       }
@@ -97,7 +94,7 @@ export default function AcademicsPage() {
 
   const updateCoverage = (id: number, val: number) => {
     setSyllabus(prev => prev.map(s => s.id === id ? { ...s, covered: val } : s))
-    toast({ title: "Coverage Synced", description: "Standard 7 progress recorded." })
+    toast({ title: "Coverage Synced", description: "Standard 7 syllabus progress recorded." })
   }
 
   const handlePremsSync = () => {
@@ -106,7 +103,7 @@ export default function AcademicsPage() {
       setIsSyncingPrems(false)
       toast({
         title: "PReMS Node Synced",
-        description: "Standard 7 records successfully pushed to national gateway.",
+        description: "Standard 7 academic records pushed to national gateway.",
       })
     }, 2000)
   }
@@ -131,14 +128,14 @@ export default function AcademicsPage() {
             <DialogContent className="rounded-[2rem] p-8 max-w-md">
               <DialogHeader className="mb-6 text-center">
                 <DialogTitle className="text-xl font-black uppercase">Scan Result Node</DialogTitle>
-                <DialogDescription className="text-[10px] font-bold uppercase tracking-widest">Identify exam number and marks via AI</DialogDescription>
+                <DialogDescription className="text-[10px] font-bold uppercase tracking-widest">Extract exam number and marks via Vision AI</DialogDescription>
               </DialogHeader>
               <div className="space-y-6 text-center">
                 <div className="p-10 rounded-[2rem] border-2 border-dashed border-primary/20 bg-primary/5 flex flex-col items-center gap-4">
                   {isScanning ? <Loader2 className="h-12 w-12 animate-spin text-primary" /> : <BrainCircuit className="h-12 w-12 text-primary/40" />}
-                  <p className="text-xs font-bold text-muted-foreground">{isScanning ? "AI Analyzing..." : "Upload Exam Cover Photo"}</p>
+                  <p className="text-xs font-bold text-muted-foreground">{isScanning ? "AI Analyzing Node..." : "Upload Exam Cover Photo"}</p>
                   <label className="cursor-pointer">
-                    <Button variant="default" className="rounded-full colorful-gradient h-12 px-8 font-black text-[10px] uppercase pointer-events-none">Select Exam Node</Button>
+                    <Button variant="default" className="rounded-full colorful-gradient h-12 px-8 font-black text-[10px] uppercase pointer-events-none shadow-xl">Select Exam Node</Button>
                     <input type="file" className="hidden" accept="image/*" onChange={handleScanExam} disabled={isScanning} />
                   </label>
                 </div>
@@ -181,7 +178,7 @@ export default function AcademicsPage() {
               <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Find candidate..." 
+                  placeholder="Find candidate node..." 
                   className="pl-10 h-10 rounded-full border-none bg-white shadow-inner font-bold text-xs" 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -191,7 +188,7 @@ export default function AcademicsPage() {
             <CardContent className="p-0 overflow-x-auto">
               <Table className="min-w-[800px]">
                 <TableHeader className="bg-muted/10">
-                  <TableRow className="border-none">
+                  <TableRow className="border-none h-14">
                     <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Student Payload</TableHead>
                     <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Math</TableHead>
                     <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Science</TableHead>
@@ -204,7 +201,7 @@ export default function AcademicsPage() {
                   {filteredResults.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="h-32 text-center text-muted-foreground font-black text-[10px] uppercase tracking-widest">
-                        No candidate results found.
+                        No candidate results synchronized.
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -219,7 +216,7 @@ export default function AcademicsPage() {
                         <TableCell className="text-center font-mono font-bold text-xs">{r.eng}</TableCell>
                         <TableCell className="text-center">
                           <Badge className={cn(
-                            "text-[9px] py-0.5 px-3 font-black rounded-full border-none",
+                            "text-[9px] py-0.5 px-3 font-black rounded-full border-none shadow-sm",
                             r.avg === "A" ? "bg-green-100 text-green-700" : "bg-blue-50 text-blue-600"
                           )}>GRADE {r.avg}</Badge>
                         </TableCell>
@@ -250,7 +247,7 @@ export default function AcademicsPage() {
                 <CardContent className="p-8 pt-0 space-y-6">
                   <div className="space-y-2">
                     <div className="flex justify-between items-center text-[10px] font-black uppercase text-muted-foreground">
-                      <span>Coverage</span>
+                      <span>Coverage Matrix</span>
                       <span className="text-primary">{s.covered}%</span>
                     </div>
                     <Progress value={s.covered} className="h-2 bg-muted/50" />
@@ -263,8 +260,8 @@ export default function AcademicsPage() {
                     </DialogTrigger>
                     <DialogContent className="rounded-[2.5rem] max-w-sm">
                       <DialogHeader className="text-center">
-                        <DialogTitle className="text-xl font-black">Sync Syllabus Progress</DialogTitle>
-                        <DialogDescription className="text-[10px] font-black uppercase">{selectedSubject?.subject} Hub</DialogDescription>
+                        <DialogTitle className="text-xl font-black uppercase">Sync Syllabus Node</DialogTitle>
+                        <DialogDescription className="text-[10px] font-black uppercase">{selectedSubject?.subject} Ledger</DialogDescription>
                       </DialogHeader>
                       <div className="py-10 space-y-8">
                         <div className="space-y-4">
@@ -279,7 +276,7 @@ export default function AcademicsPage() {
                             onValueChange={(val) => updateCoverage(selectedSubject?.id, val[0])}
                           />
                         </div>
-                        <p className="text-[9px] font-medium text-center text-muted-foreground italic">Updating this node synchronizes institutional logs.</p>
+                        <p className="text-[9px] font-medium text-center text-muted-foreground italic">Updating this node synchronizes 2026 institutional logs.</p>
                       </div>
                     </DialogContent>
                   </Dialog>
