@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -56,9 +57,9 @@ import { exportToExcel } from "@/lib/export-utils"
 import { triggerN8nWebhook } from "@/lib/n8n"
 
 const transactions = [
-  { id: "TX-9021", student: "Amani Mwamba", type: "Tuition", amount: "550,000", method: "M-Pesa", date: "2024-05-12", status: "Success", controlNo: "99102345678" },
-  { id: "TX-9022", student: "Careen Mushi", type: "Uniform", amount: "120,000", method: "Tigo Pesa", date: "2024-05-12", status: "Success", controlNo: "99102345679" },
-  { id: "TX-9023", student: "Baraka Juma", type: "Stationery", amount: "45,000", method: "Cash", date: "2024-05-11", status: "Success", controlNo: "N/A" },
+  { id: "TX-9021", student: "AGNES FRED KILIMA", type: "Tuition", amount: "550,000", method: "M-Pesa", date: "2024-05-12", status: "Success", controlNo: "99102345678" },
+  { id: "TX-9022", student: "DAVID ERICK MWIJAGE", type: "Uniform", amount: "120,000", method: "Tigo Pesa", date: "2024-05-12", status: "Success", controlNo: "99102345679" },
+  { id: "TX-9023", student: "ALVIN MICHAEL GILLA", type: "Stationery", amount: "45,000", method: "Cash", date: "2024-05-11", status: "Success", controlNo: "N/A" },
 ]
 
 const pettyCash = [
