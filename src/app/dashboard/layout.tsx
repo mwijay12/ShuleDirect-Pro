@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -22,8 +23,10 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { InstitutionalLoader } from "@/components/ui/institutional-loader"
+import { useFirestore, useDoc, useMemoFirebase } from "@/firebase"
+import { doc } from "firebase/firestore"
 
-const AUTO_LOGOUT_MS = 15 * 60 * 1000 // 15 Minutes
+const AUTO_LOGOUT_MS = 15 * 60 * 1000 
 
 export default function DashboardLayout({
   children,
@@ -32,14 +35,18 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
+  const db = useFirestore()
   const [greeting, setGreeting] = useState("Welcome")
-  const [schoolName, setSchoolName] = useState("ShuleDirect Pro")
-  const [systemName, setSystemName] = useState("ShuleDirect")
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
+  const identityRef = useMemoFirebase(() => doc(db, "schools", "school-001", "config", "identity"), [db])
+  const { data: identity } = useDoc(identityRef)
+
+  const schoolName = identity?.name || "ShuleDirect Pro"
+  const systemName = identity?.systemName || "ShuleDirect"
+
   const handleLogout = React.useCallback(() => {
-    localStorage.clear()
     router.push("/login")
   }, [router])
 
@@ -51,12 +58,6 @@ export default function DashboardLayout({
   }, [handleLogout])
 
   useEffect(() => {
-    const savedName = localStorage.getItem("shule_name")
-    const savedSystemName = localStorage.getItem("shule_system_name")
-    
-    if (savedName) setSchoolName(savedName)
-    if (savedSystemName) setSystemName(savedSystemName)
-
     const hours = new Date().getHours()
     let msg = "Good Morning"
     if (hours >= 12 && hours < 16) msg = "Good Afternoon"
@@ -116,20 +117,11 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            <div className="hidden xl:flex flex-col items-end mr-2">
-               <span className="text-[8px] font-black text-primary uppercase tracking-tighter">Identity Node</span>
-               <div className="flex items-center gap-1">
-                 <Clock className="h-2.5 w-2.5 text-muted-foreground" />
-                 <span className="text-[9px] font-mono font-bold text-muted-foreground">Session: 15m</span>
-               </div>
-            </div>
-            
             <Button variant="ghost" size="icon" className="relative text-muted-foreground rounded-full h-10 w-10">
               <Bell className="h-5 w-5" />
               <span className="absolute top-2.5 right-2.5 flex h-2 w-2 rounded-full bg-destructive border-2 border-white" />
             </Button>
-            
-            <div className="h-9 w-9 rounded-2xl bg-primary flex items-center justify-center text-white font-black text-sm shadow-xl shadow-primary/20 shrink-0">
+            <div className="h-9 w-9 rounded-2xl colorful-gradient flex items-center justify-center text-white font-black text-sm shadow-xl shadow-primary/20 shrink-0">
               A
             </div>
           </div>
@@ -145,21 +137,13 @@ export default function DashboardLayout({
           {bottomNavItems.map((item) => {
             const isActive = pathname === item.href
             return (
-              <Link 
-                key={item.href} 
-                href={item.href}
-                className={cn(
-                  "flex flex-col items-center gap-1 transition-colors px-2 min-w-0",
-                  isActive ? "text-primary" : "text-muted-foreground hover:text-primary"
-                )}
-              >
+              <Link key={item.href} href={item.href} className={cn("flex flex-col items-center gap-1 transition-colors px-2 min-w-0", isActive ? "text-primary" : "text-muted-foreground")}>
                 <item.icon className={cn("h-5 w-5", isActive && "scale-110")} />
                 <span className="text-[8px] font-black uppercase tracking-tighter truncate w-full text-center">{item.label}</span>
               </Link>
             )
           })}
         </nav>
-
         <Toaster />
       </SidebarInset>
     </SidebarProvider>

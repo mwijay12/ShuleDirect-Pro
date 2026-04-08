@@ -7,139 +7,41 @@
       "type": "object",
       "description": "Represents a school, which acts as a distinct tenant within the multi-tenant system.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the School entity (Tenant ID)."
-        },
-        "name": {
-          "type": "string",
-          "description": "The official name of the school."
-        },
-        "address": {
-          "type": "string",
-          "description": "The physical address of the school."
-        },
-        "contactEmail": {
-          "type": "string",
-          "description": "The primary contact email address for the school.",
-          "format": "email"
-        },
-        "contactPhone": {
-          "type": "string",
-          "description": "The primary contact phone number for the school."
-        },
-        "centerId": {
-          "type": "string",
-          "description": "NECTA Center Number (e.g. S.1234 or PS0206098)."
-        },
-        "region": {
-          "type": "string",
-          "description": "The administrative region of the center."
-        },
-        "district": {
-          "type": "string",
-          "description": "The administrative district of the center."
-        }
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "contactEmail": { "type": "string", "format": "email" },
+        "contactPhone": { "type": "string" },
+        "centerId": { "type": "string" },
+        "region": { "type": "string" },
+        "district": { "type": "string" }
       },
-      "required": [
-        "id",
-        "name"
-      ]
+      "required": ["id", "name"]
     },
-    "User": {
+    "Student": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
+      "title": "Student",
       "type": "object",
-      "description": "Represents a user account within the school management system with defined roles and access permissions.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the User entity."
-        },
-        "schoolId": {
-          "type": "string",
-          "description": "Reference to the School the user is associated with."
-        },
-        "firstName": {
-          "type": "string",
-          "description": "The first name of the user."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "The last name of the user."
-        },
-        "email": {
-          "type": "string",
-          "description": "The primary email address of the user.",
-          "format": "email"
-        },
-        "role": {
-          "type": "string",
-          "description": "The assigned role (e.g., 'ADMIN', 'BURSAR', 'TEACHER')."
-        }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "firstName",
-        "lastName",
-        "email",
-        "role"
-      ]
-    },
-    "Asset": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Asset",
-      "type": "object",
-      "description": "Represents a physical asset owned by the school.",
+      "description": "Represents a student enrolled in the institution.",
       "properties": {
         "id": { "type": "string" },
-        "schoolId": { "type": "string" },
-        "qrCodeValue": { "type": "string" },
         "name": { "type": "string" },
-        "category": { "type": "string" },
-        "location": { "type": "string" },
+        "class": { "type": "string" },
         "status": { "type": "string" },
-        "condition": { "type": "string" }
+        "type": { "type": "string", "enum": ["Boarder", "Day"] },
+        "contact": { "type": "string" },
+        "attendance": { "type": "string" },
+        "conductPoints": { "type": "number" },
+        "hostel": { "type": "string" },
+        "route": { "type": "string" },
+        "attendanceStatus": { "type": "string", "enum": ["Present", "Absent", "Late"] },
+        "lastAttendanceUpdate": { "type": "string" }
       },
-      "required": [
-        "id",
-        "schoolId",
-        "name",
-        "qrCodeValue",
-        "status"
-      ]
-    },
-    "Hostel": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Hostel",
-      "type": "object",
-      "description": "Represents a residential wing or dormitory block.",
-      "properties": {
-        "id": { "type": "string" },
-        "schoolId": { "type": "string" },
-        "name": { "type": "string" },
-        "block": { "type": "string" },
-        "type": { "type": "string", "enum": ["Boys", "Girls"] },
-        "capacity": { "type": "number" },
-        "occupied": { "type": "number" },
-        "rooms": { "type": "number" },
-        "warden": { "type": "string" },
-        "safetyScore": { "type": "number" }
-      },
-      "required": [
-        "id",
-        "schoolId",
-        "name",
-        "block",
-        "type"
-      ]
+      "required": ["id", "name", "class"]
     }
   },
   "auth": {
-    "providers": [
-      "password"
-    ]
+    "providers": ["password"]
   },
   "firestore": {
     "structure": [
@@ -152,27 +54,11 @@
         }
       },
       {
-        "path": "/schools/{schoolId}/users/{userId}",
+        "path": "/schools/{schoolId}/students/{studentId}",
         "definition": {
-          "entityName": "User",
-          "schema": { "$ref": "#/backend/entities/User" },
-          "description": "Staff profiles."
-        }
-      },
-      {
-        "path": "/schools/{schoolId}/assets/{assetId}",
-        "definition": {
-          "entityName": "Asset",
-          "schema": { "$ref": "#/backend/entities/Asset" },
-          "description": "Institutional property."
-        }
-      },
-      {
-        "path": "/schools/{schoolId}/hostels/{hostelId}",
-        "definition": {
-          "entityName": "Hostel",
-          "schema": { "$ref": "#/backend/entities/Hostel" },
-          "description": "Dormitory wings."
+          "entityName": "Student",
+          "schema": { "$ref": "#/backend/entities/Student" },
+          "description": "Unified student registry."
         }
       },
       {
@@ -180,7 +66,7 @@
         "definition": {
           "entityName": "SystemConfig",
           "schema": { "type": "object" },
-          "description": "Utility and system configurations."
+          "description": "Institutional identity and utility configs."
         }
       }
     ]
