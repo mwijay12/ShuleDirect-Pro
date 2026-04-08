@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -26,7 +27,8 @@ import {
   Camera,
   ShieldCheck,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Users
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -54,11 +56,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
-import { collection, doc, query, writeBatch, orderBy } from "firebase/firestore"
-import { updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates"
-import * as XLSX from 'xlsx'
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { collection, doc, query, orderBy } from "firebase/firestore"
+import { updateDocumentNonBlocking, addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { generateStudentProgressSummary } from "@/ai/flows/generate-student-progress-summary-flow"
 import { scanStudentRegistration } from "@/ai/flows/scan-student-registration-flow"
 import { exportReportCardToWord } from "@/lib/export-utils"
@@ -67,8 +66,8 @@ const DORIS_DEMO_STUDENTS = [
   { id: "PS0206098-001", name: "ALEXANDER MLAWA CALLSON", class: "Standard 7", type: "Boarder", hostel: "Mt. Kilimanjaro Wing", contact: "0712345678", conductPoints: 100 },
   { id: "PS0206098-002", name: "ALVIN MICHAEL GILLA", class: "Standard 7", type: "Day", route: "Mbezi Beach - Kawe", contact: "0754111222", conductPoints: 94 },
   { id: "PS0206098-003", name: "AYESIGA LAUREAN LEONIDAS", class: "Standard 7", type: "Boarder", hostel: "Serengeti Annex", contact: "0621777888", conductPoints: 100 },
-  { id: "S4939-0001", name: "AGNES FRED KILIMA", class: "Form 2", type: "Boarder", hostel: "Lake Victoria Wing", contact: "0788123456", conductPoints: 98 },
-  { id: "S4939-0112", name: "DAVID ERICK MWIJAGE", class: "Form 2", type: "Boarder", hostel: "Serengeti Annex", contact: "0711999888", conductPoints: 99 },
+  { id: "S4939-0001", name: "AGNES FRED KILIMA", class: "Form 2A", type: "Boarder", hostel: "Lake Victoria Wing", contact: "0788123456", conductPoints: 98 },
+  { id: "S4939-0112", name: "DAVID ERICK MWIJAGE", class: "Form 2B", type: "Boarder", hostel: "Serengeti Annex", contact: "0711999888", conductPoints: 99 },
 ]
 
 export default function StudentsPage() {
@@ -104,10 +103,6 @@ export default function StudentsPage() {
   }, [searchTerm, students])
 
   const handleUpdateStudent = (id: string, updates: any) => {
-    if (isDemo && !firestoreStudents?.find(s => s.id === id)) {
-      toast({ variant: "destructive", title: "Official Mode Required", description: "You cannot edit demo nodes. Switch to official mode or import students first." })
-      return
-    }
     updateDocumentNonBlocking(doc(db, "schools", "school-001", "students", id), updates)
     if (selectedStudent?.id === id) {
       setSelectedStudent(prev => ({...prev, ...updates}))
@@ -135,7 +130,7 @@ export default function StudentsPage() {
           attendanceStatus: "Present",
           photo: base64
         }
-        await addDocumentNonBlocking(collection(db, "schools", "school-001", "students"), newStudent)
+        addDocumentNonBlocking(collection(db, "schools", "school-001", "students"), newStudent)
         toast({ title: "AI Enrollment Success", description: `Synchronized ${result.name} to database node.` })
       } catch (err) {
         toast({ variant: "destructive", title: "Scan Node Failed", description: "Could not parse registration document." })
@@ -284,7 +279,7 @@ export default function StudentsPage() {
                       <div className="flex items-center gap-4">
                         <Avatar className="h-12 w-12 rounded-2xl shadow-lg shrink-0 border-2 border-white transition-transform group-hover:scale-110 overflow-hidden">
                           <AvatarImage src={student.photo} className="object-cover" />
-                          <AvatarFallback className="font-black text-primary bg-primary/5">{student.name.charAt(0)}</AvatarFallback>
+                          <AvatarFallback className="font-black text-primary bg-primary/5">{student.name?.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
                           <span className="font-black text-sm text-foreground/80 group-hover:text-primary transition-colors uppercase truncate max-w-[200px]">{student.name}</span>

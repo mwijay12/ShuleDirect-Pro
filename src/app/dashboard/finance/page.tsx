@@ -56,6 +56,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { exportToExcel } from "@/lib/export-utils"
 import { triggerN8nWebhook } from "@/lib/n8n"
+import { useFirestore, useDoc, useMemoFirebase } from "@/firebase"
+import { doc } from "firebase/firestore"
 
 const initialTransactions = [
   { id: "TX-9021", student: "AGNES FRED KILIMA", type: "Tuition", amount: "550,000", method: "M-Pesa", date: "2024-05-12", status: "Success", controlNo: "99102345678" },
@@ -71,10 +73,16 @@ const initialPettyCash = [
 
 export default function FinancePage() {
   const { toast } = useToast()
+  const db = useFirestore()
   const [controlNo, setControlNo] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
-  const [transactions, setTransactions] = useState(initialTransactions)
-  const [pettyCash, setPettyCash] = useState(initialPettyCash)
+  
+  const identityRef = useMemoFirebase(() => doc(db, "schools", "school-001", "config", "identity"), [db])
+  const { data: identity } = useDoc(identityRef)
+  const isDemo = identity?.demoMode === true
+
+  const [transactions, setTransactions] = useState(isDemo ? initialTransactions : [])
+  const [pettyCash, setPettyCash] = useState(isDemo ? initialPettyCash : [])
   
   const handleGenerateControlNumber = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -84,7 +92,7 @@ export default function FinancePage() {
     const newNo = "99" + Math.floor(100000000 + Math.random() * 900000000).toString()
     
     setControlNo(newNo)
-    setTransactions(prev => [{
+    const newTx = {
       id: `TX-${Math.floor(Math.random() * 10000)}`,
       student: student || "Student Node",
       type: "Fee Generation",
@@ -93,7 +101,8 @@ export default function FinancePage() {
       date: new Date().toISOString().split('T')[0],
       status: "Success",
       controlNo: newNo
-    }, ...prev])
+    }
+    setTransactions(prev => [newTx, ...prev])
 
     triggerN8nWebhook("fee-payment", { studentName: student, amount, controlNumber: newNo });
     toast({ title: "Control Number Generated", description: `Payment ID ${newNo} dispatched via Beem SMS.` })
@@ -143,7 +152,7 @@ export default function FinancePage() {
               </div>
               <div>
                 <p className="text-[9px] font-black uppercase tracking-widest text-white/60">Beem Gateway Credits</p>
-                <p className="text-2xl font-black">4,280 Credits</p>
+                <p className="text-2xl font-black">{isDemo ? "4,280" : "0"} Credits</p>
                 <Badge className="bg-white/20 text-white border-none font-black text-[8px] h-4 mt-1">SOVEREIGN SYNC</Badge>
               </div>
            </div>
@@ -152,10 +161,10 @@ export default function FinancePage() {
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
-          { title: "Total Revenue", value: "142.5M", icon: Banknote, color: "text-green-600" },
-          { title: "Outstanding Node", value: "18.2M", icon: ArrowUpRight, color: "text-destructive" },
-          { title: "Expenditure Hub", value: "45.1M", icon: TrendingDown, color: "text-orange-600" },
-          { title: "Petty Float", value: "1.2M", icon: Wallet, color: "text-primary" },
+          { title: "Total Revenue", value: isDemo ? "142.5M" : "0.0", icon: Banknote, color: "text-green-600" },
+          { title: "Outstanding Node", value: isDemo ? "18.2M" : "0.0", icon: ArrowUpRight, color: "text-destructive" },
+          { title: "Expenditure Hub", value: isDemo ? "45.1M" : "0.0", icon: TrendingDown, color: "text-orange-600" },
+          { title: "Petty Float", value: isDemo ? "1.2M" : "0.0", icon: Wallet, color: "text-primary" },
         ].map((stat) => (
           <Card key={stat.title} className="border-none shadow-xl rounded-[2rem] bg-white/60 backdrop-blur-md overflow-hidden group hover:-translate-y-1 transition-all">
             <CardContent className="p-5 sm:p-6">
@@ -239,26 +248,34 @@ export default function FinancePage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {transactions.map((tx) => (
-                    <TableRow key={tx.id} className="group border-b last:border-none hover:bg-primary/[0.02] transition-colors">
-                      <TableCell className="pl-10 py-6">
-                        <p className="font-black text-sm text-foreground/80">{tx.student}</p>
-                        <p className="text-[9px] text-muted-foreground font-mono font-black uppercase">{tx.id}</p>
-                      </TableCell>
-                      <TableCell>
-                        <code className="text-[10px] font-black bg-muted/50 px-3 py-1.5 rounded-lg text-primary border border-primary/5">{tx.controlNo}</code>
-                      </TableCell>
-                      <TableCell className="text-center font-black text-sm text-foreground/70">TZS {tx.amount}</TableCell>
-                      <TableCell className="text-center">
-                        <Badge className="bg-green-100 text-green-700 border-none font-black text-[9px] px-4 py-1 rounded-full shadow-sm uppercase">SUCCESS NODE</Badge>
-                      </TableCell>
-                      <TableCell className="text-right pr-10">
-                        <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 text-muted-foreground hover:text-primary">
-                          <ChevronRight className="h-5 w-5" />
-                        </Button>
+                  {transactions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-32 text-center text-muted-foreground font-black text-[10px] uppercase">
+                        No transactions synchronized.
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    transactions.map((tx) => (
+                      <TableRow key={tx.id} className="group border-b last:border-none hover:bg-primary/[0.02] transition-colors">
+                        <TableCell className="pl-10 py-6">
+                          <p className="font-black text-sm text-foreground/80">{tx.student}</p>
+                          <p className="text-[9px] text-muted-foreground font-mono font-black uppercase">{tx.id}</p>
+                        </TableCell>
+                        <TableCell>
+                          <code className="text-[10px] font-black bg-muted/50 px-3 py-1.5 rounded-lg text-primary border border-primary/5">{tx.controlNo}</code>
+                        </TableCell>
+                        <TableCell className="text-center font-black text-sm text-foreground/70">TZS {tx.amount}</TableCell>
+                        <TableCell className="text-center">
+                          <Badge className="bg-green-100 text-green-700 border-none font-black text-[9px] px-4 py-1 rounded-full shadow-sm uppercase">SUCCESS NODE</Badge>
+                        </TableCell>
+                        <TableCell className="text-right pr-10">
+                          <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 text-muted-foreground hover:text-primary">
+                            <ChevronRight className="h-5 w-5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -304,7 +321,7 @@ export default function FinancePage() {
                   </Dialog>
                 </CardHeader>
                 <CardContent className="p-0 overflow-x-auto">
-                  <Table className="min-w-[600px]">
+                  <Table className="min-w-[800px]">
                     <TableHeader className="bg-muted/10">
                       <TableRow className="border-none h-14">
                         <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Expense Item</TableHead>
@@ -314,28 +331,36 @@ export default function FinancePage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {pettyCash.map((item) => (
-                        <TableRow key={item.id} className="group hover:bg-primary/[0.02] border-b last:border-none transition-colors">
-                          <TableCell className="pl-8 py-6">
-                            <p className="font-black text-sm text-foreground/80">{item.item}</p>
-                            <p className="text-[9px] font-mono font-black text-muted-foreground uppercase">{item.id}</p>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="rounded-full font-black text-[8px] uppercase tracking-widest border-primary/10 bg-primary/5 text-primary px-3 py-0.5">
-                              {item.dept} NODE
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-center font-mono font-black text-xs text-foreground/70">TZS {item.amount}</TableCell>
-                          <TableCell className="text-right pr-8">
-                            <Badge className={cn(
-                              "text-[9px] font-black uppercase px-4 py-1 rounded-full border-none shadow-sm",
-                              item.status === "Approved" ? "bg-green-100 text-green-700" : "bg-orange-50 text-orange-600"
-                            )}>
-                              {item.status}
-                            </Badge>
+                      {pettyCash.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="h-32 text-center text-muted-foreground font-black text-[10px] uppercase">
+                            No petty cash records.
                           </TableCell>
                         </TableRow>
-                      ))}
+                      ) : (
+                        pettyCash.map((item) => (
+                          <TableRow key={item.id} className="group hover:bg-primary/[0.02] border-b last:border-none transition-colors">
+                            <TableCell className="pl-8 py-6">
+                              <p className="font-black text-sm text-foreground/80">{item.item}</p>
+                              <p className="text-[9px] font-mono font-black text-muted-foreground uppercase">{item.id}</p>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="rounded-full font-black text-[8px] uppercase tracking-widest border-primary/10 bg-primary/5 text-primary px-3 py-0.5">
+                                {item.dept} NODE
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-center font-mono font-black text-xs text-foreground/70">TZS {item.amount}</TableCell>
+                            <TableCell className="text-right pr-8">
+                              <Badge className={cn(
+                                "text-[9px] font-black uppercase px-4 py-1 rounded-full border-none shadow-sm",
+                                item.status === "Approved" ? "bg-green-100 text-green-700" : "bg-orange-50 text-orange-600"
+                              )}>
+                                {item.status}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -351,7 +376,7 @@ export default function FinancePage() {
                        </div>
                        <div className="p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 shadow-inner">
                           <p className="text-[10px] font-black uppercase text-white/40 tracking-widest mb-1">Liquid Node Float</p>
-                          <p className="text-3xl font-black">TZS 1.2M</p>
+                          <p className="text-3xl font-black">TZS {isDemo ? "1.2M" : "0.0"}</p>
                        </div>
                        <Button className="w-full h-12 rounded-2xl bg-white text-primary hover:bg-white/90 font-black text-[10px] uppercase tracking-widest shadow-2xl">Refill Float Node</Button>
                     </div>
