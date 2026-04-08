@@ -34,7 +34,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { 
   Sheet, 
@@ -53,7 +53,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import * as XLSX from 'xlsx'
 
-// authentic roster start (Doris & Centennial)
+// Unified 2026 Sovereign Roster (Doris & Centennial)
 const initialStudents = [
   { id: "PS0206098-001", name: "ALEXANDER MLAWA CALLSON", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 712 000 001", attendance: "98%", conductPoints: 85, hostel: "Mt. Kilimanjaro Wing", route: "N/A" },
   { id: "PS0206098-002", name: "ALVIN MICHAEL GILLA", class: "Standard 7", status: "Active", type: "Day", contact: "+255 754 000 002", attendance: "92%", conductPoints: 94, hostel: "N/A", route: "Mbezi Beach - Kawe" },
@@ -94,7 +94,6 @@ export default function StudentsPage() {
       const ws = wb.Sheets[wsname]
       const data = XLSX.utils.sheet_to_json(ws)
       
-      // Map data to match internal schema
       const importedStudents = data.map((item: any) => ({
         id: item.id || `NEW-${Math.random().toString(36).substr(2, 9)}`,
         name: item.name || "Unknown Name",
@@ -172,7 +171,7 @@ export default function StudentsPage() {
             Institutional Registry Hub 2026
           </Badge>
           <h1 className="text-xl sm:text-2xl font-black text-primary uppercase">Student Directory</h1>
-          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Management of 267 active students & logistic hubs.</p>
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Management of active students & logistic hubs.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".xlsx, .xls, .csv" />

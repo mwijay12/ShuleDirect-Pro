@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -25,10 +26,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
+// Synchronized 2026 Dietary Stream
 const canteenTransactions = [
-  { id: "CAN-101", student: "Amani Mwamba", item: "Balanced Lunch Node", amount: "2,500", time: "12:45 PM", status: "Paid" },
-  { id: "CAN-102", student: "Careen Mushi", item: "Health Snack Node", amount: "1,200", time: "10:30 AM", status: "Paid" },
-  { id: "CAN-103", student: "Baraka Juma", item: "Evening Tea Node", amount: "800", time: "04:15 PM", status: "Paid" },
+  { id: "CAN-101", student: "ALEXANDER MLAWA CALLSON", item: "Balanced Lunch Node", amount: "2,500", time: "12:45 PM", status: "Paid" },
+  { id: "CAN-102", student: "AGNES FRED KILIMA", item: "Health Snack Node", amount: "1,200", time: "10:30 AM", status: "Paid" },
+  { id: "CAN-103", student: "DAVID ERICK MWIJAGE", item: "Evening Tea Node", amount: "800", time: "04:15 PM", status: "Paid" },
+  { id: "CAN-104", student: "AYESIGA LAUREAN LEONIDAS", item: "Standard 7 Meal Node", amount: "3,500", time: "01:15 PM", status: "Paid" },
 ]
 
 export default function CanteenPage() {
