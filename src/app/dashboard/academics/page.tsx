@@ -2,27 +2,21 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { 
-  Plus, 
   Search, 
-  Calculator,
   Loader2,
-  ChevronRight,
-  Database,
   RefreshCw,
   Globe,
   ScanText,
   BrainCircuit,
-  BookOpen,
   Target,
-  PlusCircle,
-  TrendingUp
+  Database
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
@@ -61,9 +55,17 @@ export default function AcademicsPage() {
   const { toast } = useToast()
   const [results, setResults] = useState(initialResults)
   const [syllabus, setSyllabus] = useState(initialSyllabus)
+  const [searchTerm, setSearchTerm] = useState("")
   const [isSyncingPrems, setIsSyncingPrems] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<any>(null)
+
+  const filteredResults = useMemo(() => {
+    return results.filter(r => 
+      r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.id.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }, [searchTerm, results])
 
   const handleScanExam = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -176,8 +178,17 @@ export default function AcademicsPage() {
           </div>
 
           <Card className="border-none shadow-xl overflow-hidden bg-card/60 backdrop-blur-md rounded-[2.5rem]">
-            <CardHeader className="bg-muted/20 border-b p-6 sm:p-8">
+            <CardHeader className="bg-muted/20 border-b p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <CardTitle className="text-lg font-black uppercase">Standard 7 Ledger 2026</CardTitle>
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Find candidate..." 
+                  className="pl-10 h-10 rounded-full border-none bg-white shadow-inner font-bold text-xs" 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </CardHeader>
             <CardContent className="p-0 overflow-x-auto">
               <Table className="min-w-[800px]">
@@ -192,26 +203,34 @@ export default function AcademicsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {results.map((r) => (
-                    <TableRow key={r.id} className="group hover:bg-primary/[0.02] border-b last:border-none">
-                      <TableCell className="pl-8 py-5">
-                        <p className="font-black text-sm text-foreground/80">{r.name}</p>
-                        <p className="text-[9px] font-mono font-black text-muted-foreground uppercase">{r.id}</p>
-                      </TableCell>
-                      <TableCell className="text-center font-mono font-bold text-xs">{r.math}</TableCell>
-                      <TableCell className="text-center font-mono font-bold text-xs">{r.sci}</TableCell>
-                      <TableCell className="text-center font-mono font-bold text-xs">{r.eng}</TableCell>
-                      <TableCell className="text-center">
-                        <Badge className={cn(
-                          "text-[9px] py-0.5 px-3 font-black rounded-full border-none",
-                          r.avg === "A" ? "bg-green-100 text-green-700" : "bg-blue-50 text-blue-600"
-                        )}>GRADE {r.avg}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right pr-8">
-                        <Button variant="ghost" size="sm" className="font-black text-primary text-[10px] uppercase rounded-full">Details</Button>
+                  {filteredResults.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-32 text-center text-muted-foreground font-black text-[10px] uppercase tracking-widest">
+                        No candidate results found.
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    filteredResults.map((r) => (
+                      <TableRow key={r.id} className="group hover:bg-primary/[0.02] border-b last:border-none">
+                        <TableCell className="pl-8 py-5">
+                          <p className="font-black text-sm text-foreground/80">{r.name}</p>
+                          <p className="text-[9px] font-mono font-black text-muted-foreground uppercase">{r.id}</p>
+                        </TableCell>
+                        <TableCell className="text-center font-mono font-bold text-xs">{r.math}</TableCell>
+                        <TableCell className="text-center font-mono font-bold text-xs">{r.sci}</TableCell>
+                        <TableCell className="text-center font-mono font-bold text-xs">{r.eng}</TableCell>
+                        <TableCell className="text-center">
+                          <Badge className={cn(
+                            "text-[9px] py-0.5 px-3 font-black rounded-full border-none",
+                            r.avg === "A" ? "bg-green-100 text-green-700" : "bg-blue-50 text-blue-600"
+                          )}>GRADE {r.avg}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right pr-8">
+                          <Button variant="ghost" size="sm" className="font-black text-primary text-[10px] uppercase rounded-full">Details</Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -228,7 +247,7 @@ export default function AcademicsPage() {
                     <Target className="h-4 w-4 text-primary/40 group-hover:scale-110 transition-transform" />
                   </div>
                   <CardTitle className="text-lg font-black text-primary uppercase">{s.subject}</CardTitle>
-                  <CardDescription className="text-[9px] font-bold uppercase">{s.level}</CardDescription>
+                  <CardDescription className="text-[10px] font-bold uppercase">{s.level}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-8 pt-0 space-y-6">
                   <div className="space-y-2">
