@@ -59,16 +59,20 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const initialStudents = [
-  { id: "PS0206098-001", name: "ALEXANDER MLAWA CALLSON", class: "Primary Node 7", status: "Active", contact: "+255 712 000 001", attendance: "98%", conductPoints: 85, trend: "up", hostel: "Mt. Kilimanjaro Wing" },
-  { id: "PS0206098-002", name: "ALVIN MICHAEL GILLA", class: "Primary Node 7", status: "Active", contact: "+255 754 000 002", attendance: "92%", conductPoints: 94, trend: "up", hostel: "Lake Victoria Wing" },
-  { id: "PS0206098-003", name: "AYESIGA LAUREAN LEONIDAS", class: "Primary Node 7", status: "Active", contact: "+255 621 000 003", attendance: "100%", conductPoints: 100, trend: "up", hostel: "Serengeti Annex" },
-  { id: "PS0206098-004", name: "BILL EDMUND TARABA", class: "Primary Node 7", status: "Active", contact: "+255 788 000 004", attendance: "95%", conductPoints: 88, trend: "up", hostel: "Mt. Kilimanjaro Wing" },
-  { id: "PS0206098-007", name: "DAVID ERICK MWIJAGE", class: "Primary Node 7", status: "Active", contact: "+255 713 000 005", attendance: "99%", conductPoints: 92, trend: "up", hostel: "Mt. Kilimanjaro Wing" },
-  { id: "PS0206098-013", name: "GERALD KENETH KANDIMBA", class: "Primary Node 7", status: "Active", contact: "+255 714 000 006", attendance: "96%", conductPoints: 85, trend: "up", hostel: "Mt. Kilimanjaro Wing" },
-  { id: "PS0206098-017", name: "IKUTWAGA BURTON MWAKAMBONJA", class: "Primary Node 7", status: "Active", contact: "+255 715 000 007", attendance: "98%", conductPoints: 90, trend: "up", hostel: "Lake Victoria Wing" },
-  { id: "PS0206098-022", name: "LEONARD FRANCIS MANONI", class: "Primary Node 7", status: "Active", contact: "+255 716 000 008", attendance: "97%", conductPoints: 88, trend: "up", hostel: "Serengeti Annex" },
-  { id: "PS0206098-034", name: "ZINDA BENARD JOHN", class: "Primary Node 7", status: "Active", contact: "+255 717 000 009", attendance: "95%", conductPoints: 82, trend: "up", hostel: "Mt. Kilimanjaro Wing" },
-  { id: "PS0206098-037", name: "DEBORA DAMAS RUGANGIRA", class: "Primary Node 7", status: "Active", contact: "+255 718 000 010", attendance: "98%", conductPoints: 95, trend: "up", hostel: "Lake Victoria Wing" },
+  // Doris Primary Nodes
+  { id: "PS0206098-001", name: "ALEXANDER MLAWA CALLSON", class: "Primary Std 7", status: "Active", contact: "+255 712 000 001", attendance: "98%", conductPoints: 85, trend: "up", hostel: "Mt. Kilimanjaro Wing" },
+  { id: "PS0206098-002", name: "ALVIN MICHAEL GILLA", class: "Primary Std 7", status: "Active", contact: "+255 754 000 002", attendance: "92%", conductPoints: 94, trend: "up", hostel: "Lake Victoria Wing" },
+  { id: "PS0206098-003", name: "AYESIGA LAUREAN LEONIDAS", class: "Primary Std 7", status: "Active", contact: "+255 621 000 003", attendance: "100%", conductPoints: 100, trend: "up", hostel: "Serengeti Annex" },
+  { id: "PS0206098-007", name: "DAVID ERICK MWIJAGE", class: "Primary Std 7", status: "Active", contact: "+255 713 000 005", attendance: "99%", conductPoints: 92, trend: "up", hostel: "Mt. Kilimanjaro Wing" },
+  { id: "PS0206098-013", name: "GERALD KENETH KANDIMBA", class: "Primary Std 7", status: "Active", contact: "+255 714 000 006", attendance: "96%", conductPoints: 85, trend: "up", hostel: "Mt. Kilimanjaro Wing" },
+  
+  // Centennial Christian Nodes
+  { id: "S4939-0001", name: "AGNES FRED KILIMA", class: "O-Level Form 2", status: "Active", contact: "+255 711 111 001", attendance: "97%", conductPoints: 98, trend: "up", hostel: "Lake Victoria Wing" },
+  { id: "S4939-0002", name: "AGNES NKUNDWE MWAMBALASWA", class: "O-Level Form 2", status: "Active", contact: "+255 711 111 002", attendance: "99%", conductPoints: 100, trend: "up", hostel: "Lake Victoria Wing" },
+  { id: "S4939-0112", name: "DAVID ERICK MWIJAGE", class: "O-Level Form 2", status: "Active", contact: "+255 711 111 112", attendance: "98%", conductPoints: 95, trend: "up", hostel: "Mt. Kilimanjaro Wing" },
+  { id: "S4939-0140", name: "IAN RICHARD CYIZA", class: "O-Level Form 2", status: "Active", contact: "+255 711 111 140", attendance: "96%", conductPoints: 92, trend: "up", hostel: "Serengeti Annex" },
+  { id: "S4939-0161", name: "KENNEDY DISMAS RWIHULA", class: "O-Level Form 2", status: "Active", contact: "+255 711 111 161", attendance: "95%", conductPoints: 88, trend: "up", hostel: "Mt. Kilimanjaro Wing" },
+  { id: "S4939-0200", name: "WILBERT RWECHUNGURA MUNYAGA", class: "O-Level Form 2", status: "Active", contact: "+255 711 111 200", attendance: "99%", conductPoints: 100, trend: "up", hostel: "Serengeti Annex" },
 ]
 
 export default function StudentsPage() {
@@ -124,7 +128,7 @@ export default function StudentsPage() {
   const handleExportReportCard = async () => {
     if (!selectedStudent) return
     setIsExporting(true)
-    const schoolName = localStorage.getItem("shule_name") || "Doris Primary School"
+    const schoolName = localStorage.getItem("shule_name") || "Institutional Node"
     await exportReportCardToWord(selectedStudent, schoolName)
     setIsExporting(false)
     toast({ title: "Hard Copy Generated", description: "Official Word transcript downloaded." })
@@ -143,7 +147,7 @@ export default function StudentsPage() {
             Institutional Registry 2026
           </Badge>
           <h1 className="text-2xl sm:text-3xl font-headline font-black text-primary tracking-tight uppercase">Student Directory</h1>
-          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Management of Doris Primary students & conduct indices.</p>
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Management of active students & conduct indices.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <Button onClick={handleRegistryExport} variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase tracking-widest">
@@ -157,10 +161,10 @@ export default function StudentsPage() {
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Population", value: "67", color: "text-primary", sub: "Standard 7 Node" },
-          { label: "Active Nodes", value: "67", color: "text-green-600", sub: "Operational" },
-          { label: "Attendance", value: "98.4%", color: "text-accent", sub: "Verified" },
-          { label: "Avg Conduct", value: "92 pts", color: "text-orange-600", sub: "Peak Discipline" },
+          { label: "Population Node", value: "2,480", color: "text-primary", sub: "Global Count" },
+          { label: "Active Nodes", value: "2,480", color: "text-green-600", sub: "Operational" },
+          { label: "Attendance", value: "96.2%", color: "text-accent", sub: "Verified" },
+          { label: "Syllabus", value: "78.4%", color: "text-orange-600", sub: "Peak Progress" },
         ].map((stat) => (
           <Card key={stat.label} className="border-none shadow-xl rounded-[2rem] bg-white/60 backdrop-blur-md overflow-hidden group hover:-translate-y-1 transition-all">
             <CardHeader className="p-5 sm:p-6">

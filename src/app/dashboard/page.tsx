@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -39,7 +40,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import AnimatedContent from "@/components/ui/animated-content"
 
-// Target Icon needed for stats - Defined at the top to avoid ReferenceError
+// Target Icon Node
 const Target = ({ className }: { className?: string }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -58,12 +59,12 @@ const Target = ({ className }: { className?: string }) => (
 )
 
 const data = [
-  { name: "Jan", attendance: 92, fees: 4500 },
-  { name: "Feb", attendance: 95, fees: 5200 },
-  { name: "Mar", attendance: 91, fees: 4800 },
-  { name: "Apr", attendance: 98, fees: 6100 },
-  { name: "May", attendance: 94, fees: 5500 },
-  { name: "Jun", attendance: 96, fees: 7200 },
+  { name: "Jan", attendance: 92, fees: 45 },
+  { name: "Feb", attendance: 95, fees: 52 },
+  { name: "Mar", attendance: 91, fees: 48 },
+  { name: "Apr", attendance: 98, fees: 61 },
+  { name: "May", attendance: 94, fees: 55 },
+  { name: "Jun", attendance: 96, fees: 72 },
 ]
 
 const stats = [

@@ -41,7 +41,7 @@ const initialResults = [
 ]
 
 const initialSyllabus = [
-  { id: 1, subject: "Mathematics", level: "Primary Std 7", covered: 85, status: "On Track" },
+  { id: 1, subject: "Mathematics", level: "Primary Std 7", covered: 78, status: "On Track" },
   { id: 2, subject: "Science", level: "Primary Std 7", covered: 62, status: "Delayed" },
   { id: 3, subject: "Kiswahili", level: "Primary Std 7", covered: 94, status: "Peak" },
   { id: 4, subject: "English", level: "Primary Std 7", covered: 78, status: "On Track" },
@@ -109,7 +109,7 @@ export default function AcademicsPage() {
             <Database className="h-2.5 w-2.5 mr-1.5" /> 2026 Academic Node
           </Badge>
           <h1 className="text-xl sm:text-2xl font-black text-primary">Academic Matrix</h1>
-          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Doris Primary Grading & Syllabus Hub.</p>
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Institutional Grading & Syllabus Hub.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <Dialog>
@@ -252,7 +252,7 @@ export default function AcademicsPage() {
                             onValueChange={(val) => updateCoverage(selectedSubject?.id, val[0])}
                           />
                         </div>
-                        <p className="text-[9px] font-medium text-center text-muted-foreground italic">Updating this node synchronizes Doris Primary logs.</p>
+                        <p className="text-[9px] font-medium text-center text-muted-foreground italic">Updating this node synchronizes institutional logs.</p>
                       </div>
                     </DialogContent>
                   </Dialog>
