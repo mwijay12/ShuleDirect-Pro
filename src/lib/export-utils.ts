@@ -1,4 +1,3 @@
-
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { 
@@ -12,7 +11,9 @@ import {
   TableRow, 
   TableCell, 
   WidthType, 
-  ImageRun
+  ImageRun,
+  BorderStyle,
+  VerticalAlign
 } from 'docx';
 
 /**
@@ -29,12 +30,13 @@ export function exportToExcel(data: any[], fileName: string) {
 
 /**
  * Official Transcript Generation (Sovereign Hub Format)
+ * Designed for High-Fidelity NECTA Alignment
  */
 export async function exportReportCardToWord(student: any, schoolName: string) {
   const logoBase64 = localStorage.getItem("shule_logo");
   const children: any[] = [];
 
-  // 1. Institutional Header
+  // 1. Professional Header Node
   if (logoBase64) {
     try {
       const base64Data = logoBase64.split(',')[1];
@@ -42,7 +44,7 @@ export async function exportReportCardToWord(student: any, schoolName: string) {
       children.push(
         new Paragraph({
           alignment: AlignmentType.CENTER,
-          children: [new ImageRun({ data: buffer, transformation: { width: 80, height: 80 } })],
+          children: [new ImageRun({ data: buffer, transformation: { width: 100, height: 100 } })],
         })
       );
     } catch (e) { console.error("Logo processing node failed", e); }
@@ -53,102 +55,113 @@ export async function exportReportCardToWord(student: any, schoolName: string) {
       text: schoolName.toUpperCase(),
       heading: HeadingLevel.HEADING_1,
       alignment: AlignmentType.CENTER,
-      spacing: { before: 200 },
+      spacing: { before: 200, after: 100 },
     }),
     new Paragraph({
-      text: "THE UNITED REPUBLIC OF TANZANIA",
       alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({ text: "THE UNITED REPUBLIC OF TANZANIA", bold: true, size: 24 }),
+      ],
     }),
     new Paragraph({
-      text: "OFFICIAL ACADEMIC TRANSCRIPT • 2026 SEASON",
       alignment: AlignmentType.CENTER,
       spacing: { after: 400 },
+      children: [
+        new TextRun({ text: "OFFICIAL ACADEMIC TRANSCRIPT • 2026 SEASON", size: 20, color: "1F5BA6", bold: true }),
+      ],
     })
   );
 
-  // 2. Student Metadata Node
+  // 2. Student Metadata Matrix
   children.push(
-    new Paragraph({
-      children: [
-        new TextRun({ text: "Student Name: ", bold: true }),
-        new TextRun(student.name),
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: {
+        top: { style: BorderStyle.NONE },
+        bottom: { style: BorderStyle.NONE },
+        left: { style: BorderStyle.NONE },
+        right: { style: BorderStyle.NONE },
+        insideHorizontal: { style: BorderStyle.NONE },
+        insideVertical: { style: BorderStyle.NONE },
+      },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "STUDENT NAME:", bold: true, size: 18 }), new TextRun({ text: ` ${student.name.toUpperCase()}`, size: 18 })] })] }),
+            new TableCell({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "ID NODE:", bold: true, size: 18 }), new TextRun({ text: ` ${student.id}`, size: 18 })] })] }),
+          ],
+        }),
+        new TableRow({
+          children: [
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "ACADEMIC TIER:", bold: true, size: 18 }), new TextRun({ text: ` ${student.class}`, size: 18 })] })] }),
+            new TableCell({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "RESIDENCE:", bold: true, size: 18 }), new TextRun({ text: ` ${student.type.toUpperCase()}`, size: 18 })] })] }),
+          ],
+        }),
       ],
     }),
-    new Paragraph({
-      children: [
-        new TextRun({ text: "Institutional ID: ", bold: true }),
-        new TextRun(student.id),
-      ],
-    }),
-    new Paragraph({
-      children: [
-        new TextRun({ text: "Level / Class: ", bold: true }),
-        new TextRun(student.class),
-      ],
-    }),
-    new Paragraph({
-      children: [
-        new TextRun({ text: "Type: ", bold: true }),
-        new TextRun(student.type),
-      ],
-      spacing: { after: 400 },
-    })
+    new Paragraph({ text: "", spacing: { before: 400 } })
   );
 
-  // 3. Subject Matrix
+  // 3. Official Subject Matrix
   children.push(
     new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       rows: [
         new TableRow({
+          tableHeader: true,
           children: [
-            new TableCell({ children: [new Paragraph({ text: "SUBJECT NODE", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "GRADE", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "REMARKS", bold: true })] }),
+            new TableCell({ shading: { fill: "F1F5F9" }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "SUBJECT NODE", bold: true, size: 18 })] })] }),
+            new TableCell({ shading: { fill: "F1F5F9" }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "GRADE", bold: true, size: 18 })] })] }),
+            new TableCell({ shading: { fill: "F1F5F9" }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "REMARKS", bold: true, size: 18 })] })] }),
           ],
         }),
-        new TableRow({
-          children: [
-            new TableCell({ children: [new Paragraph("Civics / Kiswahili")] }),
-            new TableCell({ children: [new Paragraph("A")] }),
-            new TableCell({ children: [new Paragraph("Distinction")] }),
-          ],
-        }),
-        new TableRow({
-          children: [
-            new TableCell({ children: [new Paragraph("Mathematics")] }),
-            new TableCell({ children: [new Paragraph("A")] }),
-            new TableCell({ children: [new Paragraph("Distinction")] }),
-          ],
-        }),
-        new TableRow({
-          children: [
-            new TableCell({ children: [new Paragraph("English Node")] }),
-            new TableCell({ children: [new Paragraph("B")] }),
-            new TableCell({ children: [new Paragraph("Very Good")] }),
-          ],
-        }),
+        // Mock entries for demo
+        ...["Kiswa-hili", "English Language", "Mathematics", "Science & Tech", "Social Studies"].map(sub => (
+          new TableRow({
+            children: [
+              new TableCell({ verticalAlign: VerticalAlign.CENTER, children: [new Paragraph({ text: sub, size: 18 })] }),
+              new TableCell({ verticalAlign: VerticalAlign.CENTER, children: [new Paragraph({ alignment: AlignmentType.CENTER, text: "A", size: 18 })] }),
+              new TableCell({ verticalAlign: VerticalAlign.CENTER, children: [new Paragraph({ alignment: AlignmentType.CENTER, text: "EXCELLENT", size: 18 })] }),
+            ],
+          })
+        ))
       ],
     })
   );
 
   // 4. Institutional Certification Footer
   children.push(
-    new Paragraph({ text: "\n\n" }),
+    new Paragraph({ text: "", spacing: { before: 1000 } }),
     new Paragraph({
-      children: [
-        new TextRun({ text: "This document is a certified academic output of the 2026 Sovereign Hub.", italics: true, size: 16 }),
-      ],
       alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({ text: "THIS DOCUMENT IS A CERTIFIED ACADEMIC OUTPUT OF THE 2026 SOVEREIGN HUB.", italics: true, size: 16, color: "64748B" }),
+      ],
     }),
-    new Paragraph({
-      text: "__________________________",
-      alignment: AlignmentType.RIGHT,
-      spacing: { before: 800 },
-    }),
-    new Paragraph({
-      text: "Principal / Academic Node Head",
-      alignment: AlignmentType.RIGHT,
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: {
+        top: { style: BorderStyle.NONE },
+        bottom: { style: BorderStyle.NONE },
+        left: { style: BorderStyle.NONE },
+        right: { style: BorderStyle.NONE },
+        insideHorizontal: { style: BorderStyle.NONE },
+        insideVertical: { style: BorderStyle.NONE },
+      },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({ children: [
+              new Paragraph({ text: "DATE: " + new Date().toLocaleDateString(), size: 18 }),
+              new Paragraph({ text: "STAMP NODE:", size: 18 })
+            ] }),
+            new TableCell({ children: [
+              new Paragraph({ alignment: AlignmentType.RIGHT, text: "__________________________", spacing: { before: 400 } }),
+              new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "PRINCIPAL / HUB HEAD", bold: true, size: 18 })] })
+            ] }),
+          ],
+        }),
+      ],
     })
   );
 

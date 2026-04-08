@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -39,6 +38,8 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import AnimatedContent from "@/components/ui/animated-content"
+import { useFirestore, useDoc, useMemoFirebase, useCollection } from "@/firebase"
+import { doc, collection, query } from "firebase/firestore"
 
 // Target Icon Node
 const Target = ({ className }: { className?: string }) => (
@@ -58,7 +59,16 @@ const Target = ({ className }: { className?: string }) => (
   </svg>
 )
 
-const data = [
+const emptyData = [
+  { name: "Jan", attendance: 0, fees: 0 },
+  { name: "Feb", attendance: 0, fees: 0 },
+  { name: "Mar", attendance: 0, fees: 0 },
+  { name: "Apr", attendance: 0, fees: 0 },
+  { name: "May", attendance: 0, fees: 0 },
+  { name: "Jun", attendance: 0, fees: 0 },
+]
+
+const demoData = [
   { name: "Jan", attendance: 92, fees: 45 },
   { name: "Feb", attendance: 95, fees: 52 },
   { name: "Mar", attendance: 91, fees: 48 },
@@ -67,45 +77,19 @@ const data = [
   { name: "Jun", attendance: 96, fees: 72 },
 ]
 
-const stats = [
-  {
-    title: "Population Node",
-    value: "2,480",
-    description: "+120 New Enrolled",
-    icon: Users,
-    color: "text-primary",
-    bg: "bg-primary/5",
-  },
-  {
-    title: "Syllabus Coverage",
-    value: "78.4%",
-    description: "National Average",
-    icon: Target,
-    color: "text-purple-600",
-    bg: "bg-purple-100/50",
-  },
-  {
-    title: "Institutional Revenue",
-    value: "142.5M",
-    description: "ClickPesa Synced",
-    icon: Banknote,
-    color: "text-green-600",
-    bg: "bg-green-100/50",
-  },
-  {
-    title: "Attendance Rate",
-    value: "96.2%",
-    description: "Peak Performance",
-    icon: TrendingUp,
-    color: "text-orange-600",
-    bg: "bg-orange-100/50",
-  },
-]
-
 export default function DashboardPage() {
   const [note, setNote] = useState("")
   const [isLoaded, setIsLoaded] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+  const db = useFirestore()
+
+  const identityRef = useMemoFirebase(() => doc(db, "schools", "school-001", "config", "identity"), [db])
+  const { data: identity } = useDoc(identityRef)
+
+  const studentsQuery = useMemoFirebase(() => query(collection(db, "schools", "school-001", "students")), [db])
+  const { data: students } = useCollection(studentsQuery)
+
+  const isDemo = identity?.demoMode === true
 
   useEffect(() => {
     setIsLoaded(true)
@@ -116,6 +100,41 @@ export default function DashboardPage() {
     setTimeout(() => setIsSyncing(false), 2000)
   }
 
+  const stats = [
+    {
+      title: "Population Node",
+      value: isDemo ? "2,480" : (students?.length || "0"),
+      description: isDemo ? "+120 New Enrolled" : "Live Registry Count",
+      icon: Users,
+      color: "text-primary",
+      bg: "bg-primary/5",
+    },
+    {
+      title: "Syllabus Coverage",
+      value: isDemo ? "78.4%" : "0.0%",
+      description: isDemo ? "National Average" : "Curriculum Pulse",
+      icon: Target,
+      color: "text-purple-600",
+      bg: "bg-purple-100/50",
+    },
+    {
+      title: "Institutional Revenue",
+      value: isDemo ? "142.5M" : "0.0M",
+      description: isDemo ? "ClickPesa Synced" : "Audit Threshold",
+      icon: Banknote,
+      color: "text-green-600",
+      bg: "bg-green-100/50",
+    },
+    {
+      title: "Attendance Rate",
+      value: isDemo ? "96.2%" : "0.0%",
+      description: isDemo ? "Peak Performance" : "Daily Check-in Node",
+      icon: TrendingUp,
+      color: "text-orange-600",
+      bg: "bg-orange-100/50",
+    },
+  ]
+
   return (
     <div className={cn("space-y-8 transition-all duration-700 pb-24 px-1", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
@@ -123,7 +142,9 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary text-[9px] font-black uppercase tracking-widest border border-primary/10 w-fit">
             <Building2 className="h-3 w-3" /> Institutional Node Active
           </div>
-          <h1 className="text-xl sm:text-2xl font-headline font-black text-primary tracking-tight uppercase">Management Pulse</h1>
+          <h1 className="text-xl sm:text-2xl font-headline font-black text-primary tracking-tight uppercase">
+            Management Pulse {isDemo && <Badge className="ml-2 bg-accent text-white border-none">DEMO</Badge>}
+          </h1>
           <p className="text-muted-foreground font-bold text-[9px] uppercase tracking-widest leading-none">Global institutional insights for the 2026 academic season.</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
@@ -184,7 +205,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="h-[350px] p-8 pt-10">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data}>
+                  <AreaChart data={isDemo ? demoData : emptyData}>
                     <defs>
                       <linearGradient id="colorFees" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#1F5BA6" stopOpacity={0.2}/>
@@ -208,7 +229,7 @@ export default function DashboardPage() {
                   <div className="flex flex-col h-full justify-between gap-8">
                      <div>
                        <Badge className="bg-accent text-white font-black text-[9px] px-4 py-1 rounded-full mb-4 uppercase tracking-widest shadow-lg">NECTA SYNC</Badge>
-                       <h3 className="text-xl font-black text-accent tracking-tighter uppercase leading-none">98.4% Accuracy</h3>
+                       <h3 className="text-xl font-black text-accent tracking-tighter uppercase leading-none">{isDemo ? "98.4%" : "0.0%"} Accuracy</h3>
                        <p className="text-[10px] font-bold text-accent/60 mt-3 uppercase tracking-widest leading-relaxed">Official PReMS nodes verified for the current assessment cycle.</p>
                      </div>
                      <Button variant="ghost" className="w-fit text-accent font-black text-[10px] uppercase tracking-[0.2em] p-0 h-auto hover:bg-transparent group">
@@ -222,8 +243,8 @@ export default function DashboardPage() {
                   <div className="flex flex-col h-full justify-between gap-8">
                      <div>
                        <Badge className="bg-primary text-white font-black text-[9px] px-4 py-1 rounded-full mb-4 uppercase tracking-widest shadow-lg">HOSTEL HUB</Badge>
-                       <h3 className="text-xl font-black text-primary tracking-tighter uppercase leading-none">Utility Healthy</h3>
-                       <p className="text-[10px] font-bold text-primary/60 mt-3 uppercase tracking-widest leading-relaxed">LUKU and Water nodes monitored across 4 primary wings hub.</p>
+                       <h3 className="text-xl font-black text-primary tracking-tighter uppercase leading-none">{isDemo ? "Utility Healthy" : "Syncing Status"}</h3>
+                       <p className="text-[10px] font-bold text-primary/60 mt-3 uppercase tracking-widest leading-relaxed">LUKU and Water nodes monitored across institutional blocks.</p>
                      </div>
                      <Button variant="ghost" className="w-fit text-primary font-black text-[10px] uppercase tracking-[0.2em] p-0 h-auto hover:bg-transparent group">
                        Manage Housing <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
@@ -249,8 +270,10 @@ export default function DashboardPage() {
               <CardContent className="p-8 pt-0 space-y-4">
                 <div className="p-4 rounded-2xl bg-white/80 border border-destructive/10 shadow-sm">
                   <p className="text-[10px] font-black text-destructive uppercase tracking-widest mb-1">Critical Insight:</p>
-                  <p className="text-xs font-bold text-foreground/70 leading-relaxed">
-                    15 Students are at risk of NECTA DIV IV/0 based on current O-Level trends. Remedial intervention required.
+                  <p className="text-xs font-bold text-foreground/70 leading-relaxed uppercase tracking-tighter">
+                    {isDemo 
+                      ? "15 Students are at risk of NECTA DIV IV/0 based on current trends." 
+                      : "Initialize student performance nodes to enable AI risk detection."}
                   </p>
                 </div>
                 <Button size="sm" variant="destructive" className="w-full rounded-2xl shadow-lg font-black h-12 text-[10px] uppercase tracking-widest">
@@ -273,7 +296,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="p-8 pt-0 space-y-4">
                 <Textarea 
-                  placeholder="Prepare NECTA Center ID report..." 
+                  placeholder="Prepare official institutional report..." 
                   className="bg-white/50 border-yellow-200 focus-visible:ring-yellow-400 min-h-[120px] resize-none text-xs font-bold placeholder:text-yellow-900/30 rounded-2xl shadow-inner px-5 py-4 border-none"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
@@ -295,9 +318,9 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="p-8">
                 <div className="space-y-6">
-                  {[
+                  {isDemo ? [
                     { user: "H.M.", action: "Authorized Fee Batch", time: "12m ago", icon: CheckCircle2, color: "text-green-500" },
-                    { user: "Academics", action: "Syllabus Coverage Audit", time: "45m ago", icon: Target, color: "text-primary" },
+                    { user: "Academics", action: "Syllabus Coverage Audit", time: "45m ago", icon: ShieldCheck, color: "text-primary" },
                     { user: "Warden", action: "LUKU Node Recharged", time: "1h ago", icon: Zap, color: "text-yellow-500" },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-4 group cursor-pointer transition-transform hover:translate-x-1">
@@ -310,7 +333,12 @@ export default function DashboardPage() {
                       </div>
                       <span className="text-[9px] font-mono font-black text-muted-foreground shrink-0">{item.time}</span>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="py-10 text-center opacity-30 flex flex-col items-center gap-2">
+                      <Clock className="h-10 w-10 text-muted-foreground" />
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em]">No Recent Activity</p>
+                    </div>
+                  )}
                   <Button variant="ghost" size="sm" className="w-full text-[9px] font-black uppercase tracking-[0.3em] text-primary hover:bg-primary/5 rounded-full h-11 mt-2 border border-transparent hover:border-primary/10">
                     Audit Ledger <ArrowRight className="ml-2 h-3.5 w-3.5" />
                   </Button>

@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -26,7 +25,8 @@ import {
   ScanLine,
   Camera,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -53,7 +53,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, doc, query, writeBatch, orderBy } from "firebase/firestore"
 import { updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import * as XLSX from 'xlsx'
@@ -62,6 +62,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { generateStudentProgressSummary } from "@/ai/flows/generate-student-progress-summary-flow"
 import { scanStudentRegistration } from "@/ai/flows/scan-student-registration-flow"
 import { exportReportCardToWord } from "@/lib/export-utils"
+
+const DORIS_DEMO_STUDENTS = [
+  { id: "PS0206098-001", name: "ALEXANDER MLAWA CALLSON", class: "Standard 7", type: "Boarder", hostel: "Mt. Kilimanjaro Wing", contact: "0712345678", conductPoints: 100 },
+  { id: "PS0206098-002", name: "ALVIN MICHAEL GILLA", class: "Standard 7", type: "Day", route: "Mbezi Beach - Kawe", contact: "0754111222", conductPoints: 94 },
+  { id: "PS0206098-003", name: "AYESIGA LAUREAN LEONIDAS", class: "Standard 7", type: "Boarder", hostel: "Serengeti Annex", contact: "0621777888", conductPoints: 100 },
+  { id: "S4939-0001", name: "AGNES FRED KILIMA", class: "Form 2", type: "Boarder", hostel: "Lake Victoria Wing", contact: "0788123456", conductPoints: 98 },
+  { id: "S4939-0112", name: "DAVID ERICK MWIJAGE", class: "Form 2", type: "Boarder", hostel: "Serengeti Annex", contact: "0711999888", conductPoints: 99 },
+]
 
 export default function StudentsPage() {
   const { toast } = useToast()
@@ -72,13 +80,23 @@ export default function StudentsPage() {
   const [isScanning, setIsScanning] = useState(false)
   const [aiSummary, setAiSummary] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const smartEnrollRef = useRef<HTMLInputElement>(null)
+
+  const identityRef = useMemoFirebase(() => doc(db, "schools", "school-001", "config", "identity"), [db])
+  const { data: identity } = useDoc(identityRef)
 
   const studentsQuery = useMemoFirebase(() => query(collection(db, "schools", "school-001", "students"), orderBy("name", "asc")), [db])
-  const { data: students, isLoading } = useCollection(studentsQuery)
+  const { data: firestoreStudents, isLoading } = useCollection(studentsQuery)
+
+  const isDemo = identity?.demoMode === true
+
+  const students = useMemo(() => {
+    if (isDemo && (!firestoreStudents || firestoreStudents.length === 0)) {
+      return DORIS_DEMO_STUDENTS
+    }
+    return firestoreStudents || []
+  }, [firestoreStudents, isDemo])
 
   const filteredStudents = useMemo(() => {
-    if (!students) return []
     return students.filter(s => 
       s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.id.toLowerCase().includes(searchTerm.toLowerCase())
@@ -86,6 +104,10 @@ export default function StudentsPage() {
   }, [searchTerm, students])
 
   const handleUpdateStudent = (id: string, updates: any) => {
+    if (isDemo && !firestoreStudents?.find(s => s.id === id)) {
+      toast({ variant: "destructive", title: "Official Mode Required", description: "You cannot edit demo nodes. Switch to official mode or import students first." })
+      return
+    }
     updateDocumentNonBlocking(doc(db, "schools", "school-001", "students", id), updates)
     if (selectedStudent?.id === id) {
       setSelectedStudent(prev => ({...prev, ...updates}))
@@ -148,7 +170,7 @@ export default function StudentsPage() {
   }
 
   const handleExportTranscript = async () => {
-    const schoolName = localStorage.getItem("shule_name") || "ShuleDirect Pro"
+    const schoolName = identity?.name || "ShuleDirect Pro"
     await exportReportCardToWord(selectedStudent, schoolName)
     toast({ title: "Transcript Exported", description: "Official Word document saved locally." })
   }
@@ -169,10 +191,10 @@ export default function StudentsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-1">
           <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary px-3 py-0.5 text-[8px] font-black uppercase rounded-full">
-            Institutional Registry Node 2026
+            {isDemo ? "DEMO DATA ACTIVE" : "OFFICIAL REGISTRY"}
           </Badge>
-          <h1 className="text-xl sm:text-2xl font-black text-primary uppercase">Student Directory</h1>
-          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Management of {students?.length || 0} active students & logistic hubs.</p>
+          <h1 className="text-xl sm:text-2xl font-black text-primary uppercase tracking-tight">Student Directory</h1>
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Management of {students.length} active students & logistic hubs.</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <Dialog>
@@ -181,13 +203,13 @@ export default function StudentsPage() {
                 <ScanLine className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" /> AI Smart Enroll
               </Button>
             </DialogTrigger>
-            <DialogContent className="rounded-[2.5rem] p-8 max-w-md">
+            <DialogContent className="rounded-[2.5rem] p-8 max-w-md border-none shadow-2xl">
               <DialogHeader className="mb-6 text-center">
                 <DialogTitle className="text-xl font-black uppercase">Smart Enrollment Node</DialogTitle>
                 <DialogDescription className="text-[10px] font-bold uppercase tracking-widest">Extract student details via registration scan</DialogDescription>
               </DialogHeader>
               <div className="space-y-6 text-center">
-                <div className="p-10 rounded-[2.5rem] border-2 border-dashed border-primary/20 bg-primary/5 flex flex-col items-center gap-4 group hover:border-primary/40 transition-colors">
+                <div className="p-10 rounded-[2.5rem] border-2 border-dashed border-primary/20 bg-primary/5 flex flex-col items-center gap-4 group hover:border-primary/40 transition-colors shadow-inner">
                   {isScanning ? <Loader2 className="h-12 w-12 animate-spin text-primary" /> : <Camera className="h-12 w-12 text-primary/40 group-hover:scale-110 transition-transform" />}
                   <p className="text-[10px] font-black text-muted-foreground uppercase">{isScanning ? "AI Analyzing Form..." : "Scan Registration Form"}</p>
                   <label className="cursor-pointer">
@@ -195,13 +217,13 @@ export default function StudentsPage() {
                     <input type="file" className="hidden" accept="image/*" onChange={handleSmartEnroll} disabled={isScanning} />
                   </label>
                 </div>
-                <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-widest italic">Supports official NECTA & school admission nodes.</p>
+                <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-widest italic">Supports official NECTA & admission nodes.</p>
               </div>
             </DialogContent>
           </Dialog>
 
           <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase">
-            <Upload className="mr-2 h-4 w-4" /> Import Excel
+            <Upload className="mr-2 h-4 w-4" /> Import Ledger
             <input type="file" ref={fileInputRef} className="hidden" accept=".xlsx, .xls, .csv" />
           </Button>
           <Button className="flex-1 sm:flex-none rounded-full colorful-gradient h-11 shadow-xl font-black text-[9px] uppercase px-8">
@@ -229,17 +251,30 @@ export default function StudentsPage() {
           {isLoading ? (
             <div className="p-20 text-center flex flex-col items-center gap-4">
               <Loader2 className="animate-spin h-10 w-10 text-primary" />
-              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Synchronizing Ledger...</p>
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Synchronizing Registry Node...</p>
+            </div>
+          ) : students.length === 0 ? (
+            <div className="p-32 text-center flex flex-col items-center gap-6">
+              <div className="h-20 w-20 rounded-full bg-muted/20 flex items-center justify-center">
+                <Users className="h-10 w-10 text-muted-foreground opacity-20" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-primary uppercase">No Active Candidates</h3>
+                <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest max-w-sm">The 2026 Sovereign Ledger is empty. Enable "Demo Mode" in Settings or import students via Excel.</p>
+              </div>
+              <Button variant="outline" className="rounded-full px-8 h-12 font-black uppercase text-[10px] border-primary/20 text-primary">
+                Initialize Registry
+              </Button>
             </div>
           ) : (
             <Table className="min-w-[800px]">
               <TableHeader className="bg-muted/30">
                 <TableRow className="border-none h-14">
-                  <TableHead className="pl-8 text-[9px] font-black uppercase">Student Node</TableHead>
-                  <TableHead className="text-[9px] font-black uppercase">Academic Tier</TableHead>
-                  <TableHead className="text-[9px] font-black uppercase">Logistic Hub</TableHead>
-                  <TableHead className="text-[9px] font-black uppercase text-center">Conduct</TableHead>
-                  <TableHead className="text-right pr-8 text-[9px] font-black uppercase">Control</TableHead>
+                  <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Student Node</TableHead>
+                  <TableHead className="text-[9px] font-black uppercase tracking-widest">Academic Tier</TableHead>
+                  <TableHead className="text-[9px] font-black uppercase tracking-widest">Logistic Hub</TableHead>
+                  <TableHead className="text-[9px] font-black uppercase tracking-widest text-center">Conduct</TableHead>
+                  <TableHead className="text-right pr-8 text-[9px] font-black uppercase tracking-widest">Control</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -317,27 +352,27 @@ export default function StudentsPage() {
 
                           <div className="p-10 space-y-10">
                             <Tabs defaultValue="logistics" className="space-y-8">
-                              <TabsList className="bg-muted/40 p-1 rounded-2xl h-12 grid w-full grid-cols-3">
-                                <TabsTrigger value="logistics" className="rounded-xl text-[9px] font-black uppercase">Identity & Logistics</TabsTrigger>
-                                <TabsTrigger value="academic" className="rounded-xl text-[9px] font-black uppercase">AI Reports</TabsTrigger>
-                                <TabsTrigger value="conduct" className="rounded-xl text-[9px] font-black uppercase">Merit Ledger</TabsTrigger>
+                              <TabsList className="bg-muted/40 p-1 rounded-2xl h-12 grid w-full grid-cols-3 shadow-inner">
+                                <TabsTrigger value="logistics" className="rounded-xl text-[9px] font-black uppercase tracking-widest">Logistics Hub</TabsTrigger>
+                                <TabsTrigger value="academic" className="rounded-xl text-[9px] font-black uppercase tracking-widest">Academic Hub</TabsTrigger>
+                                <TabsTrigger value="conduct" className="rounded-xl text-[9px] font-black uppercase tracking-widest">Merit Hub</TabsTrigger>
                               </TabsList>
 
                               <TabsContent value="logistics" className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
                                 <div className="space-y-4">
-                                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1 tracking-[0.2em]">Institutional Tier Hub</Label>
+                                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1 tracking-[0.2em]">Institutional Mode</Label>
                                   <div className="grid grid-cols-2 gap-4">
                                     <Button 
                                       variant="outline" 
-                                      className={cn("h-16 rounded-2xl font-black uppercase text-[10px] flex flex-col gap-1 border-2 transition-all", selectedStudent?.type === "Boarder" ? "border-primary bg-primary/5 text-primary" : "opacity-50 border-transparent bg-muted/20")}
+                                      className={cn("h-16 rounded-2xl font-black uppercase text-[10px] flex flex-col gap-1 border-2 transition-all shadow-sm", selectedStudent?.type === "Boarder" ? "border-primary bg-primary/5 text-primary" : "opacity-50 border-transparent bg-muted/20")}
                                       onClick={() => handleUpdateStudent(selectedStudent.id, { type: "Boarder", hostel: "Mt. Kilimanjaro Wing", route: "N/A" })}
                                     >
                                       <Home className="h-4 w-4" />
-                                      Boarder Node
+                                      Boarder Hub
                                     </Button>
                                     <Button 
                                       variant="outline" 
-                                      className={cn("h-16 rounded-2xl font-black uppercase text-[10px] flex flex-col gap-1 border-2 transition-all", selectedStudent?.type === "Day" ? "border-primary bg-primary/5 text-primary" : "opacity-50 border-transparent bg-muted/20")}
+                                      className={cn("h-16 rounded-2xl font-black uppercase text-[10px] flex flex-col gap-1 border-2 transition-all shadow-sm", selectedStudent?.type === "Day" ? "border-primary bg-primary/5 text-primary" : "opacity-50 border-transparent bg-muted/20")}
                                       onClick={() => handleUpdateStudent(selectedStudent.id, { type: "Day", route: "Mbezi Beach - Kawe", hostel: "N/A" })}
                                     >
                                       <Bus className="h-4 w-4" />
@@ -348,7 +383,7 @@ export default function StudentsPage() {
 
                                 <div className="grid grid-cols-2 gap-6">
                                   <div className="space-y-4">
-                                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Parent Contact Node</Label>
+                                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Parent Contact</Label>
                                     <div className="flex gap-2">
                                       <Input 
                                         value={selectedStudent?.contact || ""} 
@@ -363,10 +398,10 @@ export default function StudentsPage() {
                                   <div className="space-y-4">
                                     <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Allocation Hub</Label>
                                     <Select 
-                                      value={selectedStudent?.type === "Boarder" ? selectedStudent?.hostel : selectedStudent?.route}
+                                      value={selectedStudent?.type === "Boarder" ? (selectedStudent?.hostel || "Mt. Kilimanjaro Wing") : (selectedStudent?.route || "Mbezi Beach - Kawe")}
                                       onValueChange={(val) => handleUpdateStudent(selectedStudent.id, selectedStudent?.type === "Boarder" ? { hostel: val } : { route: val })}
                                     >
-                                      <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-black text-xs">
+                                      <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-black text-xs shadow-inner">
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent className="rounded-xl">
@@ -390,10 +425,10 @@ export default function StudentsPage() {
                               </TabsContent>
 
                               <TabsContent value="academic" className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
-                                <Card className="border-none shadow-inner bg-muted/10 rounded-[2rem] overflow-hidden">
+                                <Card className="border-none shadow-inner bg-muted/10 rounded-[2.5rem] overflow-hidden">
                                   <CardHeader className="bg-primary/5 p-8 flex flex-row items-center justify-between">
                                     <div className="space-y-1">
-                                      <CardTitle className="text-base font-black uppercase tracking-tight">AI Narrative Synthesis</CardTitle>
+                                      <CardTitle className="text-base font-black uppercase tracking-widest text-primary">AI Narrative Synthesis</CardTitle>
                                       <CardDescription className="text-[9px] font-bold uppercase tracking-widest text-primary/60">Gemini-Powered Performance Mapping</CardDescription>
                                     </div>
                                     <Button 
@@ -419,8 +454,8 @@ export default function StudentsPage() {
                                   </CardContent>
                                 </Card>
 
-                                <Button variant="outline" onClick={handleExportTranscript} className="w-full h-14 rounded-2xl border-primary/10 text-primary font-black uppercase text-xs hover:bg-primary/5 group">
-                                  <FileText className="mr-2 h-5 w-5" /> Generate Systematic Transcript Node <Download className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
+                                <Button variant="outline" onClick={handleExportTranscript} className="w-full h-14 rounded-2xl border-primary/10 text-primary font-black uppercase text-xs hover:bg-primary/5 group shadow-sm">
+                                  <FileText className="mr-2 h-5 w-5" /> Official Performance Transcript <Download className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
                                 </Button>
                               </TabsContent>
 
@@ -469,7 +504,7 @@ export default function StudentsPage() {
                             </Tabs>
                           </div>
                           <SheetFooter className="p-8 border-t bg-muted/10">
-                            <p className="text-[8px] font-bold text-muted-foreground text-center w-full uppercase tracking-[0.4em]">Sovereign Node Identity Verified • 2026 Academic Season</p>
+                            <p className="text-[8px] font-bold text-muted-foreground text-center w-full uppercase tracking-[0.4em]">Sovereign Hub Identity Verified • 2026 Academic Season</p>
                           </SheetFooter>
                         </SheetContent>
                       </Sheet>
