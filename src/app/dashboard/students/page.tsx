@@ -60,8 +60,11 @@ const initialStudents = [
   { id: "PS0206098-008", name: "DERICK HAGAI SAMSON", class: "Standard 7", status: "Active", type: "Day", contact: "+255 713 000 008", attendance: "95%", conductPoints: 91, hostel: "N/A", route: "Mbezi Beach - Kawe" },
   { id: "PS0206098-009", name: "ELIA MICHAEL MWALONGO", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 713 000 009", attendance: "98%", conductPoints: 96, hostel: "Mt. Kilimanjaro Wing", route: "N/A" },
   { id: "PS0206098-010", name: "ELTON SIMON MMBAGA", class: "Standard 7", status: "Active", type: "Day", contact: "+255 713 000 010", attendance: "94%", conductPoints: 89, hostel: "N/A", route: "Mikocheni - Msasani" },
+  { id: "PS0206098-011", name: "ERICK IBRAHIM MAKUHI", class: "Standard 7", status: "Active", type: "Day", contact: "+255 713 000 011", attendance: "90%", conductPoints: 85, hostel: "N/A", route: "Kijitonyama - Sinza" },
+  { id: "PS0206098-012", name: "FRANCIS GELIANO MBILINYI", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 713 000 012", attendance: "96%", conductPoints: 93, hostel: "Mt. Kilimanjaro Wing", route: "N/A" },
+  { id: "PS0206098-013", name: "GERALD KENETH KANDIMBA", class: "Standard 7", status: "Active", type: "Boarder", contact: "+255 713 000 013", attendance: "100%", conductPoints: 100, hostel: "Serengeti Annex", route: "N/A" },
   
-  // --- FORM 2 (200 Candidates) ---
+  // --- FORM 2 (200 Candidates Sample) ---
   { id: "S4939-0001", name: "AGNES FRED KILIMA", class: "Form 2A", status: "Active", type: "Boarder", contact: "+255 711 111 001", attendance: "97%", conductPoints: 98, hostel: "Lake Victoria Wing", route: "N/A" },
   { id: "S4939-0002", name: "AGNES NKUNDWE MWAMBALASWA", class: "Form 2A", status: "Active", type: "Boarder", contact: "+255 711 111 002", attendance: "99%", conductPoints: 100, hostel: "Lake Victoria Wing", route: "N/A" },
   { id: "S4939-0003", name: "AIDA HAGGAI MWAKASENDO", class: "Form 2A", status: "Active", type: "Boarder", contact: "+255 711 111 003", attendance: "98%", conductPoints: 95, hostel: "Lake Victoria Wing", route: "N/A" },
@@ -363,7 +366,7 @@ export default function StudentsPage() {
                       </Sheet>
                     </TableCell>
                   </TableRow>
-                )
+                ))
               )}
             </TableBody>
           </Table>

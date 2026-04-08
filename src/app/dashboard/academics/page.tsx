@@ -40,8 +40,6 @@ const initialResults = [
   { id: "PS0206098-011", name: "ERICK IBRAHIM MAKUHI", math: 74, sci: 70, eng: 78, avg: "B" },
   { id: "PS0206098-012", name: "FRANCIS GELIANO MBILINYI", math: 91, sci: 88, eng: 93, avg: "A" },
   { id: "PS0206098-013", name: "GERALD KENETH KANDIMBA", math: 98, sci: 96, eng: 99, avg: "A" },
-  { id: "PS0206098-014", name: "HAMAD KASSIM KAMBI", math: 72, sci: 68, eng: 75, avg: "B" },
-  { id: "PS0206098-015", name: "IBRAHIM RAMIA MGANGA", math: 89, sci: 84, eng: 91, avg: "A" },
 ]
 
 const initialSyllabus = [
