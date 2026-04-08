@@ -2,26 +2,21 @@
 "use client"
 
 import * as React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { 
-  FileSpreadsheet, 
   Download, 
   Search, 
-  BarChart, 
-  CheckCircle2, 
-  AlertCircle,
-  Sparkles,
+  Sparkles, 
   Loader2,
   Copy,
-  ExternalLink,
   Globe,
   ShieldCheck,
   Zap,
   Database,
   BookOpen,
   FileText,
-  UserCheck,
-  TrendingUp
+  TrendingUp,
+  ExternalLink
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -34,9 +29,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { createLearningResource } from "@/ai/flows/create-learning-resource-flow"
+import { useFirestore, useDoc, useMemoFirebase } from "@/firebase"
+import { doc } from "firebase/firestore"
 
 const institutionalMockResults = {
-  center: "CENTENNIAL DORIS ACADEMY - S4939 / PS0206098",
+  center: "CENTENNIAL DORIS ACADEMY - PS0206098 / S4939",
   stats: {
     total: 267,
     average: "199.25 (PSLE) / 7.0 (FTNA)",
@@ -55,15 +52,24 @@ const institutionalMockResults = {
 
 export default function ReportsPage() {
   const { toast } = useToast()
+  const db = useFirestore()
   const [fetchingNecta, setFetchingNecta] = useState(false)
   const [activeResults, setActiveResults] = useState<any>(null)
   
-  const [centerNo, setCenterNo] = useState("S4939")
+  const [centerNo, setCenterNo] = useState("")
   const [examYear, setExamYear] = useState("2024")
   const [examLevel, setExamLevel] = useState("FTNA")
 
   const [isGeneratingLab, setIsGeneratingLab] = useState(false)
   const [labContent, setLabContent] = useState<string | null>(null)
+
+  const identityRef = useMemoFirebase(() => doc(db, "schools", "school-001", "config", "identity"), [db])
+  const { data: identity } = useDoc(identityRef)
+
+  // Use school's center ID if available
+  React.useEffect(() => {
+    if (identity?.centerId) setCenterNo(identity.centerId)
+  }, [identity])
 
   const handleFetchNectaResults = () => {
     setFetchingNecta(true)
@@ -94,6 +100,12 @@ export default function ReportsPage() {
     }
   }
 
+  const getPortalLink = () => {
+    if (!centerNo) return "#"
+    const base = "https://maktaba.tetea.org/exam-results"
+    return `${base}/${examLevel}${examYear}/${centerNo.toUpperCase()}.htm`
+  }
+
   return (
     <div className="space-y-6 max-w-full mx-auto pb-24 px-1">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-1">
@@ -104,14 +116,21 @@ export default function ReportsPage() {
           <h1 className="text-xl sm:text-2xl font-black text-primary uppercase">Sovereign Reports</h1>
           <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">High-fidelity mapping of national result nodes.</p>
         </div>
-        <Button variant="outline" className="rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm text-[10px] font-black uppercase">
-          <Download className="mr-2 h-4 w-4" /> Download Sovereign Ledger
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button variant="outline" asChild className="rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm text-[10px] font-black uppercase">
+            <a href={getPortalLink()} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="mr-2 h-4 w-4" /> Official Portal Node
+            </a>
+          </Button>
+          <Button variant="outline" className="rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm text-[10px] font-black uppercase">
+            <Download className="mr-2 h-4 w-4" /> Download Ledger
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 px-1">
         {[
-          { label: "Active Center", value: "S4939 / PS0206098", sub: "Unified Node", icon: ShieldCheck, color: "text-primary" },
+          { label: "Active Center", value: identity?.centerId || "PS0206098", sub: "Unified Node", icon: ShieldCheck, color: "text-primary" },
           { label: "Regional Rank", value: "15 / 120", sub: "Top Tier", icon: TrendingUp, color: "text-green-600" },
           { label: "AI Prediction", value: "Optimal", sub: "DIV I Trend", icon: Zap, color: "text-accent" },
           { label: "Sync Status", value: "Online", sub: "National Grid", icon: Globe, color: "text-orange-600" },
@@ -155,7 +174,7 @@ export default function ReportsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
                 <div className="space-y-2">
                   <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Center ID</Label>
-                  <Input value={centerNo} onChange={(e) => setCenterNo(e.target.value)} className="h-12 rounded-xl bg-muted/20 border-none font-mono font-black" />
+                  <Input value={centerNo} onChange={(e) => setCenterNo(e.target.value.toUpperCase())} className="h-12 rounded-xl bg-muted/20 border-none font-mono font-black" placeholder="e.g. S4939" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Academic Tier</Label>
@@ -178,8 +197,8 @@ export default function ReportsPage() {
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
                       <SelectItem value="2024">2024 Cycle</SelectItem>
-                      <SelectItem value="2020">2020 Archive</SelectItem>
-                      <SelectItem value="2018">2018 Archive</SelectItem>
+                      <SelectItem value="2020">2020 Cycle</SelectItem>
+                      <SelectItem value="2018">2018 Cycle</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -224,7 +243,7 @@ export default function ReportsPage() {
                               <code className="text-[10px] font-mono font-black text-primary/60 bg-primary/5 px-3 py-1.5 rounded-lg border border-primary/5">{c.id}</code>
                             </TableCell>
                             <TableCell>
-                              <span className="font-black text-sm text-foreground/80 group-hover:text-primary transition-colors">{c.name}</span>
+                              <span className="font-black text-sm text-foreground/80 group-hover:text-primary transition-colors uppercase">{c.name}</span>
                             </TableCell>
                             <TableCell className="max-w-[300px]">
                               <span className="text-[10px] font-bold text-muted-foreground truncate block uppercase">{c.subjects}</span>
@@ -272,9 +291,14 @@ export default function ReportsPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
-                        <SelectItem value="Standard 7">Standard 7</SelectItem>
-                        <SelectItem value="Form 2">Form 2</SelectItem>
-                        <SelectItem value="Form 4">Form 4</SelectItem>
+                        {identity?.tiers?.map((t: string) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        )) || (
+                          <>
+                            <SelectItem value="Standard 7">Standard 7</SelectItem>
+                            <SelectItem value="Form 2">Form 2</SelectItem>
+                          </>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -339,12 +363,15 @@ export default function ReportsPage() {
 
         <TabsContent value="archives" className="px-1">
           <div className="p-20 text-center space-y-6 rounded-[3rem] bg-primary/5 border-2 border-dashed border-primary/10">
-            <Database className="h-16 w-16 text-primary/20 mx-auto" />
+            <TrendingUp className="h-16 w-16 text-primary/20 mx-auto" />
             <div className="space-y-2">
               <h3 className="text-xl font-black text-primary uppercase">Institutional Archive Node</h3>
-              <p className="text-sm font-medium text-muted-foreground max-w-md mx-auto">Access legacy NECTA matrices from the 2018-2023 cycles for longitudinal benchmarking.</p>
+              <p className="text-sm font-medium text-muted-foreground max-w-md mx-auto">Access legacy national matrices from the 2018-2023 cycles for longitudinal benchmarking and predictive analysis.</p>
             </div>
-            <Button variant="outline" className="rounded-full h-12 border-primary/20 text-primary font-black uppercase px-8">Connect to National Archives</Button>
+            <div className="flex justify-center gap-4">
+              <Button variant="outline" className="rounded-full h-12 border-primary/20 text-primary font-black uppercase px-8">Connect to National Archives</Button>
+              <Button variant="outline" className="rounded-full h-12 border-primary/20 text-primary font-black uppercase px-8">Benchmark Trends</Button>
+            </div>
           </div>
         </TabsContent>
       </Tabs>
