@@ -28,7 +28,8 @@ import {
   ShieldCheck,
   CheckCircle2,
   AlertCircle,
-  Users
+  Users,
+  X
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -52,15 +53,18 @@ import {
   SheetFooter
 } from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, doc, query, orderBy } from "firebase/firestore"
-import { updateDocumentNonBlocking, addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+import { updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { generateStudentProgressSummary } from "@/ai/flows/generate-student-progress-summary-flow"
 import { scanStudentRegistration } from "@/ai/flows/scan-student-registration-flow"
-import { exportReportCardToWord } from "@/lib/export-utils"
+import { exportReportCardToWord, exportToExcel } from "@/lib/export-utils"
+import * as XLSX from "xlsx"
 
 const DORIS_DEMO_STUDENTS = [
   { id: "PS0206098-001", name: "ALEXANDER MLAWA CALLSON", class: "Standard 7", type: "Boarder", hostel: "Mt. Kilimanjaro Wing", contact: "0712345678", conductPoints: 100 },
@@ -77,6 +81,7 @@ export default function StudentsPage() {
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
   const [isGeneratingAi, setIsGeneratingAi] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
+  const [isManualEnrolling, setIsManualEnrolling] = useState(false)
   const [aiSummary, setAiSummary] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -89,10 +94,14 @@ export default function StudentsPage() {
   const isDemo = identity?.demoMode === true
 
   const students = useMemo(() => {
-    if (isDemo && (!firestoreStudents || firestoreStudents.length === 0)) {
-      return DORIS_DEMO_STUDENTS
-    }
-    return firestoreStudents || []
+    // In Official mode, we only show real Firestore data
+    if (!isDemo) return firestoreStudents || []
+    
+    // In Demo mode, we blend firestore data with the high-fidelity demo roster
+    const base = firestoreStudents || []
+    const demoIds = new Set(base.map(s => s.id))
+    const uniqueDemo = DORIS_DEMO_STUDENTS.filter(s => !demoIds.has(s.id))
+    return [...base, ...uniqueDemo]
   }, [firestoreStudents, isDemo])
 
   const filteredStudents = useMemo(() => {
@@ -107,6 +116,62 @@ export default function StudentsPage() {
     if (selectedStudent?.id === id) {
       setSelectedStudent(prev => ({...prev, ...updates}))
     }
+  }
+
+  const handleManualEnroll = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const newStudent = {
+      name: (formData.get("name") as string).toUpperCase(),
+      id: formData.get("id") as string,
+      class: formData.get("class") as string,
+      type: formData.get("type") as string,
+      status: "Active",
+      contact: formData.get("contact") as string || "+255",
+      conductPoints: 100,
+      attendanceStatus: "Present",
+      createdAt: new Date().toISOString()
+    }
+
+    addDocumentNonBlocking(collection(db, "schools", "school-001", "students"), newStudent)
+    setIsManualEnrolling(false)
+    toast({ title: "Student Enrolled", description: `${newStudent.name} added to 2026 registry.` })
+  }
+
+  const handleExcelImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target?.result
+        const wb = XLSX.read(bstr, { type: "binary" })
+        const wsname = wb.SheetNames[0]
+        const ws = wb.Sheets[wsname]
+        const data = XLSX.utils.sheet_to_json(ws) as any[]
+
+        data.forEach((row) => {
+          if (row.Name && row.ID) {
+            const studentNode = {
+              name: row.Name.toUpperCase(),
+              id: String(row.ID),
+              class: row.Class || "Unassigned",
+              type: row.Type || "Day",
+              contact: String(row.Contact || "+255"),
+              status: "Active",
+              conductPoints: 100,
+              attendanceStatus: "Present"
+            }
+            addDocumentNonBlocking(collection(db, "schools", "school-001", "students"), studentNode)
+          }
+        })
+        toast({ title: "Import Successful", description: `Synchronized ${data.length} candidates to hub.` })
+      } catch (err) {
+        toast({ variant: "destructive", title: "Import Failed", description: "Excel format node invalid." })
+      }
+    }
+    reader.readAsBinaryString(file)
   }
 
   const handleSmartEnroll = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,6 +235,11 @@ export default function StudentsPage() {
     toast({ title: "Transcript Exported", description: "Official Word document saved locally." })
   }
 
+  const handleExportDirectory = () => {
+    exportToExcel(students, "Institutional_Student_Directory")
+    toast({ title: "Directory Exported", description: "Excel ledger node saved locally." })
+  }
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -192,6 +262,10 @@ export default function StudentsPage() {
           <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Management of {students.length} active students & logistic hubs.</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+          <Button variant="outline" onClick={handleExportDirectory} className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase">
+            <Download className="mr-2 h-4 w-4" /> Export Ledger
+          </Button>
+
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase group">
@@ -219,11 +293,73 @@ export default function StudentsPage() {
 
           <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase">
             <Upload className="mr-2 h-4 w-4" /> Import Ledger
-            <input type="file" ref={fileInputRef} className="hidden" accept=".xlsx, .xls, .csv" />
+            <input type="file" ref={fileInputRef} className="hidden" accept=".xlsx, .xls, .csv" onChange={handleExcelImport} />
           </Button>
-          <Button className="flex-1 sm:flex-none rounded-full colorful-gradient h-11 shadow-xl font-black text-[9px] uppercase px-8">
-            <Plus className="mr-2 h-4 w-4" /> Enroll Manual
-          </Button>
+
+          <Dialog open={isManualEnrolling} onOpenChange={setIsManualEnrolling}>
+            <DialogTrigger asChild>
+              <Button className="flex-1 sm:flex-none rounded-full colorful-gradient h-11 shadow-xl font-black text-[9px] uppercase px-8">
+                <Plus className="mr-2 h-4 w-4" /> Enroll Student
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl max-w-lg">
+              <DialogHeader className="bg-primary/5 p-8 border-b">
+                <DialogTitle className="text-xl font-black uppercase text-primary">Manual Enrollment</DialogTitle>
+                <DialogDescription className="text-[10px] font-bold uppercase tracking-widest">Register new candidate node manually</DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleManualEnroll} className="p-8 space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Legal Name</Label>
+                    <Input name="name" placeholder="e.g. AGNES FRED" required className="h-12 rounded-xl bg-muted/20 border-none font-bold uppercase px-5" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Candidate ID</Label>
+                    <Input name="id" placeholder="e.g. S4939-0001" required className="h-12 rounded-xl bg-muted/20 border-none font-mono font-black px-5" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Academic Tier</Label>
+                    <Select name="class" defaultValue="Standard 7">
+                      <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-black text-xs px-5">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {identity?.tiers?.map((t: string) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        )) || (
+                          <>
+                            <SelectItem value="Standard 7">Standard 7</SelectItem>
+                            <SelectItem value="Form 2">Form 2</SelectItem>
+                          </>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Residence</Label>
+                    <Select name="type" defaultValue="Day">
+                      <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-black text-xs px-5">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="Boarder">Boarder Node</SelectItem>
+                        <SelectItem value="Day">Day Student</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Parent Contact</Label>
+                  <Input name="contact" placeholder="e.g. 0712345678" className="h-12 rounded-xl bg-muted/20 border-none font-bold px-5" />
+                </div>
+                <Button type="submit" className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-xl mt-4">
+                  Initialize Candidate Node
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -255,9 +391,9 @@ export default function StudentsPage() {
               </div>
               <div className="space-y-2">
                 <h3 className="text-xl font-black text-primary uppercase">No Active Candidates</h3>
-                <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest max-w-sm">The 2026 Sovereign Ledger is empty. Enable "Demo Mode" in Settings or import students via Excel.</p>
+                <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest max-w-sm">The 2026 Sovereign Ledger is empty. Enable "Demo Mode" in Settings or enroll students manually.</p>
               </div>
-              <Button variant="outline" className="rounded-full px-8 h-12 font-black uppercase text-[10px] border-primary/20 text-primary">
+              <Button variant="outline" className="rounded-full px-8 h-12 font-black uppercase text-[10px] border-primary/20 text-primary" onClick={() => setIsManualEnrolling(true)}>
                 Initialize Registry
               </Button>
             </div>
@@ -296,7 +432,7 @@ export default function StudentsPage() {
                       <div className="flex items-center gap-2">
                         {student.type === "Boarder" ? <Home className="h-3 w-3 text-primary/40" /> : <Bus className="h-3 w-3 text-primary/40" />}
                         <span className="text-[9px] font-black uppercase text-muted-foreground tracking-tight">
-                          {student.type === "Boarder" ? student.hostel : student.route}
+                          {student.type === "Boarder" ? (student.hostel || "Assigned Wing") : (student.route || "Fleet Route")}
                         </span>
                       </div>
                     </TableCell>
