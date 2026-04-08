@@ -22,7 +22,11 @@ import {
   MinusCircle,
   Sparkles,
   ChevronRight,
-  ClipboardCheck
+  ClipboardCheck,
+  ScanLine,
+  Camera,
+  ShieldCheck,
+  CheckCircle2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -46,6 +50,7 @@ import {
   SheetFooter
 } from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
@@ -55,6 +60,7 @@ import * as XLSX from 'xlsx'
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { generateStudentProgressSummary } from "@/ai/flows/generate-student-progress-summary-flow"
+import { scanStudentRegistration } from "@/ai/flows/scan-student-registration-flow"
 import { exportReportCardToWord } from "@/lib/export-utils"
 
 export default function StudentsPage() {
@@ -63,8 +69,10 @@ export default function StudentsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
   const [isGeneratingAi, setIsGeneratingAi] = useState(false)
+  const [isScanning, setIsScanning] = useState(false)
   const [aiSummary, setAiSummary] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const smartEnrollRef = useRef<HTMLInputElement>(null)
 
   const studentsQuery = useMemoFirebase(() => query(collection(db, "schools", "school-001", "students"), orderBy("name", "asc")), [db])
   const { data: students, isLoading } = useCollection(studentsQuery)
@@ -82,6 +90,38 @@ export default function StudentsPage() {
     if (selectedStudent?.id === id) {
       setSelectedStudent(prev => ({...prev, ...updates}))
     }
+  }
+
+  const handleSmartEnroll = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsScanning(true)
+    const reader = new FileReader()
+    reader.onloadend = async () => {
+      const base64 = reader.result as string
+      try {
+        const result = await scanStudentRegistration({ photoDataUri: base64 })
+        const newStudent = {
+          id: result.id,
+          name: result.name,
+          class: result.academicLevel,
+          status: "Active",
+          type: "Day",
+          contact: result.parentContact || "+255",
+          conductPoints: 100,
+          attendanceStatus: "Present",
+          photo: base64
+        }
+        await addDocumentNonBlocking(collection(db, "schools", "school-001", "students"), newStudent)
+        toast({ title: "AI Enrollment Success", description: `Synchronized ${result.name} to database node.` })
+      } catch (err) {
+        toast({ variant: "destructive", title: "Scan Node Failed", description: "Could not parse registration document." })
+      } finally {
+        setIsScanning(false)
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   const handleGenerateAiSummary = async () => {
@@ -113,39 +153,15 @@ export default function StudentsPage() {
     toast({ title: "Transcript Exported", description: "Official Word document saved locally." })
   }
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-
     const reader = new FileReader()
-    reader.onload = async (evt) => {
-      const bstr = evt.target?.result
-      const wb = XLSX.read(bstr, { type: 'binary' })
-      const ws = wb.Sheets[wb.SheetNames[0]]
-      const data = XLSX.utils.sheet_to_json(ws)
-      
-      const batch = writeBatch(db)
-      data.forEach((item: any) => {
-        const id = item.id || `NEW-${Math.random().toString(36).substr(2, 9)}`
-        const ref = doc(db, "schools", "school-001", "students", id)
-        batch.set(ref, {
-          id,
-          name: item.name || "Unknown Candidate",
-          class: item.class || "Standard 7",
-          status: "Active",
-          type: item.type || "Day",
-          contact: item.contact || "+255",
-          conductPoints: 100,
-          attendanceStatus: "Present",
-          hostel: item.type === "Boarder" ? "Mt. Kilimanjaro Wing" : "N/A",
-          route: item.type === "Day" ? "Mbezi Beach - Kawe" : "N/A"
-        })
-      })
-      
-      await batch.commit()
-      toast({ title: "Ledger Synced", description: `${data.length} students synchronized to 2026 Sovereign Hub.` })
+    reader.onloadend = () => {
+      handleUpdateStudent(selectedStudent.id, { photo: reader.result as string })
+      toast({ title: "Identity Node Synced", description: "Student photo updated." })
     }
-    reader.readAsBinaryString(file)
+    reader.readAsDataURL(file)
   }
 
   return (
@@ -158,35 +174,40 @@ export default function StudentsPage() {
           <h1 className="text-xl sm:text-2xl font-black text-primary uppercase">Student Directory</h1>
           <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Management of {students?.length || 0} active students & logistic hubs.</p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".xlsx, .xls, .csv" />
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase group">
+                <ScanLine className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" /> AI Smart Enroll
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="rounded-[2.5rem] p-8 max-w-md">
+              <DialogHeader className="mb-6 text-center">
+                <DialogTitle className="text-xl font-black uppercase">Smart Enrollment Node</DialogTitle>
+                <DialogDescription className="text-[10px] font-bold uppercase tracking-widest">Extract student details via registration scan</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-6 text-center">
+                <div className="p-10 rounded-[2.5rem] border-2 border-dashed border-primary/20 bg-primary/5 flex flex-col items-center gap-4 group hover:border-primary/40 transition-colors">
+                  {isScanning ? <Loader2 className="h-12 w-12 animate-spin text-primary" /> : <Camera className="h-12 w-12 text-primary/40 group-hover:scale-110 transition-transform" />}
+                  <p className="text-[10px] font-black text-muted-foreground uppercase">{isScanning ? "AI Analyzing Form..." : "Scan Registration Form"}</p>
+                  <label className="cursor-pointer">
+                    <Button variant="default" className="rounded-full colorful-gradient h-12 px-8 font-black text-[10px] uppercase shadow-xl pointer-events-none">Select Document</Button>
+                    <input type="file" className="hidden" accept="image/*" onChange={handleSmartEnroll} disabled={isScanning} />
+                  </label>
+                </div>
+                <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-widest italic">Supports official NECTA & school admission nodes.</p>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase">
-            <Upload className="mr-2 h-4 w-4" /> Import Ledger
+            <Upload className="mr-2 h-4 w-4" /> Import Excel
+            <input type="file" ref={fileInputRef} className="hidden" accept=".xlsx, .xls, .csv" />
           </Button>
-          <Button className="flex-1 sm:flex-none rounded-full colorful-gradient h-11 shadow-xl font-black text-[9px] uppercase">
-            <UserPlus className="mr-2 h-4 w-4" /> Enroll Student
+          <Button className="flex-1 sm:flex-none rounded-full colorful-gradient h-11 shadow-xl font-black text-[9px] uppercase px-8">
+            <Plus className="mr-2 h-4 w-4" /> Enroll Manual
           </Button>
         </div>
-      </div>
-
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 px-1">
-        {[
-          { label: "Population", value: "2,480", sub: "Global Node", icon: UserPlus, color: "text-primary" },
-          { label: "Boarders", value: students?.filter(s => s.type === "Boarder").length || "0", sub: "Hostel Hub", icon: Home, color: "text-accent" },
-          { label: "Day Students", value: students?.filter(s => s.type === "Day").length || "0", sub: "Fleet Hub", icon: Bus, color: "text-orange-600" },
-          { label: "Candidates", value: students?.length || "0", sub: "NECTA Pool", icon: ClipboardCheck, color: "text-green-600" },
-        ].map((stat) => (
-          <Card key={stat.label} className="border-none shadow-md bg-white/60 backdrop-blur-md rounded-[1.5rem] overflow-hidden group">
-             <CardContent className="p-5 relative">
-                <div className="absolute -right-4 -top-4 opacity-5 group-hover:rotate-12 transition-transform">
-                  <stat.icon className="h-16 w-16" />
-                </div>
-                <p className="text-[8px] uppercase font-black text-muted-foreground tracking-widest">{stat.label}</p>
-                <p className={cn("text-xl font-black mt-1 truncate", stat.color)}>{stat.value}</p>
-                <p className="text-[8px] text-muted-foreground font-black uppercase mt-1 truncate">{stat.sub}</p>
-             </CardContent>
-          </Card>
-        ))}
       </div>
 
       <Card className="border-none shadow-2xl overflow-hidden bg-white/60 rounded-[2.5rem]">
@@ -201,24 +222,24 @@ export default function StudentsPage() {
             />
           </div>
           <Button variant="outline" size="sm" className="h-12 rounded-full border-none bg-white shadow-sm font-black text-[9px] uppercase px-6">
-            <Filter className="h-4 w-4 mr-2" /> Filters
+            <Filter className="h-4 w-4 mr-2" /> Tier Filters
           </Button>
         </CardHeader>
         <CardContent className="p-0 overflow-x-auto">
           {isLoading ? (
             <div className="p-20 text-center flex flex-col items-center gap-4">
               <Loader2 className="animate-spin h-10 w-10 text-primary" />
-              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Synchronizing Sovereign Ledger...</p>
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Synchronizing Ledger...</p>
             </div>
           ) : (
             <Table className="min-w-[800px]">
               <TableHeader className="bg-muted/30">
                 <TableRow className="border-none h-14">
-                  <TableHead className="pl-8 text-[9px] font-black uppercase">Student Payload</TableHead>
+                  <TableHead className="pl-8 text-[9px] font-black uppercase">Student Node</TableHead>
                   <TableHead className="text-[9px] font-black uppercase">Academic Tier</TableHead>
                   <TableHead className="text-[9px] font-black uppercase">Logistic Hub</TableHead>
                   <TableHead className="text-[9px] font-black uppercase text-center">Conduct</TableHead>
-                  <TableHead className="text-right pr-8 text-[9px] font-black uppercase">Hub</TableHead>
+                  <TableHead className="text-right pr-8 text-[9px] font-black uppercase">Control</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -226,11 +247,12 @@ export default function StudentsPage() {
                   <TableRow key={student.id} className="group hover:bg-primary/[0.02] border-b last:border-none transition-colors">
                     <TableCell className="pl-8 py-5">
                       <div className="flex items-center gap-4">
-                        <Avatar className="h-10 w-10 rounded-2xl shadow-lg shrink-0 border-2 border-white transition-transform group-hover:scale-110">
+                        <Avatar className="h-12 w-12 rounded-2xl shadow-lg shrink-0 border-2 border-white transition-transform group-hover:scale-110 overflow-hidden">
+                          <AvatarImage src={student.photo} className="object-cover" />
                           <AvatarFallback className="font-black text-primary bg-primary/5">{student.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                          <span className="font-black text-sm text-foreground/80 group-hover:text-primary transition-colors uppercase">{student.name}</span>
+                          <span className="font-black text-sm text-foreground/80 group-hover:text-primary transition-colors uppercase truncate max-w-[200px]">{student.name}</span>
                           <span className="text-[9px] text-muted-foreground font-mono font-black">{student.id}</span>
                         </div>
                       </div>
@@ -250,8 +272,8 @@ export default function StudentsPage() {
                     </TableCell>
                     <TableCell className="text-center">
                       <span className={cn(
-                        "font-black text-[10px] px-3 py-1 rounded-full",
-                        (student.conductPoints || 100) >= 90 ? "text-green-600 bg-green-50" : "text-orange-600 bg-orange-50"
+                        "font-black text-[10px] px-3 py-1 rounded-full shadow-sm",
+                        (student.conductPoints || 100) >= 90 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"
                       )}>
                         {student.conductPoints || 100} PTS
                       </span>
@@ -269,9 +291,16 @@ export default function StudentsPage() {
                               <Zap className="h-48 w-48" />
                             </div>
                             <SheetHeader className="text-left flex-row items-center gap-8 relative z-10">
-                              <Avatar className="h-24 w-24 rounded-[2rem] shadow-2xl border-4 border-white">
-                                <AvatarFallback className="text-3xl font-black text-primary bg-white">{selectedStudent?.name?.charAt(0)}</AvatarFallback>
-                              </Avatar>
+                              <div className="relative group">
+                                <Avatar className="h-28 w-24 rounded-[2rem] shadow-2xl border-4 border-white overflow-hidden">
+                                  <AvatarImage src={selectedStudent?.photo} className="object-cover" />
+                                  <AvatarFallback className="text-3xl font-black text-primary bg-white">{selectedStudent?.name?.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer rounded-[2rem] transition-opacity">
+                                  <Upload className="h-6 w-6 text-white" />
+                                  <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+                                </label>
+                              </div>
                               <div className="space-y-3">
                                 <Input 
                                   value={selectedStudent?.name || ""} 

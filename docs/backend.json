@@ -9,12 +9,19 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
+        "systemName": { "type": "string" },
         "address": { "type": "string" },
         "contactEmail": { "type": "string", "format": "email" },
         "contactPhone": { "type": "string" },
         "centerId": { "type": "string" },
         "region": { "type": "string" },
-        "district": { "type": "string" }
+        "district": { "type": "string" },
+        "logo": { "type": "string", "description": "Base64 encoded logo image" },
+        "tiers": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "Active academic levels (e.g., Standard 7, Form 2)" 
+        }
       },
       "required": ["id", "name"]
     },
@@ -34,6 +41,7 @@
         "conductPoints": { "type": "number" },
         "hostel": { "type": "string" },
         "route": { "type": "string" },
+        "photo": { "type": "string", "description": "Student profile photo URL/Base64" },
         "attendanceStatus": { "type": "string", "enum": ["Present", "Absent", "Late"] },
         "lastAttendanceUpdate": { "type": "string" }
       },
