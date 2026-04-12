@@ -26,7 +26,9 @@ import {
   ClipboardList,
   CheckCircle2,
   AlertCircle,
-  X
+  X,
+  BookOpen,
+  ArrowRight
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
@@ -290,7 +292,108 @@ export default function AcademicsPage() {
         </TabsContent>
 
         <TabsContent value="syllabus" className="space-y-6">
-          {/* Syllabus Monitoring content remained unchanged */}
+          <div className="grid gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-4 space-y-6">
+              <Card className="border-none shadow-xl bg-primary text-white rounded-[2.5rem] p-8 overflow-hidden relative group">
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                  <Target className="h-32 w-32" />
+                </div>
+                <div className="relative z-10 space-y-6">
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/60">NECTA Readiness</p>
+                    <h3 className="text-3xl font-black">{readiness.overall}%</h3>
+                  </div>
+                  <Badge className={cn(
+                    "font-black text-[9px] px-4 py-1 rounded-full uppercase border-none shadow-lg",
+                    readiness.status === 'OPTIMAL' ? "bg-green-400 text-green-900" : "bg-orange-400 text-orange-900"
+                  )}>
+                    {readiness.status} NODE
+                  </Badge>
+                  <p className="text-xs font-medium leading-relaxed text-white/70">
+                    Syllabus velocity is currently aligned with the 2026 examination season milestones.
+                  </p>
+                  <Button onClick={initializeDefaultSyllabus} className="w-full bg-white text-primary hover:bg-white/90 font-black h-12 rounded-xl text-[10px] uppercase shadow-2xl">
+                    Reset Curriculum Hub
+                  </Button>
+                </div>
+              </Card>
+
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-white p-8">
+                <h4 className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-6 flex items-center gap-2">
+                  <History className="h-4 w-4" /> RECENT AUDITS
+                </h4>
+                <div className="space-y-6">
+                  {syllabus.slice(0, 3).map((s) => (
+                    <div key={s.id} className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary shadow-inner shrink-0">
+                        <BookOpen className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-black uppercase text-foreground/80 truncate">{s.subject}</p>
+                        <p className="text-[9px] font-bold text-muted-foreground uppercase">{s.percentageCovered}% COVERED</p>
+                      </div>
+                      <Zap className="h-3 w-3 text-accent" />
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+
+            <Card className="lg:col-span-8 border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white/60 backdrop-blur-md">
+              <CardHeader className="bg-muted/30 p-8 border-b">
+                <CardTitle className="text-xl font-black uppercase">Alignment Ledger</CardTitle>
+                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-primary/60">TIE Curriculum Synchronization</CardDescription>
+              </CardHeader>
+              <CardContent className="p-0 overflow-x-auto">
+                <Table className="min-w-[600px]">
+                  <TableHeader className="bg-muted/10">
+                    <TableRow className="border-none h-14">
+                      <TableHead className="pl-10 text-[9px] font-black uppercase">Subject Node</TableHead>
+                      <TableHead className="text-[9px] font-black uppercase text-center">Velocity</TableHead>
+                      <TableHead className="text-right pr-10 text-[9px] font-black uppercase">Control</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {syllabusLoading ? (
+                      <TableRow><TableCell colSpan={3} className="h-32 text-center"><Loader2 className="animate-spin inline" /></TableCell></TableRow>
+                    ) : syllabus.map((item) => (
+                      <TableRow key={item.id} className="group border-b last:border-none hover:bg-primary/[0.02]">
+                        <TableCell className="pl-10 py-6">
+                          <div className="flex flex-col">
+                            <span className="font-black text-sm text-foreground/80 uppercase">{item.subject}</span>
+                            <span className="text-[9px] text-muted-foreground font-black uppercase">{item.class} • {item.topics?.length || 0} TOPICS</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="w-[300px]">
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-[9px] font-black uppercase">
+                              <span className="text-primary">{item.percentageCovered}%</span>
+                              <span className="text-muted-foreground">TARGET: 100%</span>
+                            </div>
+                            <Slider 
+                              defaultValue={[item.percentageCovered]} 
+                              max={100} 
+                              step={1} 
+                              className="py-4"
+                              onValueCommit={([val]) => {
+                                updateCoverage(item.id, val)
+                                toast({ title: "Velocity Updated", description: `${item.subject} node synced.` })
+                              }}
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right pr-10">
+                          <Button variant="ghost" size="sm" className="font-black text-primary text-[10px] uppercase rounded-full">
+                            Inspect Topics <ArrowRight className="ml-2 h-3 w-3" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 
