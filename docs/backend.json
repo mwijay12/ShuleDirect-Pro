@@ -46,6 +46,23 @@
         "lastAttendanceUpdate": { "type": "string" }
       },
       "required": ["id", "name", "class"]
+    },
+    "PettyCashExpense": {
+      "title": "PettyCashExpense",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "department": { "type": "string", "enum": ["Science Lab", "Sports", "Library", "Maintenance", "Transport", "Admin"] },
+        "category": { "type": "string", "enum": ["Equipment", "Supplies", "Repairs", "Utilities", "Other"] },
+        "description": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
+        "recordedBy": { "type": "string" },
+        "approvedBy": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "schoolId": { "type": "string" }
+      },
+      "required": ["department", "category", "amount", "description"]
     }
   },
   "auth": {
@@ -67,6 +84,14 @@
           "entityName": "Student",
           "schema": { "$ref": "#/backend/entities/Student" },
           "description": "Unified student registry."
+        }
+      },
+      {
+        "path": "/schools/{schoolId}/petty_cash/{expenseId}",
+        "definition": {
+          "entityName": "PettyCashExpense",
+          "schema": { "$ref": "#/backend/entities/PettyCashExpense" },
+          "description": "Departmental operational expenses ledger."
         }
       },
       {

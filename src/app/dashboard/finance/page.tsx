@@ -8,21 +8,20 @@ import { Button } from "@/components/ui/button"
 import { 
   Banknote, 
   Receipt, 
-  Smartphone, 
-  ArrowUpRight, 
   Search,
-  Wallet,
   Plus,
-  ArrowDownCircle,
   FileSpreadsheet,
   Loader2,
   Filter,
-  ChevronRight,
-  Printer,
-  Zap,
-  Activity,
   SmartphoneNfc,
-  CheckCircle
+  CheckCircle,
+  Activity,
+  Zap,
+  Wallet,
+  Clock,
+  ArrowUpRight,
+  ShieldCheck,
+  AlertCircle
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -43,19 +42,30 @@ import { cn } from "@/lib/utils"
 import { exportToExcel } from "@/lib/export-utils"
 import { processPaymentTransaction } from "@/lib/finance-engine"
 import { useInstitutionalReconciliation } from "@/hooks/use-finance"
+import { usePettyCash } from "@/hooks/use-petty-cash"
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy } from "firebase/firestore"
+import { Progress } from "@/components/ui/progress"
+
+const BUDGETS = {
+  "Science Lab": 500000,
+  "Sports": 300000,
+  "Admin": 1000000,
+  "Maintenance": 400000,
+  "Transport": 600000
+}
 
 export default function FinancePage() {
   const { toast } = useToast()
   const db = useFirestore()
   const { user } = useUser()
   const { collected, outstanding, target, collectionRate, isLoading } = useInstitutionalReconciliation()
+  const { expenses, addExpense, updateStatus, stats, isLoading: pettyLoading } = usePettyCash()
   
   const [isProcessing, setIsProcessing] = useState(false)
-  const [isExporting, setIsExporting] = useState(false)
+  const [isAddingExpense, setIsAddingExpense] = useState(false)
 
-  // Live Transaction Stream
+  // Live Student Stream
   const studentsQuery = useMemoFirebase(() => query(collection(db, "schools", "school-001", "students"), orderBy("name", "asc")), [db])
   const { data: students } = useCollection(studentsQuery)
 
@@ -83,12 +93,40 @@ export default function FinancePage() {
     }
   }
 
+  const handleNewExpense = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const amount = parseFloat(formData.get("amount") as string)
+    const dept = formData.get("department") as string
+
+    // Budget Check Node
+    const currentSpent = stats.deptSpending[dept] || 0
+    if (currentSpent + amount > (BUDGETS[dept as keyof typeof BUDGETS] || 0)) {
+      toast({ variant: "destructive", title: "Budget Limit Exceeded", description: `This expense exceeds the ${dept} allocation.` })
+      return
+    }
+
+    try {
+      await addExpense({
+        department: dept,
+        category: formData.get("category"),
+        description: formData.get("description"),
+        amount: amount,
+        recordedBy: user?.email || "Staff"
+      })
+      setIsAddingExpense(false)
+      toast({ title: "Expense Node Saved", description: amount < 50000 ? "Auto-approved via Threshold Rules." : "Queued for departmental approval." })
+    } catch (err) {
+      toast({ variant: "destructive", title: "Persistence Error", description: "Could not save expense node." })
+    }
+  }
+
   const formatMoney = (val: number) => {
     return new Intl.NumberFormat('en-TZ', { maximumFractionDigits: 0 }).format(val)
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-32 px-1">
+    <div className="space-y-8 max-w-full mx-auto pb-32 px-1">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
         <div className="space-y-4">
           <Badge variant="outline" className="w-fit border-primary/20 bg-primary/5 text-primary px-4 py-1 h-6 text-[9px] font-black tracking-widest uppercase rounded-full shadow-sm">
@@ -116,7 +154,7 @@ export default function FinancePage() {
         {[
           { title: "Total Revenue", value: formatMoney(collected), icon: Banknote, color: "text-green-600" },
           { title: "Outstanding Node", value: formatMoney(outstanding), icon: ArrowUpRight, color: "text-destructive" },
-          { title: "Projected Target", value: formatMoney(target), icon: Receipt, color: "text-primary" },
+          { title: "Petty Cash Float", value: formatMoney(stats.totalApproved), icon: Wallet, color: "text-primary" },
           { title: "Verified Nodes", value: students?.length || "0", icon: CheckCircle, color: "text-orange-600" },
         ].map((stat) => (
           <Card key={stat.title} className="border-none shadow-xl rounded-[2rem] bg-white/60 backdrop-blur-md overflow-hidden group hover:-translate-y-1 transition-all">
@@ -134,6 +172,7 @@ export default function FinancePage() {
       <Tabs defaultValue="reconciliation" className="space-y-8">
         <TabsList className="bg-muted/40 p-1 rounded-2xl h-12 flex w-full sm:w-fit overflow-x-auto shadow-inner">
           <TabsTrigger value="reconciliation" className="rounded-xl font-black px-8 text-[10px] uppercase tracking-widest">Global Reconciliation</TabsTrigger>
+          <TabsTrigger value="petty-cash" className="rounded-xl font-black px-8 text-[10px] uppercase tracking-widest">Petty Cash Hub</TabsTrigger>
           <TabsTrigger value="invoice" className="rounded-xl font-black px-8 text-[10px] uppercase tracking-widest">Payment Portal</TabsTrigger>
         </TabsList>
 
@@ -197,6 +236,117 @@ export default function FinancePage() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="petty-cash" className="space-y-8">
+          <div className="grid gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-4 space-y-6">
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-white p-8">
+                <CardHeader className="p-0 mb-6">
+                  <CardTitle className="text-xl font-black uppercase">Log Department Expense</CardTitle>
+                  <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-primary/60">Atomic operational entry</CardDescription>
+                </CardHeader>
+                <form onSubmit={handleNewExpense} className="space-y-5">
+                  <div className="space-y-2">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Department</Label>
+                    <Select name="department" required>
+                      <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-bold">
+                        <SelectValue placeholder="Select Dept..." />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {Object.keys(BUDGETS).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Description</Label>
+                    <Input name="description" placeholder="e.g. Science Lab Chemicals" required className="h-12 rounded-xl bg-muted/20 border-none font-bold px-5" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Amount (TZS)</Label>
+                    <Input name="amount" type="number" placeholder="50,000" required className="h-12 rounded-xl bg-muted/20 border-none font-black text-lg px-5 shadow-inner" />
+                  </div>
+                  <Button type="submit" className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-xl mt-2">
+                    Initialize Expense Node
+                  </Button>
+                </form>
+              </Card>
+
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-primary text-white p-8">
+                <h3 className="text-lg font-black uppercase mb-6 flex items-center gap-2">
+                  <Activity className="h-5 w-5" /> Budget Monitor
+                </h3>
+                <div className="space-y-6">
+                  {Object.entries(BUDGETS).map(([dept, budget]) => {
+                    const spent = stats.deptSpending[dept] || 0
+                    const perc = (spent / budget) * 100
+                    return (
+                      <div key={dept} className="space-y-2">
+                        <div className="flex justify-between items-center text-[9px] font-black uppercase">
+                          <span>{dept}</span>
+                          <span className={cn(perc > 80 ? "text-orange-400" : "text-white/60")}>{formatMoney(spent)} / {formatMoney(budget)}</span>
+                        </div>
+                        <Progress value={perc} className={cn("h-1.5", perc > 80 ? "bg-orange-900" : "bg-white/10")} />
+                      </div>
+                    )
+                  })}
+                </div>
+              </Card>
+            </div>
+
+            <Card className="lg:col-span-8 border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-card/60 backdrop-blur-md">
+              <CardHeader className="bg-muted/30 p-8 border-b flex flex-row justify-between items-center">
+                <CardTitle className="text-xl font-black uppercase">Departmental Ledger</CardTitle>
+                <Badge className="bg-primary/10 text-primary border-none px-4 py-1 rounded-full font-black text-[9px] uppercase tracking-widest">
+                  {expenses.length} Sovereign Nodes
+                </Badge>
+              </CardHeader>
+              <CardContent className="p-0 overflow-x-auto">
+                <Table className="min-w-[600px]">
+                  <TableHeader className="bg-muted/10">
+                    <TableRow className="border-none h-14">
+                      <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Expense Node</TableHead>
+                      <TableHead className="text-[9px] font-black uppercase tracking-widest text-center">Amount</TableHead>
+                      <TableHead className="text-[9px] font-black uppercase tracking-widest text-center">Status</TableHead>
+                      <TableHead className="text-right pr-8 text-[9px] font-black uppercase tracking-widest">Control</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pettyLoading ? (
+                      <TableRow><TableCell colSpan={4} className="h-32 text-center"><Loader2 className="animate-spin inline mr-2" /> Syncing Node...</TableCell></TableRow>
+                    ) : expenses.map((ex) => (
+                      <TableRow key={ex.id} className="group border-b last:border-none hover:bg-primary/[0.02]">
+                        <TableCell className="pl-8 py-5">
+                          <div className="flex flex-col">
+                            <span className="font-black text-sm text-foreground/80 uppercase">{ex.description}</span>
+                            <span className="text-[9px] text-muted-foreground font-black uppercase">{ex.department} • {ex.recordedBy}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center font-bold text-xs">TZS {formatMoney(ex.amount)}</TableCell>
+                        <TableCell className="text-center">
+                          <Badge className={cn(
+                            "font-black text-[8px] px-3 py-0.5 rounded-full uppercase",
+                            ex.status === 'Approved' ? 'bg-green-100 text-green-700' : 
+                            ex.status === 'Rejected' ? 'bg-destructive/10 text-destructive' : 'bg-orange-50 text-orange-600'
+                          )}>
+                            {ex.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right pr-8">
+                          {ex.status === 'Pending' && user?.email && (
+                            <div className="flex justify-end gap-2">
+                              <Button variant="ghost" size="sm" className="h-8 rounded-full text-[8px] font-black text-green-600 uppercase" onClick={() => updateStatus(ex.id, 'Approved', user.email!)}>Approve</Button>
+                              <Button variant="ghost" size="sm" className="h-8 rounded-full text-[8px] font-black text-destructive uppercase" onClick={() => updateStatus(ex.id, 'Rejected', user.email!)}>Reject</Button>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="invoice" className="space-y-6">

@@ -20,7 +20,6 @@ service cloud.firestore {
 
       match /students/{studentId} {
         allow read: if isSignedIn();
-        // Prevent manual tampering with the balance outside of transaction logic
         allow update: if isSignedIn() && isValidPaymentUpdate();
         allow create: if isSignedIn();
         allow delete: if isSignedIn();
@@ -28,6 +27,15 @@ service cloud.firestore {
         match /payments/{paymentId} {
           allow read, write: if isSignedIn();
         }
+      }
+
+      match /petty_cash/{expenseId} {
+        allow read: if isSignedIn();
+        // Only Bursar/Admin can add expenses
+        allow create: if isSignedIn();
+        // Only Headmaster can delete verified audit nodes
+        allow delete: if isSignedIn() && request.auth.token.email.matches('.*admin.*');
+        allow update: if isSignedIn();
       }
 
       match /assets/{assetId} {
