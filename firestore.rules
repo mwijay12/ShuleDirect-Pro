@@ -7,11 +7,27 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Financial Integrity Helper
+    function isValidPaymentUpdate() {
+      let student = resource.data;
+      let newStudent = request.resource.data;
+      // Balance MUST equal (Expected + Arrears) - TotalPaid
+      return newStudent.balance == (newStudent.totalFeesExpected + newStudent.arrears) - newStudent.totalPaid;
+    }
+
     match /schools/{schoolId} {
       allow read, write: if isSignedIn();
 
       match /students/{studentId} {
-        allow read, write: if isSignedIn();
+        allow read: if isSignedIn();
+        // Prevent manual tampering with the balance outside of transaction logic
+        allow update: if isSignedIn() && isValidPaymentUpdate();
+        allow create: if isSignedIn();
+        allow delete: if isSignedIn();
+
+        match /payments/{paymentId} {
+          allow read, write: if isSignedIn();
+        }
       }
 
       match /assets/{assetId} {
