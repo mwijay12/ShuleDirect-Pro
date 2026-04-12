@@ -1,6 +1,7 @@
 
 /**
  * Real n8n Webhook Integration — Mwijay Edition
+ * This utility dispatches institutional data nodes to your automation server.
  */
 export async function triggerN8nWebhook(webhookPath: string, data: any) {
   const baseUrl = localStorage.getItem("shule_n8n_url");

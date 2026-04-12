@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -15,7 +16,8 @@ import {
   Layout,
   Palette,
   Sparkles,
-  Zap
+  Zap,
+  Network
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -54,7 +56,8 @@ export default function SettingsPage() {
     contactEmail: "",
     tiers: [] as string[],
     logo: "",
-    demoMode: false
+    demoMode: false,
+    n8nUrl: ""
   })
 
   useEffect(() => {
@@ -70,13 +73,15 @@ export default function SettingsPage() {
         contactEmail: identity.contactEmail || "",
         tiers: identity.tiers || ["Standard 7", "Form 2"],
         logo: identity.logo || "",
-        demoMode: identity.demoMode || false
+        demoMode: identity.demoMode || false,
+        n8nUrl: localStorage.getItem("shule_n8n_url") || ""
       })
     }
   }, [identity])
 
   const handleSave = () => {
     setDocumentNonBlocking(identityRef, formState, { merge: true })
+    localStorage.setItem("shule_n8n_url", formState.n8nUrl)
     toast({ 
       title: formState.demoMode ? "Demo Mode Activated" : "Official Mode Initialized", 
       description: "Global institutional configurations updated permanently." 
@@ -153,6 +158,7 @@ export default function SettingsPage() {
         <TabsList className="bg-muted/40 p-1 rounded-2xl w-full flex h-auto gap-1 border border-muted/50 px-1 overflow-x-auto shadow-inner">
           <TabsTrigger value="identity" className="rounded-xl font-black text-[9px] flex-1 py-3 uppercase tracking-widest">Identity Hub</TabsTrigger>
           <TabsTrigger value="academic" className="rounded-xl font-black text-[9px] flex-1 py-3 uppercase tracking-widest">Tier Config</TabsTrigger>
+          <TabsTrigger value="automation" className="rounded-xl font-black text-[9px] flex-1 py-3 uppercase tracking-widest">Automation</TabsTrigger>
           <TabsTrigger value="branding" className="rounded-xl font-black text-[9px] flex-1 py-3 uppercase tracking-widest">Branding</TabsTrigger>
         </TabsList>
 
@@ -201,24 +207,6 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Physical Address Node</Label>
-                  <Input 
-                    value={formState.address} 
-                    onChange={(e) => setFormState({...formState, address: e.target.value})} 
-                    className="rounded-xl h-12 bg-muted/20 border-none font-black shadow-inner px-5" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Primary Contact Node</Label>
-                  <Input 
-                    value={formState.contactPhone} 
-                    onChange={(e) => setFormState({...formState, contactPhone: e.target.value})} 
-                    className="rounded-xl h-12 bg-muted/20 border-none font-black shadow-inner px-5" 
-                  />
-                </div>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -250,6 +238,31 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="automation" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+          <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white/60">
+            <CardHeader className="bg-accent/5 border-b p-8">
+              <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-3">
+                <Network className="h-5 w-5 text-accent" /> n8n Orchestration Node
+              </CardTitle>
+              <CardDescription className="text-[10px] font-bold uppercase">Configure webhooks for Evolution API & WhatsApp automation</CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 space-y-6">
+              <div className="space-y-2">
+                <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">n8n Webhook Base URL</Label>
+                <Input 
+                  value={formState.n8nUrl} 
+                  onChange={(e) => setFormState({...formState, n8nUrl: e.target.value})} 
+                  placeholder="https://n8n.your-domain.com/webhook/..."
+                  className="rounded-xl h-12 bg-muted/20 border-none font-mono text-xs shadow-inner px-5" 
+                />
+                <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-widest mt-2 px-1">
+                  Institutional alerts (Attendance, Finance, Transport) are dispatched to this node.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="branding" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
           <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white/60">
             <CardHeader className="bg-accent/5 border-b p-8">
@@ -276,26 +289,7 @@ export default function SettingsPage() {
                       Upload a high-resolution seal. This will be used on all official transcripts, letters, and the dashboard loader.
                     </p>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" className="rounded-full h-10 px-6 font-black text-[9px] uppercase border-primary/20 text-primary">
-                      Verify Resolution
-                    </Button>
-                    <Button variant="ghost" className="rounded-full h-10 px-6 font-black text-[9px] uppercase text-destructive" onClick={() => setFormState({...formState, logo: ""})}>
-                      Clear Node
-                    </Button>
-                  </div>
                 </div>
-              </div>
-
-              <div className="p-8 rounded-[2rem] bg-primary/5 border-2 border-dashed border-primary/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <Palette className="h-6 w-6 text-primary" />
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest">Interface Identity Hub</p>
-                    <p className="text-xs font-bold text-primary/60">System inherits sovereign blue and violet by default.</p>
-                  </div>
-                </div>
-                <Badge variant="outline" className="bg-white font-black text-[8px] px-6 py-1.5 rounded-full uppercase tracking-[0.3em] shadow-sm border-primary/10">Standard 2026</Badge>
               </div>
             </CardContent>
           </Card>

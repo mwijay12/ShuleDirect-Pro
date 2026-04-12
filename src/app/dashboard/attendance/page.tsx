@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils"
 import { useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, query, orderBy, doc } from "firebase/firestore"
 import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+import { triggerN8nWebhook } from "@/lib/n8n"
 
 export default function AttendancePage() {
   const { toast } = useToast()
@@ -59,6 +60,11 @@ export default function AttendancePage() {
     })
     
     if (newStatus === "Absent") {
+      triggerN8nWebhook("attendance-update", { 
+        studentId, 
+        status: "Absent", 
+        parentContact: students?.find(s => s.id === studentId)?.contact 
+      })
       toast({
         title: "Absence Logged",
         description: "Parent notification queued via Beem Gateway.",
