@@ -7,12 +7,18 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Financial Integrity Helper
-    function isValidPaymentUpdate() {
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email.matches('.*admin.*');
+    }
+
+    // Financial Integrity Helper: Prevent manual tampering with balances
+    function isValidStudentUpdate() {
       let student = resource.data;
       let newStudent = request.resource.data;
-      // Balance MUST equal (Expected + Arrears) - TotalPaid
-      return newStudent.balance == (newStudent.totalFeesExpected + newStudent.arrears) - newStudent.totalPaid;
+      
+      // If balance or totalPaid is changing, ensure it's not a direct write unless by admin
+      // In a strict forensic mode, only the Finance Engine (Transactions) should change these.
+      return (newStudent.balance == student.balance && newStudent.totalPaid == student.totalPaid) || isAdmin();
     }
 
     match /schools/{schoolId} {
@@ -20,30 +26,24 @@ service cloud.firestore {
 
       match /students/{studentId} {
         allow read: if isSignedIn();
-        allow update: if isSignedIn() && isValidPaymentUpdate();
+        allow update: if isSignedIn() && isValidStudentUpdate();
         allow create: if isSignedIn();
-        allow delete: if isSignedIn();
+        allow delete: if isAdmin();
+      }
 
-        match /payments/{paymentId} {
-          allow read, write: if isSignedIn();
-        }
+      match /transactions/{transactionId} {
+        allow read: if isSignedIn();
+        // Transactions are immutable once verified
+        allow create: if isSignedIn();
+        allow update: if isSignedIn() && resource.data.status != 'Verified' || isAdmin();
+        allow delete: if isAdmin();
       }
 
       match /petty_cash/{expenseId} {
         allow read: if isSignedIn();
-        // Only Bursar/Admin can add expenses
         allow create: if isSignedIn();
-        // Only Headmaster can delete verified audit nodes
-        allow delete: if isSignedIn() && request.auth.token.email.matches('.*admin.*');
         allow update: if isSignedIn();
-      }
-
-      match /assets/{assetId} {
-        allow read, write: if isSignedIn();
-      }
-
-      match /hostels/{hostelId} {
-        allow read, write: if isSignedIn();
+        allow delete: if isAdmin();
       }
 
       match /config/{configId} {

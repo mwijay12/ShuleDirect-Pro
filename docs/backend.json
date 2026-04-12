@@ -44,9 +44,43 @@
         "photo": { "type": "string", "description": "Student profile photo URL/Base64" },
         "attendanceStatus": { "type": "string", "enum": ["Present", "Absent", "Late"] },
         "lastAttendanceUpdate": { "type": "string" },
-        "performance": { "type": "string" }
+        "performance": { "type": "string" },
+        "totalFeesExpected": { "type": "number" },
+        "totalPaid": { "type": "number" },
+        "balance": { "type": "number" },
+        "arrears": { "type": "number" }
       },
       "required": ["id", "name", "class"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "type": "object",
+      "description": "Forensic-grade financial transaction node.",
+      "properties": {
+        "id": { "type": "string" },
+        "controlNumber": { "type": "string" },
+        "transactionReference": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string", "default": "TZS" },
+        "feeType": { "type": "string", "enum": ["Tuition", "Transport", "Boarding", "Exam Fee"] },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "class": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Verified", "Failed", "Disputed", "Refunded"] },
+        "paymentMethod": { "type": "string", "enum": ["M-Pesa", "Tigo Pesa", "Airtel Money", "Bank Transfer", "Cash"] },
+        "bankReference": { "type": "string" },
+        "reconciled": { "type": "boolean" },
+        "reconciledBy": { "type": "string" },
+        "reconciledAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "recordedBy": { "type": "string" },
+        "recordedFromIp": { "type": "string" },
+        "deviceInfo": { "type": "string" },
+        "disputed": { "type": "boolean" },
+        "disputeReason": { "type": "string" },
+        "receiptUrl": { "type": "string" }
+      },
+      "required": ["controlNumber", "amount", "studentId", "status"]
     },
     "PettyCashExpense": {
       "title": "PettyCashExpense",
@@ -64,33 +98,6 @@
         "schoolId": { "type": "string" }
       },
       "required": ["department", "category", "amount", "description"]
-    },
-    "SyllabusTracking": {
-      "title": "SyllabusTracking",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "subject": { "type": "string" },
-        "class": { "type": "string" },
-        "teacherId": { "type": "string" },
-        "teacherName": { "type": "string" },
-        "percentageCovered": { "type": "number" },
-        "topics": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": { "type": "string" },
-              "nectaCode": { "type": "string" },
-              "status": { "type": "string", "enum": ["Not Started", "In Progress", "Completed", "Revised"] },
-              "hoursTaught": { "type": "number" }
-            }
-          }
-        },
-        "lastUpdated": { "type": "string", "format": "date-time" },
-        "schoolId": { "type": "string" }
-      },
-      "required": ["subject", "class", "percentageCovered"]
     }
   },
   "auth": {
@@ -115,27 +122,19 @@
         }
       },
       {
+        "path": "/schools/{schoolId}/transactions/{transactionId}",
+        "definition": {
+          "entityName": "Transaction",
+          "schema": { "$ref": "#/backend/entities/Transaction" },
+          "description": "Global institutional financial ledger."
+        }
+      },
+      {
         "path": "/schools/{schoolId}/petty_cash/{expenseId}",
         "definition": {
           "entityName": "PettyCashExpense",
           "schema": { "$ref": "#/backend/entities/PettyCashExpense" },
           "description": "Departmental operational expenses ledger."
-        }
-      },
-      {
-        "path": "/schools/{schoolId}/syllabus_tracking/{trackingId}",
-        "definition": {
-          "entityName": "SyllabusTracking",
-          "schema": { "$ref": "#/backend/entities/SyllabusTracking" },
-          "description": "Curriculum alignment and coverage tracking node."
-        }
-      },
-      {
-        "path": "/schools/{schoolId}/config/{configId}",
-        "definition": {
-          "entityName": "SystemConfig",
-          "schema": { "type": "object" },
-          "description": "Institutional identity and utility configs."
         }
       }
     ]
