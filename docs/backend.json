@@ -43,7 +43,8 @@
         "route": { "type": "string" },
         "photo": { "type": "string", "description": "Student profile photo URL/Base64" },
         "attendanceStatus": { "type": "string", "enum": ["Present", "Absent", "Late"] },
-        "lastAttendanceUpdate": { "type": "string" }
+        "lastAttendanceUpdate": { "type": "string" },
+        "performance": { "type": "string" }
       },
       "required": ["id", "name", "class"]
     },
@@ -63,6 +64,33 @@
         "schoolId": { "type": "string" }
       },
       "required": ["department", "category", "amount", "description"]
+    },
+    "SyllabusTracking": {
+      "title": "SyllabusTracking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "subject": { "type": "string" },
+        "class": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "percentageCovered": { "type": "number" },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "nectaCode": { "type": "string" },
+              "status": { "type": "string", "enum": ["Not Started", "In Progress", "Completed", "Revised"] },
+              "hoursTaught": { "type": "number" }
+            }
+          }
+        },
+        "lastUpdated": { "type": "string", "format": "date-time" },
+        "schoolId": { "type": "string" }
+      },
+      "required": ["subject", "class", "percentageCovered"]
     }
   },
   "auth": {
@@ -92,6 +120,14 @@
           "entityName": "PettyCashExpense",
           "schema": { "$ref": "#/backend/entities/PettyCashExpense" },
           "description": "Departmental operational expenses ledger."
+        }
+      },
+      {
+        "path": "/schools/{schoolId}/syllabus_tracking/{trackingId}",
+        "definition": {
+          "entityName": "SyllabusTracking",
+          "schema": { "$ref": "#/backend/entities/SyllabusTracking" },
+          "description": "Curriculum alignment and coverage tracking node."
         }
       },
       {

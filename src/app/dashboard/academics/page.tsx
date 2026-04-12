@@ -19,7 +19,11 @@ import {
   Database,
   GraduationCap,
   Save,
-  ChevronRight
+  ChevronRight,
+  Zap,
+  History,
+  AlertTriangle,
+  ClipboardList
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
@@ -32,29 +36,23 @@ import { Label } from "@/components/ui/label"
 import { useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, query, orderBy, doc } from "firebase/firestore"
 import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
-
-const initialSyllabus = [
-  { id: 1, subject: "Mathematics", level: "O-Level / Primary", covered: 78, status: "On Track" },
-  { id: 2, subject: "Science / Physics", level: "O-Level / Primary", covered: 62, status: "Delayed" },
-  { id: 3, subject: "Kiswahili", level: "National Core", covered: 94, status: "Peak" },
-  { id: 4, subject: "English", level: "National Core", covered: 78, status: "On Track" },
-]
+import { useSyllabusTracking, SyllabusTopic } from "@/hooks/use-syllabus"
 
 export default function AcademicsPage() {
   const { toast } = useToast()
   const db = useFirestore()
-  const [syllabus, setSyllabus] = useState(initialSyllabus)
   const [searchTerm, setSearchTerm] = useState("")
   const [isSyncingPrems, setIsSyncingPrems] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<any>(null)
   const [gradingStudent, setGradingStudent] = useState<any>(null)
 
-  // Pull real students from Firestore for the ledger
+  // Real Firestore Persistence Nodes
+  const { syllabus, isLoading: syllabusLoading, updateCoverage, readiness, initializeDefaultSyllabus } = useSyllabusTracking()
+  
   const studentsQuery = useMemoFirebase(() => query(collection(db, "schools", "school-001", "students"), orderBy("name", "asc")), [db])
   const { data: students, isLoading: studentsLoading } = useCollection(studentsQuery)
 
-  // Pull school identity for Center ID etc
   const identityRef = useMemoFirebase(() => doc(db, "schools", "school-001", "config", "identity"), [db])
   const { data: identity } = useDoc(identityRef)
 
@@ -106,11 +104,6 @@ export default function AcademicsPage() {
     })
     setGradingStudent(null)
     toast({ title: "Grades Synchronized", description: `${gradingStudent.name}'s assessment node updated.` })
-  }
-
-  const updateCoverage = (id: number, val: number) => {
-    setSyllabus(prev => prev.map(s => s.id === id ? { ...s, covered: val } : s))
-    toast({ title: "Coverage Synced", description: "Institutional syllabus progress recorded." })
   }
 
   const handlePremsSync = () => {
@@ -170,7 +163,7 @@ export default function AcademicsPage() {
       <Tabs defaultValue="ledger" className="space-y-6">
         <TabsList className="bg-muted/40 p-1 rounded-2xl h-12 w-full sm:w-fit flex overflow-x-auto shadow-inner border border-muted/50">
           <TabsTrigger value="ledger" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Grading Ledger</TabsTrigger>
-          <TabsTrigger value="syllabus" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Syllabus Coverage</TabsTrigger>
+          <TabsTrigger value="syllabus" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Syllabus Monitoring</TabsTrigger>
         </TabsList>
 
         <TabsContent value="ledger" className="space-y-6">
@@ -286,56 +279,147 @@ export default function AcademicsPage() {
         </TabsContent>
 
         <TabsContent value="syllabus" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {syllabus.map((s) => (
-              <Card key={s.id} className="border-none shadow-xl bg-white/60 backdrop-blur-md rounded-[2.5rem] overflow-hidden group">
-                <CardHeader className="p-8 pb-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <Badge variant="secondary" className="font-black text-[8px] uppercase">{s.status}</Badge>
-                    <Target className="h-4 w-4 text-primary/40 group-hover:scale-110 transition-transform" />
+          <div className="grid gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-4 space-y-6">
+              <Card className="border-none shadow-xl bg-primary text-white rounded-[2.5rem] p-8 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
+                  <Zap className="h-24 w-24" />
+                </div>
+                <div className="relative z-10 space-y-6">
+                  <div>
+                    <Badge className="bg-white/20 text-white font-black text-[8px] uppercase tracking-widest px-3 py-0.5 rounded-full border-none mb-4">NECTA Readiness Hub</Badge>
+                    <h3 className="text-3xl font-black tracking-tight leading-none uppercase">
+                      {readiness.overall}% Coverage
+                    </h3>
+                    <p className="text-[10px] font-bold text-white/60 mt-3 uppercase tracking-widest">Institutional Pace Monitor</p>
                   </div>
-                  <CardTitle className="text-lg font-black text-primary uppercase">{s.subject}</CardTitle>
-                  <CardDescription className="text-[10px] font-bold uppercase">{s.level}</CardDescription>
-                </CardHeader>
-                <CardContent className="p-8 pt-0 space-y-6">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-[10px] font-black uppercase text-muted-foreground">
-                      <span>Coverage Matrix</span>
-                      <span className="text-primary">{s.covered}%</span>
+                  <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10">
+                    <p className="text-[9px] font-black uppercase mb-1">Pace Analysis</p>
+                    <div className="flex items-center gap-2">
+                      <div className={cn("h-2 w-2 rounded-full animate-pulse", readiness.status === 'OPTIMAL' ? 'bg-green-400' : readiness.status === 'ON TRACK' ? 'bg-blue-400' : 'bg-red-400')} />
+                      <span className="text-xs font-black">{readiness.status} NODE</span>
                     </div>
-                    <Progress value={s.covered} className="h-2 bg-muted/50" />
                   </div>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="w-full text-[9px] font-black uppercase h-10 rounded-full border-primary/10 hover:bg-primary/5 transition-colors" onClick={() => setSelectedSubject(s)}>
-                        Update Node
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="rounded-[2.5rem] max-w-sm border-none shadow-2xl">
-                      <DialogHeader className="text-center">
-                        <DialogTitle className="text-xl font-black uppercase">Sync Syllabus Node</DialogTitle>
-                        <DialogDescription className="text-[10px] font-black uppercase">{selectedSubject?.subject} Ledger</DialogDescription>
-                      </DialogHeader>
-                      <div className="py-10 space-y-8">
-                        <div className="space-y-4">
-                          <div className="flex justify-between font-black text-xs uppercase text-primary">
-                            <span>Completion Matrix</span>
-                            <span>{selectedSubject?.covered}%</span>
-                          </div>
-                          <Slider 
-                            defaultValue={[selectedSubject?.covered || 0]} 
-                            max={100} 
-                            step={1} 
-                            onValueChange={(val) => updateCoverage(selectedSubject?.id, val[0])}
-                          />
-                        </div>
-                        <p className="text-[9px] font-medium text-center text-muted-foreground italic">Updating this node synchronizes 2026 institutional logs.</p>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </CardContent>
+                  {syllabus.length === 0 && (
+                    <Button variant="secondary" className="w-full rounded-xl font-black text-[10px] uppercase h-12 shadow-lg" onClick={initializeDefaultSyllabus}>
+                      Initialize TIE Syllabus Node
+                    </Button>
+                  )}
+                </div>
               </Card>
-            ))}
+
+              <Card className="border-none shadow-xl bg-white/60 backdrop-blur-md rounded-[2.5rem] p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="h-10 w-10 rounded-xl bg-muted/20 flex items-center justify-center text-primary"><History className="h-5 w-5" /></div>
+                  <div>
+                    <h4 className="text-sm font-black uppercase">Recent Audits</h4>
+                    <p className="text-[9px] font-bold text-muted-foreground uppercase">Live teacher logging</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  {syllabus.slice(0, 3).map(s => (
+                    <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/10 group cursor-default">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase">{s.subject}</span>
+                        <span className="text-[8px] font-bold text-muted-foreground">{s.class}</span>
+                      </div>
+                      <Badge variant="outline" className="text-[8px] font-black uppercase bg-white">{s.percentageCovered}%</Badge>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+
+            <div className="lg:col-span-8 grid gap-6 md:grid-cols-2">
+              {syllabusLoading ? (
+                <div className="col-span-full py-20 text-center"><Loader2 className="animate-spin inline mr-2" /> Loading Monitor...</div>
+              ) : syllabus.map((s) => (
+                <Card key={s.id} className="border-none shadow-xl bg-white/60 backdrop-blur-md rounded-[2.5rem] overflow-hidden group hover:-translate-y-1 transition-all">
+                  <CardHeader className="p-8 pb-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <Badge variant="secondary" className="font-black text-[8px] uppercase">{s.class}</Badge>
+                      <Target className="h-4 w-4 text-primary/40 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <CardTitle className="text-lg font-black text-primary uppercase">{s.subject}</CardTitle>
+                    <CardDescription className="text-[10px] font-bold uppercase">National Curriculum Tracking</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-8 pt-0 space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-[10px] font-black uppercase text-muted-foreground">
+                        <span>Coverage Matrix</span>
+                        <span className="text-primary">{s.percentageCovered}%</span>
+                      </div>
+                      <Progress value={s.percentageCovered} className="h-2 bg-muted/50 rounded-full" />
+                    </div>
+                    <div className="flex gap-2">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="flex-1 text-[9px] font-black uppercase h-10 rounded-full border-primary/10 hover:bg-primary/5 transition-colors" onClick={() => setSelectedSubject(s)}>
+                            Sync Coverage
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="rounded-[2.5rem] max-w-sm border-none shadow-2xl">
+                          <DialogHeader className="text-center">
+                            <DialogTitle className="text-xl font-black uppercase">Sync Syllabus Node</DialogTitle>
+                            <DialogDescription className="text-[10px] font-black uppercase">{selectedSubject?.subject} Hub</DialogDescription>
+                          </DialogHeader>
+                          <div className="py-10 space-y-8">
+                            <div className="space-y-4">
+                              <div className="flex justify-between font-black text-xs uppercase text-primary">
+                                <span>Completion Matrix</span>
+                                <span>{selectedSubject?.percentageCovered}%</span>
+                              </div>
+                              <Slider 
+                                defaultValue={[selectedSubject?.percentageCovered || 0]} 
+                                max={100} 
+                                step={1} 
+                                onValueChange={(val) => updateCoverage(selectedSubject?.id, val[0])}
+                              />
+                            </div>
+                            <p className="text-[9px] font-medium text-center text-muted-foreground italic">Updating this node synchronizes 2026 institutional logs.</p>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" className="text-[9px] font-black uppercase h-10 rounded-full hover:bg-primary/5 text-primary">
+                            <ClipboardList className="h-3.5 w-3.5 mr-1.5" /> Topics
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="rounded-[2.5rem] max-w-md border-none shadow-2xl p-0 overflow-hidden">
+                          <DialogHeader className="bg-primary/5 p-8 border-b">
+                            <DialogTitle className="text-xl font-black uppercase">Topic Matrix Hub</DialogTitle>
+                            <DialogDescription className="text-[10px] font-bold uppercase tracking-widest">{s.subject} • {s.class}</DialogDescription>
+                          </DialogHeader>
+                          <div className="p-8 space-y-4 max-h-[400px] overflow-y-auto">
+                            {s.topics?.map((topic, idx) => (
+                              <div key={idx} className="p-4 rounded-2xl bg-muted/20 border border-muted/50 flex items-center justify-between group">
+                                <div className="space-y-1">
+                                  <p className="text-xs font-black uppercase text-foreground/80">{topic.name}</p>
+                                  <code className="text-[8px] font-mono text-muted-foreground">{topic.nectaCode}</code>
+                                </div>
+                                <Badge className={cn("text-[8px] font-black uppercase", topic.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-blue-50 text-blue-600')}>
+                                  {topic.status}
+                                </Badge>
+                              </div>
+                            ))}
+                            {(!s.topics || s.topics.length === 0) && (
+                              <div className="py-10 text-center opacity-30 flex flex-col items-center gap-2">
+                                <AlertTriangle className="h-10 w-10 text-muted-foreground" />
+                                <p className="text-[10px] font-black uppercase tracking-widest">No Topics Defined</p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-8 pt-0 border-t bg-muted/5">
+                            <p className="text-[8px] font-bold text-muted-foreground text-center uppercase tracking-[0.3em] pt-4">Verified TIE Curriculum Alignment</p>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </TabsContent>
       </Tabs>
