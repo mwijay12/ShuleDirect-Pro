@@ -16,7 +16,10 @@ import {
   ScanText,
   BrainCircuit,
   Target,
-  Database
+  Database,
+  GraduationCap,
+  Save,
+  ChevronRight
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
@@ -25,6 +28,7 @@ import { useToast } from "@/hooks/use-toast"
 import { scanExamPaper } from "@/ai/flows/scan-exam-flow"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Slider } from "@/components/ui/slider"
+import { Label } from "@/components/ui/label"
 import { useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, query, orderBy, doc } from "firebase/firestore"
 import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
@@ -44,6 +48,7 @@ export default function AcademicsPage() {
   const [isSyncingPrems, setIsSyncingPrems] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<any>(null)
+  const [gradingStudent, setGradingStudent] = useState<any>(null)
 
   // Pull real students from Firestore for the ledger
   const studentsQuery = useMemoFirebase(() => query(collection(db, "schools", "school-001", "students"), orderBy("name", "asc")), [db])
@@ -71,22 +76,14 @@ export default function AcademicsPage() {
       const base64 = reader.result as string
       try {
         const result = await scanExamPaper({ photoDataUri: base64 })
-        
-        // Try to find matching student
         const student = students?.find(s => s.id === result.examNumber)
         if (student) {
           updateDocumentNonBlocking(doc(db, "schools", "school-001", "students", student.id), {
-            attendance: `${result.score}%` // Using attendance field as score for demo demo
+            performance: `${result.score}%`
           })
-          toast({
-            title: "AI Scan Success",
-            description: `Matched: ${student.name} | Score: ${result.score}%`,
-          })
+          toast({ title: "AI Scan Success", description: `Matched: ${student.name} | Score: ${result.score}%` })
         } else {
-          toast({
-            title: "Partial Match",
-            description: `Extracted: ${result.examNumber} | Score: ${result.score}% (Identity not in Registry)`,
-          })
+          toast({ title: "Partial Match", description: `Extracted: ${result.examNumber} | Score: ${result.score}%` })
         }
       } catch (err) {
         toast({ variant: "destructive", title: "Scan Failed", description: "Could not read exam paper node." })
@@ -95,6 +92,20 @@ export default function AcademicsPage() {
       }
     }
     reader.readAsDataURL(file)
+  }
+
+  const handleSaveGrades = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const math = formData.get("math")
+    const kiswahili = formData.get("kiswahili")
+    const english = formData.get("english")
+    
+    updateDocumentNonBlocking(doc(db, "schools", "school-001", "students", gradingStudent.id), {
+      performance: `${math}% (M), ${kiswahili}% (K), ${english}% (E)`
+    })
+    setGradingStudent(null)
+    toast({ title: "Grades Synchronized", description: `${gradingStudent.name}'s assessment node updated.` })
   }
 
   const updateCoverage = (id: number, val: number) => {
@@ -132,7 +143,7 @@ export default function AcademicsPage() {
                 <ScanText className="mr-2 h-4 w-4" /> AI Paper Scan
               </Button>
             </DialogTrigger>
-            <DialogContent className="rounded-[2rem] p-8 max-w-md">
+            <DialogContent className="rounded-[2rem] p-8 max-w-md border-none shadow-2xl">
               <DialogHeader className="mb-6 text-center">
                 <DialogTitle className="text-xl font-black uppercase">Scan Result Node</DialogTitle>
                 <DialogDescription className="text-[10px] font-bold uppercase tracking-widest">Extract exam number and marks via Vision AI</DialogDescription>
@@ -142,7 +153,7 @@ export default function AcademicsPage() {
                   {isScanning ? <Loader2 className="h-12 w-12 animate-spin text-primary" /> : <BrainCircuit className="h-12 w-12 text-primary/40" />}
                   <p className="text-xs font-bold text-muted-foreground">{isScanning ? "AI Analyzing Node..." : "Upload Exam Cover Photo"}</p>
                   <label className="cursor-pointer">
-                    <Button variant="default" className="rounded-full colorful-gradient h-12 px-8 font-black text-[10px] uppercase pointer-events-none shadow-xl">Select Exam Node</Button>
+                    <Button variant="default" className="rounded-full colorful-gradient h-12 px-8 font-black text-[10px] uppercase shadow-xl pointer-events-none">Select Exam Node</Button>
                     <input type="file" className="hidden" accept="image/*" onChange={handleScanExam} disabled={isScanning} />
                   </label>
                 </div>
@@ -157,7 +168,7 @@ export default function AcademicsPage() {
       </div>
 
       <Tabs defaultValue="ledger" className="space-y-6">
-        <TabsList className="bg-muted/40 p-1 rounded-2xl h-12 w-full sm:w-fit flex overflow-x-auto shadow-inner">
+        <TabsList className="bg-muted/40 p-1 rounded-2xl h-12 w-full sm:w-fit flex overflow-x-auto shadow-inner border border-muted/50">
           <TabsTrigger value="ledger" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Grading Ledger</TabsTrigger>
           <TabsTrigger value="syllabus" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Syllabus Coverage</TabsTrigger>
         </TabsList>
@@ -166,7 +177,7 @@ export default function AcademicsPage() {
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
             {[
               { label: "Grading Model", value: "NECTA Hybrid", color: "text-primary" },
-              { label: "Mean Points", value: "199.2", color: "text-green-600" },
+              { label: "Mean Points", value: identity?.demoMode ? "199.2" : "0.0", color: "text-green-600" },
               { label: "Total Candidates", value: students?.length || "0", color: "text-accent" },
               { label: "Audit Node", value: "Verified", color: "text-orange-600" },
             ].map((item) => (
@@ -203,10 +214,10 @@ export default function AcademicsPage() {
                   <TableHeader className="bg-muted/10">
                     <TableRow className="border-none h-14">
                       <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Student Payload</TableHead>
-                      <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Performance</TableHead>
+                      <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Assessment Hub</TableHead>
                       <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Tier</TableHead>
                       <TableHead className="text-center text-[9px] font-black uppercase tracking-widest">Conduct</TableHead>
-                      <TableHead className="text-right pr-8 text-[9px] font-black uppercase tracking-widest">Hub</TableHead>
+                      <TableHead className="text-right pr-8 text-[9px] font-black uppercase tracking-widest">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -223,13 +234,46 @@ export default function AcademicsPage() {
                             <p className="font-black text-sm text-foreground/80 uppercase">{r.name}</p>
                             <p className="text-[9px] font-mono font-black text-muted-foreground uppercase">{r.id}</p>
                           </TableCell>
-                          <TableCell className="text-center font-mono font-bold text-xs">{r.attendance || "TBD"}</TableCell>
+                          <TableCell className="text-center font-mono font-bold text-[10px] text-primary">
+                            {r.performance || "PENDING ASSESSMENT"}
+                          </TableCell>
                           <TableCell className="text-center">
                             <Badge variant="outline" className="text-[8px] font-black uppercase rounded-full">{r.class}</Badge>
                           </TableCell>
-                          <TableCell className="text-center font-mono font-bold text-xs">{r.conductPoints} PTS</TableCell>
+                          <TableCell className="text-center font-mono font-bold text-xs">{r.conductPoints || 100} PTS</TableCell>
                           <TableCell className="text-right pr-8">
-                            <Button variant="ghost" size="sm" className="font-black text-primary text-[10px] uppercase rounded-full">Details</Button>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="ghost" size="sm" className="font-black text-primary text-[10px] uppercase rounded-full group/btn" onClick={() => setGradingStudent(r)}>
+                                  Enter Marks <ChevronRight className="ml-1 h-3 w-3 group-hover/btn:translate-x-1 transition-transform" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden max-w-md border-none shadow-2xl font-body">
+                                <DialogHeader className="bg-primary/5 p-8 border-b text-center">
+                                  <DialogTitle className="text-xl font-black uppercase text-primary">Grade Entry Node</DialogTitle>
+                                  <DialogDescription className="text-[10px] font-bold uppercase tracking-widest">{gradingStudent?.name}</DialogDescription>
+                                </DialogHeader>
+                                <form onSubmit={handleSaveGrades} className="p-8 space-y-6">
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Mathematics (%)</Label>
+                                      <Input name="math" type="number" placeholder="0-100" required className="h-12 rounded-xl bg-muted/20 border-none font-black px-5 shadow-inner" />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Kiswahili (%)</Label>
+                                      <Input name="kiswahili" type="number" placeholder="0-100" required className="h-12 rounded-xl bg-muted/20 border-none font-black px-5 shadow-inner" />
+                                    </div>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">English Language (%)</Label>
+                                    <Input name="english" type="number" placeholder="0-100" required className="h-12 rounded-xl bg-muted/20 border-none font-black px-5 shadow-inner" />
+                                  </div>
+                                  <Button type="submit" className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-xl mt-4">
+                                    <Save className="mr-2 h-4 w-4" /> Save Academic Node
+                                  </Button>
+                                </form>
+                              </DialogContent>
+                            </Dialog>
                           </TableCell>
                         </TableRow>
                       ))
@@ -263,11 +307,11 @@ export default function AcademicsPage() {
                   </div>
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button variant="outline" className="w-full text-[9px] font-black uppercase h-10 rounded-full border-primary/10" onClick={() => setSelectedSubject(s)}>
+                      <Button variant="outline" className="w-full text-[9px] font-black uppercase h-10 rounded-full border-primary/10 hover:bg-primary/5 transition-colors" onClick={() => setSelectedSubject(s)}>
                         Update Node
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="rounded-[2.5rem] max-w-sm">
+                    <DialogContent className="rounded-[2.5rem] max-w-sm border-none shadow-2xl">
                       <DialogHeader className="text-center">
                         <DialogTitle className="text-xl font-black uppercase">Sync Syllabus Node</DialogTitle>
                         <DialogDescription className="text-[10px] font-black uppercase">{selectedSubject?.subject} Ledger</DialogDescription>

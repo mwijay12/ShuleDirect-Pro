@@ -94,10 +94,7 @@ export default function StudentsPage() {
   const isDemo = identity?.demoMode === true
 
   const students = useMemo(() => {
-    // In Official mode, we only show real Firestore data
     if (!isDemo) return firestoreStudents || []
-    
-    // In Demo mode, we blend firestore data with the high-fidelity demo roster
     const base = firestoreStudents || []
     const demoIds = new Set(base.map(s => s.id))
     const uniqueDemo = DORIS_DEMO_STUDENTS.filter(s => !demoIds.has(s.id))
@@ -121,11 +118,17 @@ export default function StudentsPage() {
   const handleManualEnroll = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
+    const className = formData.get("class") as string
+    
+    // RIGID BUSINESS LOGIC: Form 2 students default to Boarders
+    const isFormTwo = className.toLowerCase().includes("form 2")
+    
     const newStudent = {
       name: (formData.get("name") as string).toUpperCase(),
       id: formData.get("id") as string,
-      class: formData.get("class") as string,
-      type: formData.get("type") as string,
+      class: className,
+      type: isFormTwo ? "Boarder" : (formData.get("type") as string),
+      hostel: isFormTwo ? "Serengeti Annex" : "N/A",
       status: "Active",
       contact: formData.get("contact") as string || "+255",
       conductPoints: 100,
@@ -255,7 +258,7 @@ export default function StudentsPage() {
     <div className="space-y-6 pb-24 px-1">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-1">
-          <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary px-3 py-0.5 text-[8px] font-black uppercase rounded-full">
+          <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary px-3 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-full">
             {isDemo ? "DEMO DATA ACTIVE" : "OFFICIAL REGISTRY"}
           </Badge>
           <h1 className="text-xl sm:text-2xl font-black text-primary uppercase tracking-tight">Student Directory</h1>
@@ -302,7 +305,7 @@ export default function StudentsPage() {
                 <Plus className="mr-2 h-4 w-4" /> Enroll Student
               </Button>
             </DialogTrigger>
-            <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl max-w-lg">
+            <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl max-w-lg font-body">
               <DialogHeader className="bg-primary/5 p-8 border-b">
                 <DialogTitle className="text-xl font-black uppercase text-primary">Manual Enrollment</DialogTitle>
                 <DialogDescription className="text-[10px] font-bold uppercase tracking-widest">Register new candidate node manually</DialogDescription>
@@ -311,18 +314,18 @@ export default function StudentsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Legal Name</Label>
-                    <Input name="name" placeholder="e.g. AGNES FRED" required className="h-12 rounded-xl bg-muted/20 border-none font-bold uppercase px-5" />
+                    <Input name="name" placeholder="e.g. AGNES FRED" required className="h-12 rounded-xl bg-muted/20 border-none font-bold uppercase px-5 shadow-inner" />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Candidate ID</Label>
-                    <Input name="id" placeholder="e.g. S4939-0001" required className="h-12 rounded-xl bg-muted/20 border-none font-mono font-black px-5" />
+                    <Input name="id" placeholder="e.g. S4939-0001" required className="h-12 rounded-xl bg-muted/20 border-none font-mono font-black px-5 shadow-inner" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Academic Tier</Label>
                     <Select name="class" defaultValue="Standard 7">
-                      <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-black text-xs px-5">
+                      <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-black text-xs px-5 shadow-inner">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
@@ -340,7 +343,7 @@ export default function StudentsPage() {
                   <div className="space-y-2">
                     <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Residence</Label>
                     <Select name="type" defaultValue="Day">
-                      <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-black text-xs px-5">
+                      <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-black text-xs px-5 shadow-inner">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
@@ -352,7 +355,7 @@ export default function StudentsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Parent Contact</Label>
-                  <Input name="contact" placeholder="e.g. 0712345678" className="h-12 rounded-xl bg-muted/20 border-none font-bold px-5" />
+                  <Input name="contact" placeholder="e.g. 0712345678" className="h-12 rounded-xl bg-muted/20 border-none font-bold px-5 shadow-inner" />
                 </div>
                 <Button type="submit" className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-xl mt-4">
                   Initialize Candidate Node
@@ -496,7 +499,7 @@ export default function StudentsPage() {
                                     <Button 
                                       variant="outline" 
                                       className={cn("h-16 rounded-2xl font-black uppercase text-[10px] flex flex-col gap-1 border-2 transition-all shadow-sm", selectedStudent?.type === "Boarder" ? "border-primary bg-primary/5 text-primary" : "opacity-50 border-transparent bg-muted/20")}
-                                      onClick={() => handleUpdateStudent(selectedStudent.id, { type: "Boarder", hostel: "Mt. Kilimanjaro Wing", route: "N/A" })}
+                                      onClick={() => handleUpdateStudent(selectedStudent.id, { type: "Boarder", hostel: "Serengeti Annex", route: "N/A" })}
                                     >
                                       <Home className="h-4 w-4" />
                                       Boarder Hub
@@ -529,7 +532,7 @@ export default function StudentsPage() {
                                   <div className="space-y-4">
                                     <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Allocation Hub</Label>
                                     <Select 
-                                      value={selectedStudent?.type === "Boarder" ? (selectedStudent?.hostel || "Mt. Kilimanjaro Wing") : (selectedStudent?.route || "Mbezi Beach - Kawe")}
+                                      value={selectedStudent?.type === "Boarder" ? (selectedStudent?.hostel || "Serengeti Annex") : (selectedStudent?.route || "Mbezi Beach - Kawe")}
                                       onValueChange={(val) => handleUpdateStudent(selectedStudent.id, selectedStudent?.type === "Boarder" ? { hostel: val } : { route: val })}
                                     >
                                       <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-black text-xs shadow-inner">

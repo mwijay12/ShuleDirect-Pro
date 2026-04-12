@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { 
@@ -60,15 +60,15 @@ import { useFirestore, useDoc, useMemoFirebase } from "@/firebase"
 import { doc } from "firebase/firestore"
 
 const initialTransactions = [
-  { id: "TX-9021", student: "AGNES FRED KILIMA", type: "Tuition", amount: "550,000", method: "M-Pesa", date: "2024-05-12", status: "Success", controlNo: "99102345678" },
-  { id: "TX-9022", student: "DAVID ERICK MWIJAGE", type: "Uniform", amount: "120,000", method: "Tigo Pesa", date: "2024-05-12", status: "Success", controlNo: "99102345679" },
-  { id: "TX-9023", student: "ALVIN MICHAEL GILLA", type: "Stationery", amount: "45,000", method: "Cash", date: "2024-05-11", status: "Success", controlNo: "N/A" },
+  { id: "TX-9021", student: "AGNES FRED KILIMA", type: "Tuition", amount: 550000, method: "M-Pesa", date: "2024-05-12", status: "Success", controlNo: "99102345678" },
+  { id: "TX-9022", student: "DAVID ERICK MWIJAGE", type: "Uniform", amount: 120000, method: "Tigo Pesa", date: "2024-05-12", status: "Success", controlNo: "99102345679" },
+  { id: "TX-9023", student: "ALVIN MICHAEL GILLA", type: "Stationery", amount: 45000, method: "Cash", date: "2024-05-11", status: "Success", controlNo: "N/A" },
 ]
 
 const initialPettyCash = [
-  { id: "PC-001", item: "Laboratory Reagents", amount: "85,000", dept: "Science", status: "Approved" },
-  { id: "PC-002", item: "A4 Printing Paper", amount: "45,000", dept: "Admin", status: "Approved" },
-  { id: "PC-003", item: "Football Pump", amount: "12,000", dept: "Sports", status: "Pending" },
+  { id: "PC-001", item: "Laboratory Reagents", amount: 85000, dept: "Science", status: "Approved" },
+  { id: "PC-002", item: "A4 Printing Paper", amount: 45000, dept: "Admin", status: "Approved" },
+  { id: "PC-003", item: "Football Pump", amount: 12000, dept: "Sports", status: "Pending" },
 ]
 
 export default function FinancePage() {
@@ -83,12 +83,20 @@ export default function FinancePage() {
 
   const [transactions, setTransactions] = useState(isDemo ? initialTransactions : [])
   const [pettyCash, setPettyCash] = useState(isDemo ? initialPettyCash : [])
+
+  // RIGID CALCULATIONS NODE
+  const totals = useMemo(() => {
+    const revenue = transactions.reduce((acc, curr) => acc + curr.amount, 0)
+    const expenses = pettyCash.reduce((acc, curr) => acc + curr.amount, 0)
+    const outstanding = isDemo ? 18200000 : 0
+    return { revenue, expenses, outstanding, float: isDemo ? 1200000 : 0 }
+  }, [transactions, pettyCash, isDemo])
   
   const handleGenerateControlNumber = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     const student = formData.get("student") as string
-    const amount = formData.get("amount") as string
+    const amount = parseInt(formData.get("amount") as string)
     const newNo = "99" + Math.floor(100000000 + Math.random() * 900000000).toString()
     
     setControlNo(newNo)
@@ -105,7 +113,7 @@ export default function FinancePage() {
     setTransactions(prev => [newTx, ...prev])
 
     triggerN8nWebhook("fee-payment", { studentName: student, amount, controlNumber: newNo });
-    toast({ title: "Control Number Generated", description: `Payment ID ${newNo} dispatched via Beem SMS.` })
+    toast({ title: "Control Number Generated", description: `Payment ID ${newNo} dispatched via WhatsApp.` })
   }
 
   const handleAddPettyCash = (e: React.FormEvent<HTMLFormElement>) => {
@@ -114,7 +122,7 @@ export default function FinancePage() {
     const newExpense = {
       id: `PC-${Math.floor(Math.random() * 1000)}`,
       item: formData.get("item") as string,
-      amount: formData.get("amount") as string,
+      amount: parseInt(formData.get("amount") as string),
       dept: formData.get("dept") as string,
       status: "Approved"
     }
@@ -129,6 +137,10 @@ export default function FinancePage() {
       setIsExporting(false)
       toast({ title: "Excel Ledger Generated", description: "Audit-ready financial statement node saved locally." })
     }, 1000)
+  }
+
+  const formatMoney = (val: number) => {
+    return new Intl.NumberFormat('en-TZ', { maximumFractionDigits: 0 }).format(val)
   }
 
   return (
@@ -161,10 +173,10 @@ export default function FinancePage() {
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
-          { title: "Total Revenue", value: isDemo ? "142.5M" : "0.0", icon: Banknote, color: "text-green-600" },
-          { title: "Outstanding Node", value: isDemo ? "18.2M" : "0.0", icon: ArrowUpRight, color: "text-destructive" },
-          { title: "Expenditure Hub", value: isDemo ? "45.1M" : "0.0", icon: TrendingDown, color: "text-orange-600" },
-          { title: "Petty Float", value: isDemo ? "1.2M" : "0.0", icon: Wallet, color: "text-primary" },
+          { title: "Total Revenue", value: formatMoney(totals.revenue), icon: Banknote, color: "text-green-600" },
+          { title: "Outstanding Node", value: formatMoney(totals.outstanding), icon: ArrowUpRight, color: "text-destructive" },
+          { title: "Expenditure Hub", value: formatMoney(totals.expenses), icon: TrendingDown, color: "text-orange-600" },
+          { title: "Petty Float", value: formatMoney(totals.float), icon: Wallet, color: "text-primary" },
         ].map((stat) => (
           <Card key={stat.title} className="border-none shadow-xl rounded-[2rem] bg-white/60 backdrop-blur-md overflow-hidden group hover:-translate-y-1 transition-all">
             <CardContent className="p-5 sm:p-6">
@@ -229,7 +241,7 @@ export default function FinancePage() {
                       )}
                       <Button type="submit" className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-xl group">
                         <SmartphoneNfc className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" /> 
-                        Generate & Dispatch SMS
+                        Generate & Dispatch Hub
                       </Button>
                     </form>
                   </DialogContent>
@@ -264,7 +276,7 @@ export default function FinancePage() {
                         <TableCell>
                           <code className="text-[10px] font-black bg-muted/50 px-3 py-1.5 rounded-lg text-primary border border-primary/5">{tx.controlNo}</code>
                         </TableCell>
-                        <TableCell className="text-center font-black text-sm text-foreground/70">TZS {tx.amount}</TableCell>
+                        <TableCell className="text-center font-black text-sm text-foreground/70">TZS {formatMoney(tx.amount)}</TableCell>
                         <TableCell className="text-center">
                           <Badge className="bg-green-100 text-green-700 border-none font-black text-[9px] px-4 py-1 rounded-full shadow-sm uppercase">SUCCESS NODE</Badge>
                         </TableCell>
@@ -349,7 +361,7 @@ export default function FinancePage() {
                                 {item.dept} NODE
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-center font-mono font-black text-xs text-foreground/70">TZS {item.amount}</TableCell>
+                            <TableCell className="text-center font-mono font-black text-xs text-foreground/70">TZS {formatMoney(item.amount)}</TableCell>
                             <TableCell className="text-right pr-8">
                               <Badge className={cn(
                                 "text-[9px] font-black uppercase px-4 py-1 rounded-full border-none shadow-sm",
@@ -376,7 +388,7 @@ export default function FinancePage() {
                        </div>
                        <div className="p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 shadow-inner">
                           <p className="text-[10px] font-black uppercase text-white/40 tracking-widest mb-1">Liquid Node Float</p>
-                          <p className="text-3xl font-black">TZS {isDemo ? "1.2M" : "0.0"}</p>
+                          <p className="text-3xl font-black">TZS {formatMoney(totals.float)}</p>
                        </div>
                        <Button className="w-full h-12 rounded-2xl bg-white text-primary hover:bg-white/90 font-black text-[10px] uppercase tracking-widest shadow-2xl">Refill Float Node</Button>
                     </div>
