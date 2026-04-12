@@ -25,7 +25,10 @@ import {
   History,
   FileText,
   AlertTriangle,
-  Scale
+  Scale,
+  QrCode,
+  Smartphone,
+  Info
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -45,7 +48,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { exportToExcel } from "@/lib/export-utils"
-import { processPaymentTransaction } from "@/lib/finance-engine"
+import { processPaymentTransaction, generateInstitutionalControlNumber, ControlNumberResponse } from "@/lib/finance-engine"
 import { useInstitutionalReconciliation } from "@/hooks/use-finance"
 import { usePettyCash } from "@/hooks/use-petty-cash"
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
@@ -69,10 +72,10 @@ export default function FinancePage() {
   const { expenses, addExpense, updateStatus, stats, isLoading: pettyLoading } = usePettyCash()
   
   const [isProcessing, setIsProcessing] = useState(false)
-  const [isAddingExpense, setIsAddingExpense] = useState(false)
+  const [isGeneratingBill, setIsGeneratingBill] = useState(false)
+  const [activeBill, setActiveBill] = useState<ControlNumberResponse | null>(null)
   const [ledgerSearch, setLedgerSearch] = useState("")
 
-  // Live Student Stream
   const studentsQuery = useMemoFirebase(() => query(collection(db, "schools", "school-001", "students"), orderBy("name", "asc")), [db])
   const { data: students } = useCollection(studentsQuery)
 
@@ -84,7 +87,33 @@ export default function FinancePage() {
     )
   }, [ledgerSearch, transactions])
 
-  const handleProcessPayment = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleGenerateBill = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsGeneratingBill(true)
+    const formData = new FormData(e.currentTarget)
+    const studentId = formData.get("studentId") as string
+    const student = students?.find(s => s.id === studentId)
+
+    try {
+      const bill = await generateInstitutionalControlNumber(db, {
+        schoolId: "school-001",
+        studentId,
+        amount: parseFloat(formData.get("amount") as string),
+        feeType: formData.get("feeType") as any,
+        payerName: student?.name || "Guardian",
+        payerPhone: formData.get("phone") as string || student?.contact || "+255",
+        expiresInDays: 7
+      })
+      setActiveBill(bill)
+      toast({ title: "Control Number Generated", description: "Payment instructions dispatched via WhatsApp." })
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Gateway Error", description: err.message })
+    } finally {
+      setIsGeneratingBill(false)
+    }
+  }
+
+  const handleProcessManualPayment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsProcessing(true)
     const formData = new FormData(e.currentTarget)
@@ -93,7 +122,7 @@ export default function FinancePage() {
       await processPaymentTransaction(db, {
         studentId: formData.get("studentId") as string,
         amount: parseFloat(formData.get("amount") as string),
-        controlNumber: formData.get("controlNumber") as string || "99" + Math.floor(100000000 + Math.random() * 900000000).toString(),
+        controlNumber: formData.get("controlNumber") as string || "CASH-" + Date.now(),
         feeType: formData.get("feeType") as any,
         paymentMethod: formData.get("method") as any,
         recordedBy: user?.email || "Staff",
@@ -107,16 +136,6 @@ export default function FinancePage() {
     } finally {
       setIsProcessing(false)
     }
-  }
-
-  const handleDispute = (id: string, reason: string) => {
-    updateDocumentNonBlocking(doc(db, "schools", "school-001", "transactions", id), {
-      status: 'Disputed',
-      disputed: true,
-      disputeReason: reason,
-      updatedAt: new Date().toISOString()
-    })
-    toast({ title: "Transaction Flagged", description: "Forensic node moved to dispute queue." })
   }
 
   const formatMoney = (val: number) => {
@@ -161,7 +180,7 @@ export default function FinancePage() {
               <div className="flex items-baseline gap-1 mt-2">
                 <stat.icon className={cn("h-4 w-4 mr-2", stat.color)} />
                 <span className={cn("text-xl sm:text-2xl font-black truncate", stat.color)}>
-                  {typeof stat.value === 'string' ? stat.value : stat.value}
+                  {stat.value}
                 </span>
               </div>
             </CardContent>
@@ -174,7 +193,7 @@ export default function FinancePage() {
           <TabsTrigger value="reconciliation" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Global Balances</TabsTrigger>
           <TabsTrigger value="forensic-ledger" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Forensic Ledger</TabsTrigger>
           <TabsTrigger value="petty-cash" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Petty Cash</TabsTrigger>
-          <TabsTrigger value="invoice" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Record Node</TabsTrigger>
+          <TabsTrigger value="control-number" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Control No</TabsTrigger>
         </TabsList>
 
         <TabsContent value="reconciliation" className="space-y-6">
@@ -232,6 +251,113 @@ export default function FinancePage() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="control-number" className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-12">
+            <Card className="lg:col-span-5 border-none shadow-xl rounded-[2.5rem] bg-white p-8">
+              <CardHeader className="p-0 mb-8">
+                <CardTitle className="text-xl font-black uppercase">ClickPesa Billing Node</CardTitle>
+                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-primary/60">Generate verifiable control numbers</CardDescription>
+              </CardHeader>
+              <form onSubmit={handleGenerateBill} className="space-y-6">
+                <div className="space-y-2">
+                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Target Student</Label>
+                  <Select name="studentId" required>
+                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-bold">
+                      <SelectValue placeholder="Select candidate node..." />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      {students?.map(s => <SelectItem key={s.id} value={s.id}>{s.name} ({s.id})</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Fee Category</Label>
+                    <Select name="feeType" defaultValue="Tuition">
+                      <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-bold"><SelectValue /></SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="Tuition">Tuition Fee</SelectItem>
+                        <SelectItem value="Boarding">Boarding Hub</SelectItem>
+                        <SelectItem value="Transport">Fleet Node</SelectItem>
+                        <SelectItem value="Exam Fee">National Exam</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Amount (TZS)</Label>
+                    <Input name="amount" type="number" placeholder="500,000" required className="h-12 rounded-xl bg-muted/20 border-none font-black px-5" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Payer WhatsApp Number</Label>
+                  <Input name="phone" placeholder="+255 7XX XXX XXX" required className="h-12 rounded-xl bg-muted/20 border-none font-bold px-5" />
+                </div>
+                <Button type="submit" disabled={isGeneratingBill} className="w-full h-16 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-2xl group">
+                  {isGeneratingBill ? <Loader2 className="animate-spin mr-2" /> : <ShieldCheck className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />}
+                  Generate Control No
+                </Button>
+              </form>
+            </Card>
+
+            <div className="lg:col-span-7 space-y-6">
+              {activeBill ? (
+                <Card className="border-none shadow-xl rounded-[2.5rem] bg-primary text-white p-10 relative overflow-hidden animate-in zoom-in-95 duration-500">
+                  <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12">
+                    <QrCode className="h-48 w-48" />
+                  </div>
+                  <div className="relative z-10 space-y-8">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60">Institutional Bill Node</p>
+                        <h3 className="text-3xl font-black tracking-tighter">TZS {activeBill.amount.toLocaleString()}</h3>
+                      </div>
+                      <Badge className="bg-white/20 text-white border-none px-4 py-1 rounded-full font-black text-[9px] uppercase">EXPIRES: {activeBill.expiresAt.toLocaleDateString()}</Badge>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                      <div className="bg-white p-6 rounded-[2rem] shadow-2xl flex flex-col items-center gap-4">
+                        <img src={activeBill.qrCodeUrl} alt="Scan to pay" className="h-40 w-40" />
+                        <p className="text-[10px] font-black text-primary uppercase">Scan to Pay Node</p>
+                      </div>
+                      <div className="space-y-6">
+                        <div className="p-6 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/10">
+                          <p className="text-[10px] font-black uppercase text-white/60 mb-2">USSD Payment Code</p>
+                          <code className="text-2xl font-black tracking-widest">{activeBill.ussdCode}</code>
+                        </div>
+                        <div className="p-6 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/10">
+                          <p className="text-[10px] font-black uppercase text-white/60 mb-2">Control Number</p>
+                          <code className="text-xl font-black tracking-widest">{activeBill.controlNumber}</code>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                      <Button className="flex-1 rounded-2xl h-14 bg-white text-primary hover:bg-white/90 font-black text-[10px] uppercase shadow-xl">
+                        <Smartphone className="mr-2 h-4 w-4" /> Resend WhatsApp
+                      </Button>
+                      <Button variant="outline" className="flex-1 rounded-2xl h-14 border-white/20 text-white hover:bg-white/10 font-black text-[10px] uppercase">
+                        Print Invoice
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center p-20 border-2 border-dashed border-primary/10 rounded-[3rem] text-center space-y-6">
+                  <div className="h-20 w-20 rounded-full bg-primary/5 flex items-center justify-center text-primary/40">
+                    <Info className="h-10 w-10" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-black text-primary uppercase">Ready for Billing</h3>
+                    <p className="text-xs text-muted-foreground font-medium max-w-xs leading-relaxed uppercase tracking-tighter">
+                      Select a student and specify the fee amount to generate a hardened ClickPesa control number.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="forensic-ledger" className="space-y-6">
@@ -330,15 +456,6 @@ export default function FinancePage() {
                                     <span className="text-green-600">{tx.reconciledAt?.toDate().toLocaleString() || "PENDING"}</span>
                                   </div>
                                 </div>
-                                {tx.status !== 'Disputed' && (
-                                  <Button 
-                                    variant="outline" 
-                                    className="w-full h-12 rounded-xl text-destructive border-destructive/20 font-black text-[10px] uppercase mt-4"
-                                    onClick={() => handleDispute(tx.id, "Audit anomaly detected by staff.")}
-                                  >
-                                    Flag Dispute Node
-                                  </Button>
-                                )}
                               </div>
                             </DialogContent>
                           </Dialog>
@@ -379,7 +496,7 @@ export default function FinancePage() {
                         <SelectValue placeholder="Select Dept..." />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
-                        {Object.keys(BUDGETS).map(d => <SelectItem key(d) value(d}>{d}</SelectItem>)}
+                        {Object.keys(BUDGETS).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -471,105 +588,6 @@ export default function FinancePage() {
                 </Table>
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="invoice" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-12">
-            <Card className="lg:col-span-5 border-none shadow-xl rounded-[2.5rem] bg-white p-8">
-              <CardHeader className="p-0 mb-8">
-                <CardTitle className="text-xl font-black uppercase">Record Verified Payment</CardTitle>
-                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-primary/60">Forensic audit trail entry</CardDescription>
-              </CardHeader>
-              <form onSubmit={handleProcessPayment} className="space-y-6">
-                <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Target Student</Label>
-                  <Select name="studentId" required>
-                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-bold">
-                      <SelectValue placeholder="Select candidate node..." />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      {students?.map(s => <SelectItem key={s.id} value={s.id}>{s.name} ({s.id})</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Fee Category</Label>
-                    <Select name="feeType" defaultValue="Tuition">
-                      <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-bold"><SelectValue /></SelectTrigger>
-                      <SelectContent className="rounded-xl">
-                        <SelectItem value="Tuition">Tuition Fee</SelectItem>
-                        <SelectItem value="Boarding">Boarding Hub</SelectItem>
-                        <SelectItem value="Transport">Fleet Node</SelectItem>
-                        <SelectItem value="Exam Fee">National Exam</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Method Hub</Label>
-                    <Select name="method" defaultValue="Bank Transfer">
-                      <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-bold"><SelectValue /></SelectTrigger>
-                      <SelectContent className="rounded-xl">
-                        <SelectItem value="M-Pesa">M-Pesa Node</SelectItem>
-                        <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
-                        <SelectItem value="Cash">Direct Cash</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Control Number (Optional)</Label>
-                  <Input name="controlNumber" placeholder="9910XXXXXXXX" className="h-12 rounded-xl bg-muted/20 border-none font-mono font-bold px-5" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Amount Node (TZS)</Label>
-                  <Input name="amount" type="number" placeholder="500,000" required className="h-14 rounded-2xl bg-muted/20 border-none font-black text-xl px-6 text-primary shadow-inner" />
-                </div>
-                <Button type="submit" disabled={isProcessing} className="w-full h-16 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-2xl group">
-                  {isProcessing ? <Loader2 className="animate-spin mr-2" /> : <ShieldCheck className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />}
-                  Commit Forensic Node
-                </Button>
-              </form>
-            </Card>
-
-            <div className="lg:col-span-7 space-y-6">
-              <Card className="border-none shadow-xl rounded-[2.5rem] bg-primary text-white p-8 relative overflow-hidden group">
-                <div className="absolute -right-4 -top-4 opacity-10 group-hover:rotate-12 transition-transform">
-                  <ShieldCheck className="h-40 w-40" />
-                </div>
-                <div className="relative z-10 space-y-6">
-                  <div className="space-y-1">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-white/60">Institutional Guarantee</p>
-                    <h3 className="text-2xl font-black tracking-tight uppercase">Sovereign Audit Protocol</h3>
-                  </div>
-                  <p className="text-xs text-white/70 leading-relaxed font-medium max-w-md">
-                    Every transaction processed through this hub is signed with an integrity hash. 
-                    Parents receive instant WhatsApp alerts via Evolution API upon verification.
-                  </p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
-                      <p className="text-[8px] font-black uppercase opacity-60">Verified Today</p>
-                      <p className="text-xl font-black">14 Transactions</p>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
-                      <p className="text-[8px] font-black uppercase opacity-60">Collection Health</p>
-                      <p className="text-xl font-black">OPTIMAL</p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="border-none shadow-xl rounded-[2.5rem] bg-accent/5 border border-accent/10 p-8">
-                <div className="flex items-center gap-3 mb-4 text-accent">
-                  <Zap className="h-5 w-5 fill-accent" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Automation Hub</span>
-                </div>
-                <p className="text-xs font-bold text-accent/80 leading-relaxed uppercase tracking-tighter">
-                  Current verification efficiency: 98.4%. Daily reconciliation reports are dispatched to the Headmaster's WhatsApp at 18:00 EAT.
-                </p>
-              </Card>
-            </div>
           </div>
         </TabsContent>
       </Tabs>
