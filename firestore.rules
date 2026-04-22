@@ -3,51 +3,100 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    /**
+     * Institutional Security Helpers
+     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function isAdmin() {
-      return isSignedIn() && request.auth.token.email.matches('.*admin.*');
+    function isMember(schoolId) {
+      return isSignedIn() && request.auth.token.schoolId == schoolId;
     }
 
-    // Financial Integrity Helper: Prevent manual tampering with balances
-    function isValidStudentUpdate() {
-      let student = resource.data;
-      let newStudent = request.resource.data;
-      
-      // If balance or totalPaid is changing, ensure it's not a direct write unless by admin
-      // In a strict forensic mode, only the Finance Engine (Transactions) should change these.
-      return (newStudent.balance == student.balance && newStudent.totalPaid == student.totalPaid) || isAdmin();
+    function hasRole(role) {
+      return isSignedIn() && request.auth.token.role == role;
+    }
+
+    function isAdmin() {
+      return hasRole('ADMIN');
+    }
+
+    function isTeacher() {
+      return hasRole('TEACHER');
+    }
+
+    function isAccountant() {
+      return hasRole('ACCOUNTANT') || hasRole('BURSAR');
     }
 
     match /schools/{schoolId} {
-      allow read, write: if isSignedIn();
+      // 1. Allow authenticated users to read all data under their school.
+      allow read: if isMember(schoolId);
+      
+      // Recursive read for all school collections
+      match /{allPaths=**} {
+        allow read: if isMember(schoolId);
+      }
 
+      // 2. Allow admin users to write (create/update) all data.
+      // 3 & 4. Teachers and Accountants have role-specific write access.
+      
       match /students/{studentId} {
-        allow read: if isSignedIn();
-        allow update: if isSignedIn() && isValidStudentUpdate();
-        allow create: if isSignedIn();
-        allow delete: if isAdmin();
+        allow create, update: if isMember(schoolId) && isAdmin();
+        // 6. Never allow delete of students.
+        allow delete: if false;
+      }
+
+      match /staff/{staffId} {
+        allow write: if isMember(schoolId) && isAdmin();
+      }
+
+      match /attendance/{docId} {
+        allow write: if isMember(schoolId) && (isAdmin() || isTeacher());
+      }
+
+      match /syllabus_tracking/{docId} {
+        allow write: if isMember(schoolId) && (isAdmin() || isTeacher());
+      }
+
+      match /academics/{docId} {
+        allow write: if isMember(schoolId) && (isAdmin() || isTeacher());
       }
 
       match /transactions/{transactionId} {
-        allow read: if isSignedIn();
-        // Transactions are immutable once verified
-        allow create: if isSignedIn();
-        allow update: if isSignedIn() && resource.data.status != 'Verified' || isAdmin();
-        allow delete: if isAdmin();
+        allow create, update: if isMember(schoolId) && (isAdmin() || isAccountant());
+        // 5. Never allow delete of financial records.
+        allow delete: if false;
       }
 
       match /petty_cash/{expenseId} {
-        allow read: if isSignedIn();
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isAdmin();
+        allow create, update: if isMember(schoolId) && (isAdmin() || isAccountant());
+        allow delete: if isMember(schoolId) && isAdmin();
+      }
+
+      match /assets/{assetId} {
+        allow create, update: if isMember(schoolId) && (isAdmin() || isAccountant());
+        allow delete: if isMember(schoolId) && isAdmin();
+      }
+
+      match /hostels/{hostelId} {
+        allow create, update: if isMember(schoolId) && (isAdmin() || isAccountant());
+        allow delete: if isMember(schoolId) && isAdmin();
+      }
+
+      match /routes/{routeId} {
+        allow create, update: if isMember(schoolId) && (isAdmin() || isAccountant());
+        allow delete: if isMember(schoolId) && isAdmin();
+      }
+
+      match /canteen_sales/{saleId} {
+        allow create, update: if isMember(schoolId) && (isAdmin() || isAccountant());
+        allow delete: if isMember(schoolId) && isAdmin();
       }
 
       match /config/{configId} {
-        allow read, write: if isSignedIn();
+        allow write: if isMember(schoolId) && isAdmin();
       }
     }
   }
