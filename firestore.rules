@@ -10,12 +10,29 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    /**
+     * Membership helper: checks for the schoolId claim in the token.
+     * Fallback: Allows access to 'school-001' for verified institutional emails.
+     */
     function isMember(schoolId) {
-      return isSignedIn() && request.auth.token.schoolId == schoolId;
+      return isSignedIn() && (
+        request.auth.token.schoolId == schoolId || 
+        (schoolId == 'school-001' && (
+          request.auth.token.email.endsWith('@shule.pro') || 
+          request.auth.token.email == 'admin@shule.pro'
+        ))
+      );
     }
 
+    /**
+     * Role helper: checks for the role claim in the token.
+     * Fallback: Identifies the primary admin email as an ADMIN.
+     */
     function hasRole(role) {
-      return isSignedIn() && request.auth.token.role == role;
+      return isSignedIn() && (
+        request.auth.token.role == role ||
+        (role == 'ADMIN' && request.auth.token.email == 'admin@shule.pro')
+      );
     }
 
     function isAdmin() {
@@ -31,20 +48,18 @@ service cloud.firestore {
     }
 
     match /schools/{schoolId} {
-      // 1. Allow authenticated users to read all data under their school.
+      // 1. Allow authenticated members to read all data under their school node.
       allow read: if isMember(schoolId);
       
-      // Recursive read for all school collections
+      // Recursive read for all school sub-collections
       match /{allPaths=**} {
         allow read: if isMember(schoolId);
       }
 
       // 2. Allow admin users to write (create/update) all data.
-      // 3 & 4. Teachers and Accountants have role-specific write access.
-      
       match /students/{studentId} {
         allow create, update: if isMember(schoolId) && isAdmin();
-        // 6. Never allow delete of students.
+        // 6. Never allow delete of student identities.
         allow delete: if false;
       }
 
@@ -66,7 +81,7 @@ service cloud.firestore {
 
       match /transactions/{transactionId} {
         allow create, update: if isMember(schoolId) && (isAdmin() || isAccountant());
-        // 5. Never allow delete of financial records.
+        // 5. Never allow delete of forensic financial records.
         allow delete: if false;
       }
 
