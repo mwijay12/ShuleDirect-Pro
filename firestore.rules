@@ -18,8 +18,8 @@ service cloud.firestore {
       return isSignedIn() && (
         request.auth.token.schoolId == schoolId || 
         (schoolId == 'school-001' && (
-          request.auth.token.email.endsWith('@shule.pro') || 
-          request.auth.token.email == 'admin@shule.pro'
+          request.auth.token.email == 'admin@shule.pro' ||
+          request.auth.token.email.endsWith('@shule.pro')
         ))
       );
     }
@@ -59,7 +59,7 @@ service cloud.firestore {
       // 2. Allow admin users to write (create/update) all data.
       match /students/{studentId} {
         allow create, update: if isMember(schoolId) && isAdmin();
-        // 6. Never allow delete of student identities.
+        // Never allow delete of student identities.
         allow delete: if false;
       }
 
@@ -81,7 +81,7 @@ service cloud.firestore {
 
       match /transactions/{transactionId} {
         allow create, update: if isMember(schoolId) && (isAdmin() || isAccountant());
-        // 5. Never allow delete of forensic financial records.
+        // Never allow delete of forensic financial records.
         allow delete: if false;
       }
 
@@ -111,6 +111,8 @@ service cloud.firestore {
       }
 
       match /config/{configId} {
+        // Explicitly allow read for config documents for authorized members
+        allow read: if isMember(schoolId);
         allow write: if isMember(schoolId) && isAdmin();
       }
     }
