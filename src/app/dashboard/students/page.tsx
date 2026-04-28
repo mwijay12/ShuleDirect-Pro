@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -7,12 +6,9 @@ import {
   Plus, 
   Search, 
   Filter, 
-  UserPlus,
   Download,
   Loader2,
   FileText,
-  Save,
-  Trash2,
   Upload,
   Home,
   Bus,
@@ -22,14 +18,14 @@ import {
   MinusCircle,
   Sparkles,
   ChevronRight,
-  ClipboardCheck,
   ScanLine,
   Camera,
   ShieldCheck,
   CheckCircle2,
-  AlertCircle,
   Users,
-  X
+  IdCard,
+  Printer,
+  QrCode
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -53,14 +49,14 @@ import {
   SheetFooter
 } from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, doc, query, orderBy } from "firebase/firestore"
-import { updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+import { updateDocumentNonBlocking, addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { generateStudentProgressSummary } from "@/ai/flows/generate-student-progress-summary-flow"
 import { scanStudentRegistration } from "@/ai/flows/scan-student-registration-flow"
 import { exportReportCardToWord, exportToExcel } from "@/lib/export-utils"
@@ -119,8 +115,6 @@ export default function StudentsPage() {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     const className = formData.get("class") as string
-    
-    // RIGID BUSINESS LOGIC: Form 2 students default to Boarders
     const isFormTwo = className.toLowerCase().includes("form 2")
     
     const newStudent = {
@@ -139,42 +133,6 @@ export default function StudentsPage() {
     addDocumentNonBlocking(collection(db, "schools", "school-001", "students"), newStudent)
     setIsManualEnrolling(false)
     toast({ title: "Student Enrolled", description: `${newStudent.name} added to 2026 registry.` })
-  }
-
-  const handleExcelImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    const reader = new FileReader()
-    reader.onload = (evt) => {
-      try {
-        const bstr = evt.target?.result
-        const wb = XLSX.read(bstr, { type: "binary" })
-        const wsname = wb.SheetNames[0]
-        const ws = wb.Sheets[wsname]
-        const data = XLSX.utils.sheet_to_json(ws) as any[]
-
-        data.forEach((row) => {
-          if (row.Name && row.ID) {
-            const studentNode = {
-              name: row.Name.toUpperCase(),
-              id: String(row.ID),
-              class: row.Class || "Unassigned",
-              type: row.Type || "Day",
-              contact: String(row.Contact || "+255"),
-              status: "Active",
-              conductPoints: 100,
-              attendanceStatus: "Present"
-            }
-            addDocumentNonBlocking(collection(db, "schools", "school-001", "students"), studentNode)
-          }
-        })
-        toast({ title: "Import Successful", description: `Synchronized ${data.length} candidates to hub.` })
-      } catch (err) {
-        toast({ variant: "destructive", title: "Import Failed", description: "Excel format node invalid." })
-      }
-    }
-    reader.readAsBinaryString(file)
   }
 
   const handleSmartEnroll = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -232,31 +190,9 @@ export default function StudentsPage() {
     }
   }
 
-  const handleExportTranscript = async () => {
-    const schoolName = identity?.name || "ShuleDirect Pro"
-    await exportReportCardToWord(selectedStudent, schoolName)
-    toast({ title: "Transcript Exported", description: "Official Word document saved locally." })
-  }
-
-  const handleExportDirectory = () => {
-    exportToExcel(students, "Institutional_Student_Directory")
-    toast({ title: "Directory Exported", description: "Excel ledger node saved locally." })
-  }
-
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      handleUpdateStudent(selectedStudent.id, { photo: reader.result as string })
-      toast({ title: "Identity Node Synced", description: "Student photo updated." })
-    }
-    reader.readAsDataURL(file)
-  }
-
   return (
-    <div className="space-y-6 pb-24 px-1">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-6 pb-24 px-1 font-body">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-1">
         <div className="space-y-1">
           <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary px-3 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-full">
             {isDemo ? "DEMO DATA ACTIVE" : "OFFICIAL REGISTRY"}
@@ -265,7 +201,7 @@ export default function StudentsPage() {
           <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Management of {students.length} active students & logistic hubs.</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-          <Button variant="outline" onClick={handleExportDirectory} className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase">
+          <Button variant="outline" onClick={() => exportToExcel(students, "Institutional_Student_Directory")} className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase">
             <Download className="mr-2 h-4 w-4" /> Export Ledger
           </Button>
 
@@ -289,15 +225,9 @@ export default function StudentsPage() {
                     <input type="file" className="hidden" accept="image/*" onChange={handleSmartEnroll} disabled={isScanning} />
                   </label>
                 </div>
-                <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-widest italic">Supports official NECTA & admission nodes.</p>
               </div>
             </DialogContent>
           </Dialog>
-
-          <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase">
-            <Upload className="mr-2 h-4 w-4" /> Import Ledger
-            <input type="file" ref={fileInputRef} className="hidden" accept=".xlsx, .xls, .csv" onChange={handleExcelImport} />
-          </Button>
 
           <Dialog open={isManualEnrolling} onOpenChange={setIsManualEnrolling}>
             <DialogTrigger asChild>
@@ -305,7 +235,7 @@ export default function StudentsPage() {
                 <Plus className="mr-2 h-4 w-4" /> Enroll Student
               </Button>
             </DialogTrigger>
-            <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl max-w-lg font-body">
+            <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl max-w-lg">
               <DialogHeader className="bg-primary/5 p-8 border-b">
                 <DialogTitle className="text-xl font-black uppercase text-primary">Manual Enrollment</DialogTitle>
                 <DialogDescription className="text-[10px] font-bold uppercase tracking-widest">Register new candidate node manually</DialogDescription>
@@ -353,10 +283,6 @@ export default function StudentsPage() {
                     </Select>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Parent Contact</Label>
-                  <Input name="contact" placeholder="e.g. 0712345678" className="h-12 rounded-xl bg-muted/20 border-none font-bold px-5 shadow-inner" />
-                </div>
                 <Button type="submit" className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-xl mt-4">
                   Initialize Candidate Node
                 </Button>
@@ -387,19 +313,6 @@ export default function StudentsPage() {
               <Loader2 className="animate-spin h-10 w-10 text-primary" />
               <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Synchronizing Registry Node...</p>
             </div>
-          ) : students.length === 0 ? (
-            <div className="p-32 text-center flex flex-col items-center gap-6">
-              <div className="h-20 w-20 rounded-full bg-muted/20 flex items-center justify-center">
-                <Users className="h-10 w-10 text-muted-foreground opacity-20" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-black text-primary uppercase">No Active Candidates</h3>
-                <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest max-w-sm">The 2026 Sovereign Ledger is empty. Enable "Demo Mode" in Settings or enroll students manually.</p>
-              </div>
-              <Button variant="outline" className="rounded-full px-8 h-12 font-black uppercase text-[10px] border-primary/20 text-primary" onClick={() => setIsManualEnrolling(true)}>
-                Initialize Registry
-              </Button>
-            </div>
           ) : (
             <Table className="min-w-[800px]">
               <TableHeader className="bg-muted/30">
@@ -418,7 +331,7 @@ export default function StudentsPage() {
                       <div className="flex items-center gap-4">
                         <Avatar className="h-12 w-12 rounded-2xl shadow-lg shrink-0 border-2 border-white transition-transform group-hover:scale-110 overflow-hidden">
                           <AvatarImage src={student.photo} className="object-cover" />
-                          <AvatarFallback className="font-black text-primary bg-primary/5">{student.name?.charAt(0)}</AvatarFallback>
+                          <AvatarFallback className="font-black text-primary bg-primary/5 uppercase">{student.name?.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
                           <span className="font-black text-sm text-foreground/80 group-hover:text-primary transition-colors uppercase truncate max-w-[200px]">{student.name}</span>
@@ -439,13 +352,8 @@ export default function StudentsPage() {
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-center">
-                      <span className={cn(
-                        "font-black text-[10px] px-3 py-1 rounded-full shadow-sm",
-                        (student.conductPoints || 100) >= 90 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"
-                      )}>
-                        {student.conductPoints || 100} PTS
-                      </span>
+                    <TableCell className="text-center font-black text-[10px] text-green-700 bg-green-50 px-3 py-1 rounded-full shadow-sm">
+                      {student.conductPoints || 100} PTS
                     </TableCell>
                     <TableCell className="text-right pr-8">
                       <Sheet onOpenChange={(open) => { if (open) { setSelectedStudent(student); setAiSummary(null); } }}>
@@ -454,28 +362,18 @@ export default function StudentsPage() {
                             Access Hub <ChevronRight className="ml-1 h-3 w-3 group-hover/btn:translate-x-1 transition-transform" />
                           </Button>
                         </SheetTrigger>
-                        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto p-0 border-l-0 shadow-2xl font-body">
+                        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto p-0 border-l-0 shadow-2xl">
                           <div className="bg-primary/5 p-10 border-b relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-8 opacity-5 rotate-12">
                               <Zap className="h-48 w-48" />
                             </div>
                             <SheetHeader className="text-left flex-row items-center gap-8 relative z-10">
-                              <div className="relative group">
-                                <Avatar className="h-28 w-24 rounded-[2rem] shadow-2xl border-4 border-white overflow-hidden">
-                                  <AvatarImage src={selectedStudent?.photo} className="object-cover" />
-                                  <AvatarFallback className="text-3xl font-black text-primary bg-white">{selectedStudent?.name?.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer rounded-[2rem] transition-opacity">
-                                  <Upload className="h-6 w-6 text-white" />
-                                  <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
-                                </label>
-                              </div>
+                              <Avatar className="h-28 w-24 rounded-[2rem] shadow-2xl border-4 border-white overflow-hidden">
+                                <AvatarImage src={selectedStudent?.photo} className="object-cover" />
+                                <AvatarFallback className="text-3xl font-black text-primary bg-white uppercase">{selectedStudent?.name?.charAt(0)}</AvatarFallback>
+                              </Avatar>
                               <div className="space-y-3">
-                                <Input 
-                                  value={selectedStudent?.name || ""} 
-                                  onChange={(e) => handleUpdateStudent(selectedStudent.id, { name: e.target.value.toUpperCase() })}
-                                  className="text-2xl font-black text-primary uppercase bg-transparent border-none p-0 focus-visible:ring-0 h-auto"
-                                />
+                                <h3 className="text-2xl font-headline font-black text-primary uppercase tracking-tighter">{selectedStudent?.name}</h3>
                                 <div className="flex flex-wrap gap-2">
                                   <Badge className="rounded-full bg-white text-primary border-none shadow-md px-4 py-1 text-[9px] uppercase tracking-widest font-black">{selectedStudent?.class}</Badge>
                                   <span className="text-[9px] font-mono font-black text-muted-foreground px-3 py-1 bg-white rounded-lg shadow-inner">{selectedStudent?.id}</span>
@@ -486,74 +384,24 @@ export default function StudentsPage() {
 
                           <div className="p-10 space-y-10">
                             <Tabs defaultValue="logistics" className="space-y-8">
-                              <TabsList className="bg-muted/40 p-1 rounded-2xl h-12 grid w-full grid-cols-3 shadow-inner">
-                                <TabsTrigger value="logistics" className="rounded-xl text-[9px] font-black uppercase tracking-widest">Logistics Hub</TabsTrigger>
-                                <TabsTrigger value="academic" className="rounded-xl text-[9px] font-black uppercase tracking-widest">Academic Hub</TabsTrigger>
-                                <TabsTrigger value="conduct" className="rounded-xl text-[9px] font-black uppercase tracking-widest">Merit Hub</TabsTrigger>
+                              <TabsList className="bg-muted/40 p-1 rounded-2xl h-12 grid w-full grid-cols-4 shadow-inner">
+                                <TabsTrigger value="logistics" className="rounded-xl text-[8px] font-black uppercase">Logistics</TabsTrigger>
+                                <TabsTrigger value="academic" className="rounded-xl text-[8px] font-black uppercase">Academic</TabsTrigger>
+                                <TabsTrigger value="conduct" className="rounded-xl text-[8px] font-black uppercase">Merit</TabsTrigger>
+                                <TabsTrigger value="id-card" className="rounded-xl text-[8px] font-black uppercase">ID Node</TabsTrigger>
                               </TabsList>
 
                               <TabsContent value="logistics" className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
-                                <div className="space-y-4">
-                                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1 tracking-[0.2em]">Institutional Mode</Label>
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <Button 
-                                      variant="outline" 
-                                      className={cn("h-16 rounded-2xl font-black uppercase text-[10px] flex flex-col gap-1 border-2 transition-all shadow-sm", selectedStudent?.type === "Boarder" ? "border-primary bg-primary/5 text-primary" : "opacity-50 border-transparent bg-muted/20")}
-                                      onClick={() => handleUpdateStudent(selectedStudent.id, { type: "Boarder", hostel: "Serengeti Annex", route: "N/A" })}
-                                    >
-                                      <Home className="h-4 w-4" />
-                                      Boarder Hub
-                                    </Button>
-                                    <Button 
-                                      variant="outline" 
-                                      className={cn("h-16 rounded-2xl font-black uppercase text-[10px] flex flex-col gap-1 border-2 transition-all shadow-sm", selectedStudent?.type === "Day" ? "border-primary bg-primary/5 text-primary" : "opacity-50 border-transparent bg-muted/20")}
-                                      onClick={() => handleUpdateStudent(selectedStudent.id, { type: "Day", route: "Mbezi Beach - Kawe", hostel: "N/A" })}
-                                    >
-                                      <Bus className="h-4 w-4" />
-                                      Day Node
-                                    </Button>
-                                  </div>
-                                </div>
-
                                 <div className="grid grid-cols-2 gap-6">
-                                  <div className="space-y-4">
+                                  <div className="space-y-2">
                                     <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Parent Contact</Label>
-                                    <div className="flex gap-2">
-                                      <Input 
-                                        value={selectedStudent?.contact || ""} 
-                                        onChange={(e) => handleUpdateStudent(selectedStudent.id, { contact: e.target.value })}
-                                        className="h-12 bg-muted/20 border-none font-bold rounded-xl px-5 shadow-inner" 
-                                      />
-                                      <Button variant="outline" className="h-12 w-12 rounded-xl border-primary/20 text-primary shadow-sm">
-                                        <MessageCircle className="h-5 w-5" />
-                                      </Button>
-                                    </div>
+                                    <Input value={selectedStudent?.contact || ""} readOnly className="h-12 bg-muted/20 border-none font-bold rounded-xl px-5 shadow-inner" />
                                   </div>
-                                  <div className="space-y-4">
+                                  <div className="space-y-2">
                                     <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Allocation Hub</Label>
-                                    <Select 
-                                      value={selectedStudent?.type === "Boarder" ? (selectedStudent?.hostel || "Serengeti Annex") : (selectedStudent?.route || "Mbezi Beach - Kawe")}
-                                      onValueChange={(val) => handleUpdateStudent(selectedStudent.id, selectedStudent?.type === "Boarder" ? { hostel: val } : { route: val })}
-                                    >
-                                      <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-black text-xs shadow-inner">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent className="rounded-xl">
-                                        {selectedStudent?.type === "Boarder" ? (
-                                          <>
-                                            <SelectItem value="Mt. Kilimanjaro Wing">Kilimanjaro Wing</SelectItem>
-                                            <SelectItem value="Serengeti Annex">Serengeti Annex</SelectItem>
-                                            <SelectItem value="Lake Victoria Wing">Lake Victoria Wing</SelectItem>
-                                          </>
-                                        ) : (
-                                          <>
-                                            <SelectItem value="Mbezi Beach - Kawe">Mbezi Route</SelectItem>
-                                            <SelectItem value="Kijitonyama - Sinza">Kijitonyama Route</SelectItem>
-                                            <SelectItem value="Mikocheni - Msasani">Mikocheni Route</SelectItem>
-                                          </>
-                                        )}
-                                      </SelectContent>
-                                    </Select>
+                                    <Badge className="h-12 w-full flex items-center justify-center bg-white border border-muted text-primary font-black uppercase text-[10px] rounded-xl">
+                                      {selectedStudent?.type === "Boarder" ? selectedStudent?.hostel : selectedStudent?.route}
+                                    </Badge>
                                   </div>
                                 </div>
                               </TabsContent>
@@ -565,20 +413,13 @@ export default function StudentsPage() {
                                       <CardTitle className="text-base font-black uppercase tracking-widest text-primary">AI Narrative Synthesis</CardTitle>
                                       <CardDescription className="text-[9px] font-bold uppercase tracking-widest text-primary/60">Gemini-Powered Performance Mapping</CardDescription>
                                     </div>
-                                    <Button 
-                                      onClick={handleGenerateAiSummary} 
-                                      disabled={isGeneratingAi} 
-                                      className="rounded-full colorful-gradient h-10 px-6 font-black text-[9px] uppercase tracking-widest shadow-lg"
-                                    >
-                                      {isGeneratingAi ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Sparkles className="h-3 w-3 mr-2" />}
-                                      Synthesize Node
+                                    <Button onClick={handleGenerateAiSummary} disabled={isGeneratingAi} className="rounded-full colorful-gradient h-10 px-6 font-black text-[9px] uppercase shadow-lg">
+                                      {isGeneratingAi ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Sparkles className="h-3 w-3 mr-2" />} Synthesize
                                     </Button>
                                   </CardHeader>
                                   <CardContent className="p-8 min-h-[200px]">
                                     {aiSummary ? (
-                                      <div className="prose prose-sm font-medium text-foreground/80 leading-relaxed text-xs">
-                                        {aiSummary}
-                                      </div>
+                                      <div className="prose prose-sm font-medium text-foreground/80 leading-relaxed text-xs">{aiSummary}</div>
                                     ) : (
                                       <div className="flex flex-col items-center justify-center h-[150px] text-center space-y-4 opacity-30">
                                         <Sparkles className="h-10 w-10 text-primary" />
@@ -587,58 +428,63 @@ export default function StudentsPage() {
                                     )}
                                   </CardContent>
                                 </Card>
-
-                                <Button variant="outline" onClick={handleExportTranscript} className="w-full h-14 rounded-2xl border-primary/10 text-primary font-black uppercase text-xs hover:bg-primary/5 group shadow-sm">
-                                  <FileText className="mr-2 h-5 w-5" /> Official Performance Transcript <Download className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
+                                <Button variant="outline" className="w-full h-14 rounded-2xl border-primary/10 text-primary font-black uppercase text-xs hover:bg-primary/5 group">
+                                  <FileText className="mr-2 h-5 w-5" /> Official Performance Transcript
                                 </Button>
                               </TabsContent>
 
-                              <TabsContent value="conduct" className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
-                                <div className="grid grid-cols-2 gap-4">
-                                  <Button 
-                                    className="h-24 rounded-[2rem] bg-green-50 text-green-700 hover:bg-green-100 border-none flex flex-col gap-2 transition-all hover:-translate-y-1 shadow-sm" 
-                                    onClick={() => handleUpdateStudent(selectedStudent.id, { conductPoints: (selectedStudent.conductPoints || 100) + 5 })}
-                                  >
-                                    <Star className="h-6 w-6 fill-green-600" />
-                                    <div className="text-center">
-                                      <p className="text-[10px] font-black uppercase">Award Merit Node</p>
-                                      <p className="text-[8px] font-bold opacity-60">+5 PTS</p>
-                                    </div>
-                                  </Button>
-                                  <Button 
-                                    className="h-24 rounded-[2rem] bg-destructive/5 text-destructive hover:bg-destructive/10 border-none flex flex-col gap-2 transition-all hover:-translate-y-1 shadow-sm" 
-                                    onClick={() => handleUpdateStudent(selectedStudent.id, { conductPoints: (selectedStudent.conductPoints || 100) - 5 })}
-                                  >
-                                    <MinusCircle className="h-6 w-6" />
-                                    <div className="text-center">
-                                      <p className="text-[10px] font-black uppercase tracking-tight">Log Infraction</p>
-                                      <p className="text-[8px] font-bold opacity-60">-5 PTS</p>
-                                    </div>
-                                  </Button>
-                                </div>
-
-                                <div className="p-8 rounded-[2rem] bg-white border border-muted/50 shadow-inner space-y-4">
-                                  <div className="flex justify-between items-center">
-                                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Global Conduct Index</p>
-                                    <Badge className={cn(
-                                      "font-black text-xs px-4 py-1 rounded-full",
-                                      (selectedStudent?.conductPoints || 100) >= 90 ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"
-                                    )}>
-                                      {selectedStudent?.conductPoints || 100} Points
-                                    </Badge>
-                                  </div>
-                                  <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                                    <div 
-                                      className="h-full bg-primary transition-all duration-1000" 
-                                      style={{ width: `${selectedStudent?.conductPoints || 100}%` }} 
-                                    />
-                                  </div>
+                              <TabsContent value="id-card" className="space-y-8 animate-in fade-in slide-in-from-bottom-2 text-center">
+                                <div className="p-10 bg-muted/20 rounded-[3rem] border-2 border-dashed border-primary/10 flex flex-col items-center gap-8">
+                                   {/* ID Card Visual Node */}
+                                   <div className="w-[320px] h-[480px] bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col border border-muted relative">
+                                      <div className="h-24 bg-primary p-6 flex items-center justify-between">
+                                         <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center shadow-lg"><Zap className="h-6 w-6 text-primary fill-primary" /></div>
+                                         <div className="text-right">
+                                            <p className="text-[7px] font-black text-white uppercase tracking-widest">{identity?.name || "ShuleDirect Pro"}</p>
+                                            <p className="text-[5px] font-bold text-white/60 uppercase">Institutional Identity Node</p>
+                                         </div>
+                                      </div>
+                                      <div className="flex-1 flex flex-col items-center pt-10 px-8 text-center space-y-6">
+                                         <Avatar className="h-32 w-32 rounded-[2rem] border-4 border-primary/10 shadow-xl shadow-primary/5">
+                                            <AvatarImage src={selectedStudent?.photo} className="object-cover" />
+                                            <AvatarFallback className="text-3xl font-black text-primary bg-primary/5 uppercase">{selectedStudent?.name?.charAt(0)}</AvatarFallback>
+                                         </Avatar>
+                                         <div className="space-y-1">
+                                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Student Node</p>
+                                            <h4 className="text-lg font-black text-primary uppercase leading-tight">{selectedStudent?.name}</h4>
+                                         </div>
+                                         <div className="grid grid-cols-2 w-full gap-4 pt-4 border-t border-muted">
+                                            <div className="text-left">
+                                               <p className="text-[6px] font-black text-muted-foreground uppercase">ID Number</p>
+                                               <p className="text-[10px] font-bold text-foreground/80 font-mono">{selectedStudent?.id}</p>
+                                            </div>
+                                            <div className="text-right">
+                                               <p className="text-[6px] font-black text-muted-foreground uppercase">Academic Tier</p>
+                                               <p className="text-[10px] font-bold text-foreground/80">{selectedStudent?.class}</p>
+                                            </div>
+                                         </div>
+                                         <div className="pt-6">
+                                            <div className="p-3 bg-muted/30 rounded-2xl shadow-inner inline-block"><QrCode className="h-14 w-14 text-primary opacity-60" /></div>
+                                            <p className="text-[6px] font-black text-muted-foreground uppercase mt-2">Sovereign Audit Key</p>
+                                         </div>
+                                      </div>
+                                      <div className="h-3 bg-accent" />
+                                   </div>
+                                   
+                                   <div className="space-y-4 w-full max-w-xs">
+                                      <Button className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-xl">
+                                         <IdCard className="mr-2 h-4 w-4" /> Export Sovereign ID
+                                      </Button>
+                                      <Button variant="ghost" onClick={() => window.print()} className="w-full text-primary font-black uppercase text-[10px] tracking-widest h-10 rounded-xl hover:bg-primary/5">
+                                         <Printer className="mr-2 h-4 w-4" /> Print on Card PVC
+                                      </Button>
+                                   </div>
                                 </div>
                               </TabsContent>
                             </Tabs>
                           </div>
                           <SheetFooter className="p-8 border-t bg-muted/10">
-                            <p className="text-[8px] font-bold text-muted-foreground text-center w-full uppercase tracking-[0.4em]">Sovereign Hub Identity Verified • 2026 Academic Season</p>
+                            <p className="text-[8px] font-bold text-muted-foreground text-center w-full uppercase tracking-[0.4em]">Sovereign Hub Identity Verified • 2026 Season</p>
                           </SheetFooter>
                         </SheetContent>
                       </Sheet>
