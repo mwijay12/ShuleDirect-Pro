@@ -4,21 +4,22 @@
 import * as React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ShieldCheck, Lock, Mail, Key, ArrowRight, Sparkles, Loader2, AlertCircle, Building2 } from "lucide-react"
+import { ShieldCheck, Lock, Mail, Key, ArrowRight, Sparkles, Loader2, AlertCircle, Building2, UserCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useAuth, initiateEmailSignIn } from "@/firebase"
-import { onAuthStateChanged } from "firebase/auth"
+import { useAuth } from "@/firebase"
+import { signInWithEmailAndPassword, signInAnonymously, onAuthStateChanged } from "firebase/auth"
 
 export default function LoginPage() {
   const auth = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [schoolName, setSchoolName] = useState("Institutional Node")
+  const [schoolName, setSchoolName] = useState("ShuleDirect Pro")
   const [loading, setLoading] = useState(false)
+  const [demoLoading, setDemoLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
@@ -28,25 +29,46 @@ export default function LoginPage() {
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        localStorage.setItem("shule_user", user.email || "")
-        router.push("/dashboard")
+        localStorage.setItem("shule_user", user.email || "Anonymous Node")
+        // Default to admin role if we don't have custom claims yet
+        if (!localStorage.getItem("shule_role")) {
+          localStorage.setItem("shule_role", "ADMIN")
+        }
+        router.replace("/dashboard")
       }
     })
     return () => unsubscribe()
   }, [auth, router])
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
-    // Real Firebase Auth Node
     try {
-      initiateEmailSignIn(auth, email, password)
-      // Success is handled by onAuthStateChanged listener above
+      await signInWithEmailAndPassword(auth, email, password)
     } catch (err: any) {
-      setError("Invalid institutional credentials.")
+      console.error("Login Node Failure:", err)
+      if (err.code === 'auth/invalid-credential') {
+        setError("Vitambulisho siyo sahihi. Hakiki Email na Password.")
+      } else if (err.code === 'auth/user-not-found') {
+        setError("Akaunti hii haijajisajili kwenye mfumo.")
+      } else {
+        setError("Hitilafu ya kiufundi imetokea. Jaribu tena baadae.")
+      }
       setLoading(false)
+    }
+  }
+
+  const handleDemoLogin = async () => {
+    setDemoLoading(true)
+    setError(null)
+    try {
+      await signInAnonymously(auth)
+      localStorage.setItem("shule_role", "ADMIN")
+    } catch (err) {
+      setError("Demo access is currently unavailable.")
+      setDemoLoading(false)
     }
   }
 
@@ -122,18 +144,37 @@ export default function LoginPage() {
                 </Alert>
               )}
 
-              <Button 
-                disabled={loading} 
-                className="w-full h-14 rounded-2xl font-black colorful-gradient shadow-2xl text-sm group mt-6 hover:scale-[1.02] transition-transform uppercase tracking-[0.2em]"
-              >
-                {loading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <>
-                    Initialize Session <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-2 transition-transform" />
-                  </>
-                )}
-              </Button>
+              <div className="space-y-4 mt-6">
+                <Button 
+                  type="submit"
+                  disabled={loading || demoLoading} 
+                  className="w-full h-14 rounded-2xl font-black colorful-gradient shadow-2xl text-sm group hover:scale-[1.02] transition-transform uppercase tracking-[0.2em]"
+                >
+                  {loading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      Initialize Session <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-2 transition-transform" />
+                    </>
+                  )}
+                </Button>
+
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={handleDemoLogin}
+                  disabled={loading || demoLoading}
+                  className="w-full h-14 rounded-2xl font-black border-primary/20 text-primary bg-white shadow-lg text-sm group hover:bg-primary/5 transition-all uppercase tracking-[0.2em]"
+                >
+                  {demoLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      <UserCircle className="mr-3 h-5 w-5" /> Quick Demo Access
+                    </>
+                  )}
+                </Button>
+              </div>
             </form>
 
             <div className="pt-8 border-t border-dashed flex flex-col items-center gap-4 text-center">
