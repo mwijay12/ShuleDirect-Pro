@@ -1,9 +1,9 @@
+
 "use client"
 
 import * as React from "react"
-import { useEffect, useState } from "react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { 
   LayoutDashboard, 
   Users, 
@@ -19,7 +19,8 @@ import {
   X,
   HelpCircle,
   PackageSearch,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Calendar
 } from "lucide-react"
 
 import {
@@ -34,41 +35,31 @@ import {
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/hooks/use-auth"
 
 const allNavItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "TEACHER", "BURSAR"] },
-  { title: "Students", url: "/dashboard/students", icon: Users, roles: ["ADMIN", "TEACHER"] },
-  { title: "Attendance", url: "/dashboard/attendance", icon: ClipboardCheck, roles: ["ADMIN", "TEACHER"] },
-  { title: "Academics", url: "/dashboard/academics", icon: GraduationCap, roles: ["ADMIN", "TEACHER"] },
-  { title: "Finance", url: "/dashboard/finance", icon: Banknote, roles: ["ADMIN", "BURSAR"] },
-  { title: "Canteen", url: "/dashboard/canteen", icon: UtensilsCrossed, roles: ["ADMIN", "BURSAR"] },
-  { title: "Inventory", url: "/dashboard/assets", icon: PackageSearch, roles: ["ADMIN", "BURSAR"] },
-  { title: "Transport", url: "/dashboard/transport", icon: Bus, roles: ["ADMIN", "BURSAR"] },
-  { title: "Hostel", url: "/dashboard/hostel", icon: Bed, roles: ["ADMIN", "BURSAR"] },
-  { title: "Reports", url: "/dashboard/reports", icon: Zap, roles: ["ADMIN", "TEACHER", "BURSAR"] },
-  { title: "Help", url: "/dashboard/help", icon: HelpCircle, roles: ["ADMIN", "TEACHER", "BURSAR"] },
-  { title: "Settings", url: "/dashboard/settings", icon: Settings, roles: ["ADMIN"] },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, module: "dashboard" },
+  { title: "Students", url: "/dashboard/students", icon: Users, module: "students" },
+  { title: "Attendance", url: "/dashboard/attendance", icon: ClipboardCheck, module: "attendance" },
+  { title: "Academics", url: "/dashboard/academics", icon: GraduationCap, module: "academics" },
+  { title: "Finance", url: "/dashboard/finance", icon: Banknote, module: "finance" },
+  { title: "Canteen", url: "/dashboard/canteen", icon: UtensilsCrossed, module: "canteen" },
+  { title: "Inventory", url: "/dashboard/assets", icon: PackageSearch, module: "assets" },
+  { title: "Timetable", url: "/dashboard/timetable", icon: Calendar, module: "timetable" },
+  { title: "Transport", url: "/dashboard/transport", icon: Bus, module: "transport" },
+  { title: "Hostel", url: "/dashboard/hostel", icon: Bed, module: "hostel" },
+  { title: "Reports", url: "/dashboard/reports", icon: Zap, module: "reports" },
+  { title: "Help", url: "/dashboard/help", icon: HelpCircle, module: "help" },
+  { title: "Settings", url: "/dashboard/settings", icon: Settings, module: "settings" },
 ]
 
 export function AppSidebar() {
   const pathname = usePathname()
-  const router = useRouter()
   const { state, setOpenMobile, isMobile } = useSidebar()
+  const { role, canAccess, signOut } = useAuth()
   const isCollapsed = state === "collapsed"
-  const [role, setRole] = useState<string>("ADMIN")
-  const [systemName, setSystemName] = useState("Shule Altra")
 
-  useEffect(() => {
-    const savedRole = localStorage.getItem("shule_role")
-    if (savedRole) setRole(savedRole)
-  }, [])
-
-  const filteredItems = allNavItems.filter(item => item.roles.includes(role))
-
-  const handleLogout = () => {
-    localStorage.clear()
-    router.push("/login")
-  }
+  const filteredItems = allNavItems.filter(item => canAccess(item.module))
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/50 shadow-sm transition-all duration-300 font-body">
@@ -79,8 +70,8 @@ export function AppSidebar() {
           </div>
           {!isCollapsed && (
             <div className="flex flex-col gap-0.5 leading-none overflow-hidden animate-in fade-in slide-in-from-left-4 duration-500">
-              <span className="font-headline font-black text-lg sm:text-xl text-primary tracking-tighter whitespace-nowrap uppercase">{systemName}</span>
-              <span className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-black">Sovereign Node 2026</span>
+              <span className="font-headline font-black text-lg sm:text-xl text-primary tracking-tighter whitespace-nowrap uppercase">Shule Altra</span>
+              <span className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-black">Academic Season 2026</span>
             </div>
           )}
         </Link>
@@ -94,7 +85,7 @@ export function AppSidebar() {
       <SidebarContent className="px-3 sm:px-4">
         <SidebarMenu className="gap-1 sm:gap-2">
           {filteredItems.map((item) => {
-            const isActive = pathname === item.url
+            const isActive = pathname === item.url || (item.url !== '/dashboard' && pathname.startsWith(item.url))
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
@@ -137,17 +128,17 @@ export function AppSidebar() {
         )}>
           {!isCollapsed && (
             <div className="flex items-center gap-3 group bg-primary/5 p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-primary/10 shadow-inner overflow-hidden">
-              <div className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 rounded-full colorful-gradient flex items-center justify-center text-white font-black text-xs shadow-lg">
-                {role.charAt(0)}
+              <div className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 rounded-full colorful-gradient flex items-center justify-center text-white font-black text-xs shadow-lg uppercase">
+                {role?.charAt(0) || 'A'}
               </div>
               <div className="flex flex-col overflow-hidden">
-                <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary truncate">Persona Active</span>
-                <span className="text-[7px] sm:text-[9px] text-muted-foreground font-black uppercase tracking-tighter truncate">{role} Hub</span>
+                <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary truncate">Active Hub</span>
+                <span className="text-[7px] sm:text-[9px] text-muted-foreground font-black uppercase tracking-tighter truncate">{role} NODE</span>
               </div>
             </div>
           )}
           <button 
-            onClick={handleLogout}
+            onClick={signOut}
             className={cn(
               "flex items-center gap-3 p-2 sm:p-3 rounded-xl sm:rounded-2xl text-destructive font-black text-[8px] sm:text-[10px] uppercase tracking-widest hover:bg-destructive/10 transition-all group",
               isCollapsed ? "justify-center" : "w-full"

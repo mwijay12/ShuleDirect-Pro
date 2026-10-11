@@ -1,6 +1,7 @@
+
 /**
- * @fileOverview NECTA-Compliant Grading & Division Logic Node 2026.
- * Implementation of official PSLE and CSEE aggregation rules.
+ * @fileOverview National Grading Matrix Engine for Shule Altra.
+ * Refined to align with official NECTA CSEE/ACSEE/PSLE/FTNA standards.
  */
 
 export type NectaLevel = 'PSLE' | 'FTNA' | 'CSEE' | 'ACSEE';
@@ -8,38 +9,80 @@ export type NectaLevel = 'PSLE' | 'FTNA' | 'CSEE' | 'ACSEE';
 export interface GradeResult {
   grade: string;
   points: number;
-  remarks: string;
+  remark: string;
 }
 
-/**
- * PSLE (Standard 7) Grading Matrix
- */
-export function calculatePsleGrade(marks: number): GradeResult {
-  if (marks >= 41) return { grade: 'A', points: 1, remarks: 'EXCELLENT' };
-  if (marks >= 30) return { grade: 'B', points: 2, remarks: 'VERY GOOD' };
-  if (marks >= 21) return { grade: 'C', points: 3, remarks: 'GOOD' };
-  if (marks >= 10) return { grade: 'D', points: 4, remarks: 'SATISFACTORY' };
-  return { grade: 'E', points: 5, remarks: 'FAIL' };
+export interface DivisionResult {
+  division: string;
+  totalPoints: number;
+  bestSubjects: SubjectGrade[];
+  classification: string;
 }
 
-/**
- * CSEE (Form 4) / FTNA (Form 2) Grading Matrix
- */
-export function calculateCseeGrade(marks: number): GradeResult {
-  if (marks >= 75) return { grade: 'A', points: 1, remarks: 'EXCELLENT' };
-  if (marks >= 60) return { grade: 'B', points: 2, remarks: 'VERY GOOD' };
-  if (marks >= 45) return { grade: 'C', points: 3, remarks: 'GOOD' };
-  if (marks >= 30) return { grade: 'D', points: 4, remarks: 'SATISFACTORY' };
-  return { grade: 'F', points: 5, remarks: 'FAIL' };
+export interface SubjectGrade {
+  subject: string;
+  score: number;
+  grade: string;
+  points: number;
 }
 
-/**
- * Division Classification for CSEE (Best 7 Subjects)
- */
-export function classifyCseeDivision(totalPoints: number): string {
-  if (totalPoints >= 7 && totalPoints <= 17) return 'I';
-  if (totalPoints >= 18 && totalPoints <= 21) return 'II';
-  if (totalPoints >= 22 && totalPoints <= 25) return 'III';
-  if (totalPoints >= 26 && totalPoints <= 33) return 'IV';
-  return '0';
+// ── CSEE (Form IV) Grading Scale ──
+export function calculateCseeGrade(score: number): GradeResult {
+  if (score < 0 || score > 100) throw new Error(`Invalid score: ${score}`);
+  if (score >= 75) return { grade: 'A', points: 1, remark: 'Excellent' };
+  if (score >= 65) return { grade: 'B', points: 2, remark: 'Very Good' };
+  if (score >= 45) return { grade: 'C', points: 3, remark: 'Good' };
+  if (score >= 30) return { grade: 'D', points: 4, remark: 'Satisfactory' };
+  return { grade: 'F', points: 5, remark: 'Fail' };
+}
+
+// ── ACSEE (Form VI) Grading Scale ──
+export function calculateAcseeGrade(score: number): GradeResult {
+  if (score >= 80) return { grade: 'A', points: 1, remark: 'Excellent' };
+  if (score >= 70) return { grade: 'B', points: 2, remark: 'Very Good' };
+  if (score >= 60) return { grade: 'C', points: 3, remark: 'Good' };
+  if (score >= 50) return { grade: 'D', points: 4, remark: 'Satisfactory' };
+  if (score >= 40) return { grade: 'E', points: 5, remark: 'Pass' };
+  if (score >= 35) return { grade: 'S', points: 6, remark: 'Subsidiary' };
+  return { grade: 'F', points: 7, remark: 'Fail' };
+}
+
+// ── PSLE (Standard VII) Grading Scale ──
+export function calculatePsleGrade(score: number): GradeResult {
+  if (score >= 41) return { grade: 'A', points: 1, remark: 'Excellent' };
+  if (score >= 31) return { grade: 'B', points: 2, remark: 'Very Good' };
+  if (score >= 21) return { grade: 'C', points: 3, remark: 'Average' };
+  if (score >= 11) return { grade: 'D', points: 4, remark: 'Below Average' };
+  return { grade: 'E', points: 5, remark: 'Fail' };
+}
+
+// ── FTNA (Form II) Pass/Fail Node ──
+export function calculateFtnaResult(subjects: SubjectGrade[]) {
+  const failedCount = subjects.filter(s => s.score < 30).length;
+  const avg = subjects.reduce((s, c) => s + c.score, 0) / subjects.length;
+  const passed = failedCount <= 2 && avg >= 30;
+  return { passed, avg: Math.round(avg), remark: passed ? 'PROCEED' : 'REMEDIAL' };
+}
+
+// ── Division Classification Node (Best 7 Subjects) ──
+const COMPULSORY_CSEE = ['Mathematics', 'English', 'Civics'];
+
+export function classifyCseeDivision(subjects: SubjectGrade[]): DivisionResult {
+  if (subjects.length < 7) {
+    return { division: '0', totalPoints: 0, bestSubjects: [], classification: 'Incomplete' };
+  }
+
+  const compulsory = subjects.filter(s => COMPULSORY_CSEE.includes(s.subject));
+  const optional = subjects.filter(s => !COMPULSORY_CSEE.includes(s.subject)).sort((a, b) => a.points - b.points);
+  
+  const best7 = [...compulsory, ...optional.slice(0, 4)];
+  const points = best7.reduce((s, c) => s + c.points, 0);
+
+  let div = '0';
+  if (points >= 7 && points <= 17) div = 'I';
+  else if (points >= 18 && points <= 21) div = 'II';
+  else if (points >= 22 && points <= 25) div = 'III';
+  else if (points >= 26 && points <= 33) div = 'IV';
+
+  return { division: div, totalPoints: points, bestSubjects: best7, classification: `Division ${div}` };
 }

@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { Toaster } from "@/components/ui/toaster"
@@ -11,80 +11,65 @@ import {
   Menu,
   ShieldCheck,
   Loader2,
-  Clock,
-  LayoutDashboard,
-  ClipboardCheck,
-  Users,
-  Banknote
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { InstitutionalLoader } from "@/components/ui/institutional-loader"
-import { useFirestore, useDoc, useMemoFirebase } from "@/firebase"
-import { doc } from "firebase/firestore"
-
-const AUTO_LOGOUT_MS = 15 * 60 * 1000 
+import { useAuth } from "@/hooks/use-auth"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const pathname = usePathname()
+  const { user, role, loading, error, canAccess, signOut } = useAuth()
   const router = useRouter()
-  const db = useFirestore()
+  const pathname = usePathname()
   const [greeting, setGreeting] = useState("Welcome")
   const [isInitialLoading, setIsInitialLoading] = useState(true)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const identityRef = useMemoFirebase(() => doc(db, "schools", "school-001", "config", "identity"), [db])
-  const { data: identity } = useDoc(identityRef)
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/login")
+    }
+  }, [loading, user, router])
 
-  const schoolName = identity?.name || "ShuleDirect Pro"
-  const systemName = identity?.systemName || "ShuleDirect"
-
-  const handleLogout = React.useCallback(() => {
-    router.push("/login")
-  }, [router])
-
-  const resetTimer = React.useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    timeoutRef.current = setTimeout(() => {
-      handleLogout()
-    }, AUTO_LOGOUT_MS)
-  }, [handleLogout])
+  useEffect(() => {
+    if (!loading && user && role) {
+      const module = pathname.split('/')[2]
+      if (module && !canAccess(module)) {
+        router.replace("/dashboard")
+      }
+    }
+  }, [loading, user, role, pathname, canAccess, router])
 
   useEffect(() => {
     const hours = new Date().getHours()
-    let msg = "Good Morning"
-    if (hours >= 12 && hours < 16) msg = "Good Afternoon"
-    if (hours >= 16) msg = "Good Evening"
+    let msg = "Habari za asubuhi"
+    if (hours >= 12 && hours < 16) msg = "Habari za mchana"
+    if (hours >= 16) msg = "Habari za jioni"
     setGreeting(msg)
+  }, [])
 
-    window.addEventListener("mousemove", resetTimer)
-    window.addEventListener("keydown", resetTimer)
-    resetTimer()
-    
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-      window.removeEventListener("mousemove", resetTimer)
-      window.removeEventListener("keydown", resetTimer)
-    }
-  }, [resetTimer])
-
-  const bottomNavItems = [
-    { label: "Home", icon: LayoutDashboard, href: "/dashboard" },
-    { label: "Register", icon: ClipboardCheck, href: "/dashboard/attendance" },
-    { label: "Students", icon: Users, href: "/dashboard/students" },
-    { label: "Finance", icon: Banknote, href: "/dashboard/finance" },
-  ]
-
-  if (isInitialLoading) {
+  if (loading || isInitialLoading) {
     return <InstitutionalLoader onComplete={() => setIsInitialLoading(false)} />
   }
+
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center p-8 text-center font-body">
+        <div className="space-y-4">
+          <Badge variant="destructive" className="px-4 py-1 rounded-full uppercase font-black tracking-widest">Access Node Denied</Badge>
+          <p className="text-muted-foreground text-sm uppercase font-bold">{error}</p>
+          <Button onClick={() => router.push("/login")} className="rounded-full colorful-gradient font-black text-[10px] uppercase px-8">Retry Entry</Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) return null
 
   return (
     <SidebarProvider>
@@ -102,15 +87,15 @@ export default function DashboardLayout({
           
           <div className="flex flex-1 items-center gap-4 min-w-0 px-2">
             <div className="flex flex-col min-w-0">
-              <h2 className="text-xs sm:text-lg font-black text-primary flex items-center gap-2 truncate tracking-tight">
-                {greeting}<span className="hidden lg:inline">, Administrator! 👋</span>
+              <h2 className="text-xs sm:text-lg font-black text-primary flex items-center gap-2 truncate tracking-tight uppercase">
+                {greeting}<span className="hidden lg:inline">, {role}! 👋</span>
               </h2>
               <div className="flex items-center gap-2 overflow-hidden">
                 <p className="text-[8px] sm:text-[9px] text-muted-foreground font-black uppercase tracking-widest truncate">
-                  {schoolName} Hub
+                  Sovereign Institutional Node
                 </p>
                 <Badge variant="outline" className="hidden sm:flex border-green-200 bg-green-50 text-green-700 h-4 text-[7px] font-black px-2 rounded-full whitespace-nowrap">
-                  {systemName.toUpperCase()} 2026
+                  VERIFIED SESSION
                 </Badge>
               </div>
             </div>
@@ -121,8 +106,8 @@ export default function DashboardLayout({
               <Bell className="h-5 w-5" />
               <span className="absolute top-2.5 right-2.5 flex h-2 w-2 rounded-full bg-destructive border-2 border-white" />
             </Button>
-            <div className="h-9 w-9 rounded-2xl colorful-gradient flex items-center justify-center text-white font-black text-sm shadow-xl shadow-primary/20 shrink-0">
-              A
+            <div className="h-9 w-9 rounded-2xl colorful-gradient flex items-center justify-center text-white font-black text-sm shadow-xl shadow-primary/20 shrink-0 uppercase">
+              {role?.charAt(0) || 'A'}
             </div>
           </div>
         </header>
@@ -132,18 +117,6 @@ export default function DashboardLayout({
             {children}
           </div>
         </main>
-
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t flex items-center justify-around px-2 z-50 shadow-lg">
-          {bottomNavItems.map((item) => {
-            const isActive = pathname === item.href
-            return (
-              <Link key={item.href} href={item.href} className={cn("flex flex-col items-center gap-1 transition-colors px-2 min-w-0", isActive ? "text-primary" : "text-muted-foreground")}>
-                <item.icon className={cn("h-5 w-5", isActive && "scale-110")} />
-                <span className="text-[8px] font-black uppercase tracking-tighter truncate w-full text-center">{item.label}</span>
-              </Link>
-            )
-          })}
-        </nav>
         <Toaster />
       </SidebarInset>
     </SidebarProvider>
