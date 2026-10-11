@@ -57,13 +57,11 @@ export function AppSidebar() {
   const { state, setOpenMobile, isMobile } = useSidebar()
   const isCollapsed = state === "collapsed"
   const [role, setRole] = useState<string>("ADMIN")
-  const [systemName, setSystemName] = useState("Altraware")
+  const [systemName, setSystemName] = useState("Shule Atra")
 
   useEffect(() => {
     const savedRole = localStorage.getItem("shule_role")
-    const savedSystem = localStorage.getItem("shule_system_name")
     if (savedRole) setRole(savedRole)
-    if (savedSystem) setSystemName(savedSystem)
   }, [])
 
   const filteredItems = allNavItems.filter(item => item.roles.includes(role))
@@ -83,7 +81,7 @@ export function AppSidebar() {
           {!isCollapsed && (
             <div className="flex flex-col gap-0.5 leading-none overflow-hidden animate-in fade-in slide-in-from-left-4 duration-500">
               <span className="font-headline font-black text-lg sm:text-xl text-primary tracking-tighter whitespace-nowrap uppercase">{systemName}</span>
-              <span className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-black">PDPA Node 2026</span>
+              <span className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-black">Sovereign Node 2026</span>
             </div>
           )}
         </Link>
@@ -144,7 +142,7 @@ export function AppSidebar() {
                 {role.charAt(0)}
               </div>
               <div className="flex flex-col overflow-hidden">
-                <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary truncate">Altraware Active</span>
+                <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary truncate">Persona Active</span>
                 <span className="text-[7px] sm:text-[9px] text-muted-foreground font-black uppercase tracking-tighter truncate">{role} Hub</span>
               </div>
             </div>
@@ -157,7 +155,7 @@ export function AppSidebar() {
             )}
           >
             <LogOut className="h-4 w-4 group-hover:-translate-x-1 transition-transform shrink-0" />
-            {!isCollapsed && <span className="truncate">Logout Node</span>}
+            {!isCollapsed && <span className="truncate">Exit Node</span>}
           </button>
         </div>
       </SidebarFooter>

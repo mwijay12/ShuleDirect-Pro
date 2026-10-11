@@ -4,12 +4,13 @@
 import * as React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ShieldCheck, Lock, Mail, Key, ArrowRight, Sparkles, Loader2, AlertCircle, Building2, UserCircle } from "lucide-react"
+import { ShieldCheck, Lock, Mail, Key, ArrowRight, Sparkles, Loader2, AlertCircle, Building2, UserCircle, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/firebase"
 import { signInWithEmailAndPassword, signInAnonymously, onAuthStateChanged } from "firebase/auth"
 
@@ -17,23 +18,17 @@ export default function LoginPage() {
   const auth = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [systemName, setSystemName] = useState("Altraware Technology")
+  const [systemName] = useState("Shule Atra")
   const [loading, setLoading] = useState(false)
   const [demoLoading, setDemoLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [demoRole, setDemoRole] = useState("ADMIN")
   const router = useRouter()
 
   useEffect(() => {
-    const saved = localStorage.getItem("shule_system_name")
-    if (saved) setSystemName(saved)
-
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        localStorage.setItem("shule_user", user.email || "Altraware Node")
-        // Ensure role is set for demo purposes
-        if (!localStorage.getItem("shule_role")) {
-          localStorage.setItem("shule_role", "ADMIN")
-        }
+        localStorage.setItem("shule_user", user.email || "Guest Node")
         router.replace("/dashboard")
       }
     })
@@ -47,9 +42,9 @@ export default function LoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password)
+      localStorage.setItem("shule_role", "ADMIN") // Default for official admin login
     } catch (err: any) {
-      // Catch error silently in console to prevent Next.js error overlay in dev
-      setError("Vitambulisho siyo sahihi. Hakiki Email na Password za Altraware.")
+      setError("Vitambulisho siyo sahihi. Hakiki Email na Password za Shule Atra.")
       setLoading(false)
     }
   }
@@ -59,7 +54,8 @@ export default function LoginPage() {
     setError(null)
     try {
       await signInAnonymously(auth)
-      localStorage.setItem("shule_role", "ADMIN")
+      localStorage.setItem("shule_role", demoRole)
+      localStorage.setItem("shule_system_name", "Shule Atra")
     } catch (err) {
       setError("Demo access is currently unavailable.")
       setDemoLoading(false)
@@ -83,7 +79,7 @@ export default function LoginPage() {
           </div>
           <div className="space-y-2 px-4">
             <h1 className="text-2xl sm:text-4xl font-headline font-black text-primary tracking-tighter uppercase truncate">{systemName}</h1>
-            <p className="text-muted-foreground font-black text-[9px] uppercase tracking-[0.4em]">Altraware Verification Gateway 2026</p>
+            <p className="text-muted-foreground font-black text-[9px] uppercase tracking-[0.4em]">Sovereign Verification Gateway 2026</p>
           </div>
         </div>
 
@@ -95,18 +91,18 @@ export default function LoginPage() {
             <CardTitle className="text-xl sm:text-2xl flex items-center justify-center gap-3 text-primary font-black uppercase tracking-tight">
               <Lock className="h-5 w-5" /> Secure Hub Access
             </CardTitle>
-            <CardDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-2">Authorized Staff Node Required</CardDescription>
+            <CardDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-2">Authorized Personnel Required</CardDescription>
           </CardHeader>
           <CardContent className="p-8 sm:p-12 space-y-8">
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-3">
-                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Altraware Email</Label>
+                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Official Email</Label>
                 <div className="relative group">
                   <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input 
                     id="email"
                     type="email" 
-                    placeholder="e.g. admin@altraware.tech" 
+                    placeholder="e.g. admin@shuleatra.tech" 
                     className="pl-14 h-14 rounded-2xl border-none bg-muted/30 focus-visible:ring-4 focus-visible:ring-primary/10 focus-visible:bg-white text-sm font-bold shadow-inner"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -153,29 +149,47 @@ export default function LoginPage() {
                   )}
                 </Button>
 
-                <Button 
-                  type="button"
-                  variant="outline"
-                  onClick={handleDemoLogin}
-                  disabled={loading || demoLoading}
-                  className="w-full h-14 rounded-2xl font-black border-primary/20 text-primary bg-white shadow-lg text-sm group hover:bg-primary/5 transition-all uppercase tracking-[0.2em]"
-                >
-                  {demoLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <>
-                      <UserCircle className="mr-3 h-5 w-5" /> Quick Demo Access
-                    </>
-                  )}
-                </Button>
+                <div className="pt-6 border-t border-dashed">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground ml-2 tracking-widest">Select Demo Persona</Label>
+                      <Select value={demoRole} onValueChange={setDemoRole}>
+                        <SelectTrigger className="h-12 rounded-xl bg-primary/5 border-none font-black text-[10px] uppercase tracking-widest">
+                          <SelectValue placeholder="Identify testing role..." />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl">
+                          <SelectItem value="ADMIN" className="font-black text-[10px] uppercase">Super Admin Hub</SelectItem>
+                          <SelectItem value="TEACHER" className="font-black text-[10px] uppercase">Teaching Faculty</SelectItem>
+                          <SelectItem value="BURSAR" className="font-black text-[10px] uppercase">Financial Bursar</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      onClick={handleDemoLogin}
+                      disabled={loading || demoLoading}
+                      className="w-full h-14 rounded-2xl font-black border-primary/20 text-primary bg-white shadow-lg text-sm group hover:bg-primary/5 transition-all uppercase tracking-[0.2em]"
+                    >
+                      {demoLoading ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <>
+                          <UserCircle className="mr-3 h-5 w-5" /> Test as {demoRole}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
               </div>
             </form>
 
             <div className="pt-8 border-t border-dashed flex flex-col items-center gap-4 text-center">
               <div className="flex items-center gap-3 px-6 py-2 rounded-full bg-accent/10 text-accent text-[9px] font-black uppercase tracking-[0.3em]">
-                <Sparkles className="h-4 w-4" /> PDPA 2022 COMPLIANT
+                <Sparkles className="h-4 w-4" /> TEST MODE ACTIVE
               </div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Architect: Altraware Technology</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Design: Shule Atra Node</p>
             </div>
           </CardContent>
         </Card>

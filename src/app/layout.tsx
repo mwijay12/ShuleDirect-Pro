@@ -4,8 +4,8 @@ import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'Altraware Technology - Advanced Institutional Hub',
-  description: 'PDPA-compliant high-fidelity institutional ecosystem for the modern Tanzanian landscape. Powered by Altraware.',
+  title: 'Shule Atra - Advanced Institutional Hub',
+  description: 'PDPA-compliant high-fidelity institutional ecosystem for the modern Tanzanian landscape. Powered by Shule Atra.',
 };
 
 export default function RootLayout({

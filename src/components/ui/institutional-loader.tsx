@@ -8,14 +8,11 @@ import { ShieldCheck, Loader2 } from 'lucide-react'
 export function InstitutionalLoader({ onComplete }: { onComplete?: () => void }) {
   const [progress, setProgress] = useState(0)
   const [isExiting, setIsExiting] = useState(false)
-  const [systemName, setSystemName] = useState("Altraware Technology")
+  const [systemName, setSystemName] = useState("Shule Atra")
   const [logo, setLogo] = useState<string | null>(null)
 
   useEffect(() => {
-    const savedSystemName = localStorage.getItem("shule_system_name")
     const savedLogo = localStorage.getItem("shule_logo")
-    
-    if (savedSystemName) setSystemName(savedSystemName)
     if (savedLogo) setLogo(savedLogo)
 
     const interval = setInterval(() => {
@@ -62,7 +59,7 @@ export function InstitutionalLoader({ onComplete }: { onComplete?: () => void })
               className="h-24 w-24 sm:h-32 sm:w-32 rounded-[2.5rem] sm:rounded-[3rem] colorful-gradient flex items-center justify-center text-white shadow-[0_30px_60px_rgba(31,91,166,0.3)] group relative overflow-hidden"
             >
               {logo ? (
-                <img src={logo} alt="Altraware Logo" className="h-full w-full object-cover" />
+                <img src={logo} alt="Shule Atra Logo" className="h-full w-full object-cover" />
               ) : (
                 <ShieldCheck className="h-12 w-12 sm:h-16 sm:w-16" />
               )}
@@ -114,7 +111,7 @@ export function InstitutionalLoader({ onComplete }: { onComplete?: () => void })
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
                   <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest">
-                    {progress < 40 ? 'Security Check' : progress < 80 ? 'Optimizing Altraware' : 'Hub Ready'}
+                    {progress < 40 ? 'Security Check' : progress < 80 ? 'Optimizing Node' : 'Hub Ready'}
                   </span>
                 </div>
                 <span className="text-sm font-mono font-black text-primary">{Math.min(Math.round(progress), 100)}%</span>
@@ -130,9 +127,9 @@ export function InstitutionalLoader({ onComplete }: { onComplete?: () => void })
           >
             <div className="flex items-center gap-3 text-[8px] font-black text-muted-foreground uppercase tracking-[0.5em]">
               <Loader2 className="h-3 w-3 animate-spin text-primary" />
-              Altraware Technology Core
+              Shule Atra Technology Core
             </div>
-            <p className="text-[7px] font-bold text-muted-foreground/40 uppercase tracking-widest">Architecture by Altraware Node</p>
+            <p className="text-[7px] font-bold text-muted-foreground/40 uppercase tracking-widest">Architecture by Atra Node</p>
           </motion.div>
         </motion.div>
       )}
