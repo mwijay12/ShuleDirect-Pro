@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -61,6 +60,7 @@ import { updateDocumentNonBlocking, addDocumentNonBlocking } from "@/firebase/no
 import { generateStudentProgressSummary } from "@/ai/flows/generate-student-progress-summary-flow"
 import { scanStudentRegistration } from "@/ai/flows/scan-student-registration-flow"
 import { exportReportCardToWord, exportToExcel } from "@/lib/export-utils"
+import { buildReportCardData } from "@/lib/report-card-builder"
 
 const ALTRAWARE_DEMO_STUDENTS = [
   { id: "ALT-2026-001", name: "JUMA KHAMISI OMARI", class: "Standard 7", type: "Boarder", hostel: "Kilimanjaro Wing", contact: "+255 700 000 001", conductPoints: 100 },
@@ -78,6 +78,7 @@ export default function StudentsPage() {
   const [isGeneratingAi, setIsGeneratingAi] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
   const [isManualEnrolling, setIsManualEnrolling] = useState(false)
+  const [isExportingReport, setIsExportingReport] = useState(false)
   const [aiSummary, setAiSummary] = useState<string | null>(null)
 
   const identityRef = useMemoFirebase(() => doc(db, "schools", "school-001", "config", "identity"), [db])
@@ -176,6 +177,20 @@ export default function StudentsPage() {
       toast({ variant: "destructive", title: "Synthesis Failed", description: "Internal AI node error." })
     } finally {
       setIsGeneratingAi(false)
+    }
+  }
+
+  const handleDownloadReport = async () => {
+    if (!selectedStudent) return
+    setIsExportingReport(true)
+    try {
+      const data = await buildReportCardData(db, "school-001", selectedStudent.id, "Term 3", "Annual")
+      await exportReportCardToWord(data)
+      toast({ title: "Transcript Compiled", description: `Sovereign node exported for ${selectedStudent.name}.` })
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Export Error", description: err.message || "Failed to assemble report matrix." })
+    } finally {
+      setIsExportingReport(false)
     }
   }
 
@@ -417,8 +432,14 @@ export default function StudentsPage() {
                                     )}
                                   </CardContent>
                                 </Card>
-                                <Button variant="outline" className="w-full h-14 rounded-2xl border-primary/10 text-primary font-black uppercase text-xs hover:bg-primary/5 group">
-                                  <FileText className="mr-2 h-5 w-5" /> Official Performance Transcript
+                                <Button 
+                                  variant="outline" 
+                                  className="w-full h-14 rounded-2xl border-primary/10 text-primary font-black uppercase text-xs hover:bg-primary/5 group"
+                                  onClick={handleDownloadReport}
+                                  disabled={isExportingReport}
+                                >
+                                  {isExportingReport ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <FileText className="mr-2 h-5 w-5" />}
+                                  Official Performance Transcript
                                 </Button>
                               </TabsContent>
 

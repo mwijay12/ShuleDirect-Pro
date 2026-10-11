@@ -31,12 +31,20 @@ import {
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+} from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, query, orderBy, doc } from "firebase/firestore"
 import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { useSyllabusTracking } from "@/hooks/use-syllabus"
 import { calculatePsleGrade, calculateCseeGrade, classifyCseeDivision } from "@/lib/necta-logic"
+import { cn } from "@/lib/utils"
 
 export default function AcademicsPage() {
   const { toast } = useToast()
@@ -74,15 +82,21 @@ export default function AcademicsPage() {
     const g3 = calculateCseeGrade(eng)
     
     const totalPoints = g1.points + g2.points + g3.points
-    const div = classifyCseeDivision(totalPoints)
+    // Note: classifyCseeDivision expects an array of SubjectGrade
+    const subjects = [
+      { subject: "Mathematics", score: math, grade: g1.grade, points: g1.points },
+      { subject: "Kiswahili", score: kisw, grade: g2.grade, points: g2.points },
+      { subject: "English", score: eng, grade: g3.grade, points: g3.points }
+    ]
+    const divResult = classifyCseeDivision(subjects)
 
     updateDocumentNonBlocking(doc(db, "schools", "school-001", "students", gradingStudent.id), {
       performance: `${math}% (${g1.grade}), ${kisw}% (${g2.grade}), ${eng}% (${g3.grade})`,
       points: totalPoints,
-      division: div
+      division: divResult.division
     })
     setGradingStudent(null)
-    toast({ title: "Assessment Node Certified", description: `Division ${div} registered for ${gradingStudent.name}.` })
+    toast({ title: "Assessment Node Certified", description: `Division ${divResult.division} registered for ${gradingStudent.name}.` })
   }
 
   return (
