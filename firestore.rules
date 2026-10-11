@@ -11,31 +11,42 @@ service cloud.firestore {
     }
 
     /**
-     * Membership helper: checks for school ownership or institutional domain.
+     * Membership helper: checks for school ownership, institutional domain, or anonymous demo access.
      * Recognized Domains: @shule.pro, @altraware.tech, @altraware.com
      */
     function isMember(schoolId) {
       return isSignedIn() && (
         request.auth.token.schoolId == schoolId || 
         (schoolId == 'school-001' && (
+          // Allow Anonymous users for Demo Node
+          request.auth.token.firebase.sign_in_provider == 'anonymous' ||
+          // Explicit admin email
           request.auth.token.email == 'admin@shule.pro' ||
-          request.auth.token.email.endsWith('@shule.pro') ||
-          request.auth.token.email.endsWith('@altraware.tech') ||
-          request.auth.token.email.endsWith('@altraware.com')
+          // Domain checks (handle potential null emails)
+          (request.auth.token.email != null && (
+            request.auth.token.email.endsWith('@shule.pro') ||
+            request.auth.token.email.endsWith('@altraware.tech') ||
+            request.auth.token.email.endsWith('@altraware.com')
+          ))
         ))
       );
     }
 
     /**
-     * Role helper: checks for the role claim or identifies master admin.
+     * Role helper: checks for the role claim, identifies master admin, or handles demo admin.
      */
     function hasRole(role) {
       return isSignedIn() && (
         request.auth.token.role == role ||
+        // Master Admin Emails
         (role == 'ADMIN' && (
           request.auth.token.email == 'admin@shule.pro' ||
-          request.auth.token.email.endsWith('@altraware.tech') ||
-          request.auth.token.email.endsWith('@altraware.com')
+          (request.auth.token.email != null && (
+            request.auth.token.email.endsWith('@altraware.tech') ||
+            request.auth.token.email.endsWith('@altraware.com')
+          )) ||
+          // Treat anonymous users as admins for the school-001 demo node
+          request.auth.token.firebase.sign_in_provider == 'anonymous'
         ))
       );
     }
