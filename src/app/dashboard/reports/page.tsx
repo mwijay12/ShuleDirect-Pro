@@ -1,82 +1,122 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useState } from "react"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 import { 
-  FileText, 
   DollarSign, 
+  GraduationCap, 
   Package, 
   Users, 
-  TrendingUp, 
   Download, 
+  FileText,
   Loader2,
-  PieChart,
-  Bus,
-  ClipboardCheck,
-  Zap,
-  ShieldCheck,
-  History
-} from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useToast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
-import { useAuth } from "@/hooks/use-auth"
+  TrendingUp,
+  AlertTriangle,
+  History,
+  Zap
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
+// 1. Define Report Item structure
+interface ReportItem {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ElementType;
+}
+
+// 2. Define the actual reports under each category
+const financialReports: ReportItem[] = [
+  { id: "fee-ledger", title: "Fee Collection Ledger", description: "Detailed record of all student payments and bank reconciliation references.", icon: DollarSign },
+  { id: "expenditure", title: "Expenditure Summary", description: "Tracks institutional operational costs, petty cash, and procurement.", icon: TrendingUp },
+  { id: "defaulters", title: "Fee Defaulters List", description: "Audit of students with outstanding balances for recovery actions.", icon: AlertTriangle },
+];
+
+const academicReports: ReportItem[] = [
+  { id: "class-rank", title: "Class Performance Ranking", description: "Comparative analysis of average scores across all academic tiers.", icon: GraduationCap },
+  { id: "subject-analysis", title: "Subject Analysis Matrix", description: "Pass rates and grade distribution breakdown per subject node.", icon: FileText },
+  { id: "master-sheet", title: "Master Grade Sheet", description: "Unified export of all student results for the current term.", icon: FileText },
+];
+
+const operationsReports: ReportItem[] = [
+  { id: "canteen-log", title: "Canteen Usage Log", description: "Tracking of cashless transactions and dietary consumption.", icon: Package },
+  { id: "asset-register", title: "Asset Register", description: "Verified audit ledger of all school property and equipment.", icon: Package },
+];
+
+const adminReports: ReportItem[] = [
+  { id: "staff-attendance", title: "Staff Attendance Summary", description: "Monthly personnel node report including clock-in data.", icon: Users },
+  { id: "student-attendance", title: "Student Attendance Trends", description: "Longitudinal audit of presence rates and absenteeism warnings.", icon: Users },
+];
 
 export default function ReportsPage() {
-  const { toast } = useToast()
-  const { role } = useAuth()
-  const [loadingReport, setLoadingReport] = useState<string | null>(null)
+  const { toast } = useToast();
+  const [loadingId, setLoadingId] = useState<string | null>(null);
 
-  // Simulated Report Generator
-  const handleGenerateReport = (reportName: string) => {
-    setLoadingReport(reportName)
+  const handleGenerate = (report: ReportItem) => {
+    setLoadingId(report.id);
     
-    // Simulate complex data aggregation node
+    // Simulate generation delay
     setTimeout(() => {
-      setLoadingReport(null)
+      setLoadingId(null);
       toast({
-        title: "Report Node Certified",
-        description: `${reportName} has been generated and is ready in your vault.`,
-      })
-    }, 2000)
-  }
+        title: "Report Generated",
+        description: `${report.title} has been successfully compiled.`,
+      });
 
-  // Functional CSV Export for Defaulters (Demo Logic)
-  const exportDefaultersCSV = () => {
-    setLoadingReport("Defaulters List")
-    
-    setTimeout(() => {
-      const data = [
-        ["Student ID", "Name", "Class", "Balance (TZS)", "Status"],
-        ["ALT-2026-001", "JUMA KHAMISI OMARI", "Standard 7", "450,000", "Critical"],
-        ["ALT-2026-004", "ANNA JOSEPH KILIMA", "Form 2A", "120,000", "Partial"],
-        ["ALT-2026-088", "BARAKA SAIDI", "Standard 4", "900,000", "Critical"]
-      ]
-      
-      const csvContent = "data:text/csv;charset=utf-8," + data.map(e => e.join(",")).join("\n")
-      const encodedUri = encodeURI(csvContent)
-      const link = document.createElement("a")
-      link.setAttribute("href", encodedUri)
-      link.setAttribute("download", "ShuleAltra_Defaulters_Audit.csv")
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      // Specific Demo Logic for CSV export example
+      if (report.id === "defaulters") {
+         const csvContent = "data:text/csv;charset=utf-8,Student Name,Class,Balance (TZS),Status\nJUMA KHAMISI,Standard 7,450000,Critical\nNEEMA PAUL,Standard 7,25000,Partial\nBARAKA SAIDI,Form 2,900000,Critical";
+         const encodedUri = encodeURI(csvContent);
+         const link = document.createElement("a");
+         link.setAttribute("href", encodedUri);
+         link.setAttribute("download", "ShuleAltra_Defaulters_Audit.csv");
+         document.body.appendChild(link);
+         link.click();
+         document.body.removeChild(link);
+      }
 
-      setLoadingReport(null)
-      toast({
-        title: "CSV Export Successful",
-        description: "Defaulters audit ledger saved to local node.",
-      })
-    }, 1500)
-  }
+    }, 1500);
+  };
+
+  const renderReportList = (reports: ReportItem[]) => (
+    <div className="grid gap-4 md:grid-cols-2">
+      {reports.map((report) => (
+        <Card key={report.id} className="glass-card hover:shadow-lg transition-all duration-300 border-primary/10">
+          <CardContent className="p-6 flex items-start gap-4">
+            <div className="p-3 rounded-2xl bg-primary/5 text-primary shadow-inner">
+              <report.icon className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-black text-[10px] sm:text-xs uppercase tracking-widest">{report.title}</h3>
+              <p className="text-[10px] text-muted-foreground mt-1 mb-4 leading-relaxed font-medium">{report.description}</p>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => handleGenerate(report)}
+                disabled={loadingId === report.id}
+                className="rounded-full h-9 px-6 font-black text-[9px] uppercase border-primary/20 text-primary hover:bg-primary/5 transition-all"
+              >
+                {loadingId === report.id ? (
+                  <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                ) : (
+                  <Download className="h-3 w-3 mr-2" />
+                )}
+                {loadingId === report.id ? "Compiling..." : "Generate Report"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
 
   return (
-    <div className="space-y-8 max-w-full mx-auto pb-24 px-1 font-body">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+    <div className="space-y-8 pb-24 font-body">
+      {/* HEADER */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 px-1">
         <div className="space-y-1">
           <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary px-3 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-full">
             <Zap className="h-2.5 w-2.5 mr-1.5" /> Institutional Hub
@@ -84,218 +124,75 @@ export default function ReportsPage() {
           <h1 className="text-xl sm:text-2xl font-black text-primary uppercase tracking-tight">Reports Center</h1>
           <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-none">Generate and export system-wide analytics and records.</p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Button variant="outline" className="flex-1 sm:flex-none rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase tracking-widest">
-            <History className="mr-2 h-4 w-4" /> Audit History
-          </Button>
-        </div>
+        <Button variant="outline" className="rounded-full h-11 border-primary/20 text-primary bg-white shadow-sm font-black text-[9px] uppercase px-8">
+          <History className="mr-2 h-4 w-4" /> Audit History
+        </Button>
       </div>
 
-      {/* Top Summary Cards */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-        <Card className="border-none shadow-xl bg-white/60 backdrop-blur-md rounded-[2rem] overflow-hidden group">
+      {/* SUMMARY CARDS */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 px-1">
+        <Card className="colorful-gradient text-white border-none shadow-xl rounded-[2rem] overflow-hidden group">
           <CardContent className="p-6 relative overflow-hidden">
-            <div className="absolute -right-4 -top-4 opacity-5 group-hover:rotate-12 transition-transform">
+            <div className="absolute -right-4 -top-4 opacity-10 group-hover:rotate-12 transition-transform">
               <DollarSign className="h-20 w-20" />
             </div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Fee Collection (Term 3)</p>
-            <p className="text-2xl font-black text-primary mt-2">TZS 45.5M</p>
+            <p className="text-[10px] uppercase font-black opacity-70 tracking-widest">Total Fee Collection</p>
+            <h2 className="text-2xl font-black mt-2">TZS 45,500,000</h2>
             <div className="flex items-center gap-2 mt-2">
-              <Badge className="bg-green-100 text-green-700 text-[8px] font-black rounded-full border-none">82% Target</Badge>
-              <span className="text-[9px] text-muted-foreground font-bold uppercase">vs Budget Node</span>
+              <Badge className="bg-white/20 text-white border-none font-black text-[8px] rounded-full">82% TARGET</Badge>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-xl bg-white/60 backdrop-blur-md rounded-[2rem] overflow-hidden group">
+        <Card className="glass-card border-primary/10 shadow-lg rounded-[2rem] overflow-hidden group">
           <CardContent className="p-6 relative overflow-hidden">
             <div className="absolute -right-4 -top-4 opacity-5 group-hover:rotate-12 transition-transform">
               <TrendingUp className="h-20 w-20" />
             </div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Overall Pass Rate</p>
-            <p className="text-2xl font-black text-accent mt-2">78.4%</p>
+            <p className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Overall Pass Rate</p>
+            <h2 className="text-2xl font-black text-primary mt-2">78.4%</h2>
             <div className="flex items-center gap-2 mt-2">
-              <Badge className="bg-accent/10 text-accent text-[8px] font-black rounded-full border-none">↑ 2.1%</Badge>
-              <span className="text-[9px] text-muted-foreground font-bold uppercase">Since last cycle</span>
+              <Badge className="bg-green-100 text-green-700 border-none font-black text-[8px] rounded-full">↑ 2.1% TREND</Badge>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-xl bg-white/60 backdrop-blur-md rounded-[2rem] overflow-hidden group">
+        <Card className="glass-card border-primary/10 shadow-lg rounded-[2rem] overflow-hidden group">
           <CardContent className="p-6 relative overflow-hidden">
             <div className="absolute -right-4 -top-4 opacity-5 group-hover:rotate-12 transition-transform">
               <Package className="h-20 w-20" />
             </div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Canteen Inventory</p>
-            <p className="text-2xl font-black text-orange-600 mt-2">Optimal</p>
+            <p className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Inventory Status</p>
+            <h2 className="text-2xl font-black text-green-600 mt-2">Optimal</h2>
             <div className="flex items-center gap-2 mt-2">
-              <Badge className="bg-orange-100 text-orange-600 text-[8px] font-black rounded-full border-none">3 Items Low</Badge>
-              <span className="text-[9px] text-muted-foreground font-bold uppercase">Restock Required</span>
+              <Badge className="bg-orange-100 text-orange-600 border-none font-black text-[8px] rounded-full">3 ITEMS LOW</Badge>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Report Categories */}
-      <Tabs defaultValue="finance" className="space-y-8">
-        <TabsList className="bg-muted/40 p-1 rounded-2xl h-12 flex w-full sm:w-fit overflow-x-auto shadow-inner border border-muted/50">
-          <TabsTrigger value="finance" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Financial</TabsTrigger>
-          <TabsTrigger value="academics" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Academics</TabsTrigger>
-          <TabsTrigger value="ops" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Operations</TabsTrigger>
-          <TabsTrigger value="admin" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Administrative</TabsTrigger>
+      {/* CATEGORIZED REPORTS */}
+      <Tabs defaultValue="financial" className="px-1 space-y-8">
+        <TabsList className="bg-muted/40 p-1 rounded-2xl w-full flex h-auto border border-muted/50 shadow-inner overflow-x-auto">
+          <TabsTrigger value="financial" className="rounded-xl font-black text-[9px] flex-1 py-3 uppercase tracking-widest">Financial</TabsTrigger>
+          <TabsTrigger value="academic" className="rounded-xl font-black text-[9px] flex-1 py-3 uppercase tracking-widest">Academic</TabsTrigger>
+          <TabsTrigger value="operations" className="rounded-xl font-black text-[9px] flex-1 py-3 uppercase tracking-widest">Operations</TabsTrigger>
+          <TabsTrigger value="admin" className="rounded-xl font-black text-[9px] flex-1 py-3 uppercase tracking-widest">Admin</TabsTrigger>
         </TabsList>
-
-        {/* Finance Section */}
-        <TabsContent value="finance" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <ReportCard 
-              title="Fee Collection Ledger"
-              description="Detailed chronological list of all student payments and bank reconciliation refs."
-              icon={DollarSign}
-              onGenerate={() => handleGenerateReport("Fee Collection Ledger")}
-              isLoading={loadingReport === "Fee Collection Ledger"}
-            />
-            <ReportCard 
-              title="Expenditure & Procurement"
-              description="Full breakdown of institutional spending, petty cash, and vendor settlements."
-              icon={FileText}
-              onGenerate={() => handleGenerateReport("Expenditure & Procurement")}
-              isLoading={loadingReport === "Expenditure & Procurement"}
-            />
-            <ReportCard 
-              title="Defaulters List"
-              description="Critical audit of students with outstanding balances for debt recovery nodes."
-              icon={ShieldCheck}
-              onGenerate={exportDefaultersCSV}
-              isLoading={loadingReport === "Defaulters List"}
-              badge="CSV EXPORT"
-            />
-          </div>
+        
+        <TabsContent value="financial" className="mt-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          {renderReportList(financialReports)}
         </TabsContent>
-
-        {/* Academics Section */}
-        <TabsContent value="academics" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <ReportCard 
-              title="Class Performance Ranking"
-              description="Institutional benchmarking of classes from peak performance to remedial nodes."
-              icon={PieChart}
-              onGenerate={() => handleGenerateReport("Class Performance Ranking")}
-              isLoading={loadingReport === "Class Performance Ranking"}
-            />
-            <ReportCard 
-              title="Subject Analysis Matrix"
-              description="Detailed pass/fail rates per subject node for NECTA readiness audit."
-              icon={ClipboardCheck}
-              onGenerate={() => handleGenerateReport("Subject Analysis Matrix")}
-              isLoading={loadingReport === "Subject Analysis Matrix"}
-            />
-            <ReportCard 
-              title="Master Grade Sheet"
-              description="Unified export of all student results for the current academic season."
-              icon={FileText}
-              onGenerate={() => handleGenerateReport("Master Grade Sheet")}
-              isLoading={loadingReport === "Master Grade Sheet"}
-            />
-          </div>
+        <TabsContent value="academic" className="mt-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          {renderReportList(academicReports)}
         </TabsContent>
-
-        {/* Ops & Logistics */}
-        <TabsContent value="ops" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <ReportCard 
-              title="Canteen Usage Log"
-              description="Tracking of cashless transactions and dietary consumption across the student body."
-              icon={Package}
-              onGenerate={() => handleGenerateReport("Canteen Usage Log")}
-              isLoading={loadingReport === "Canteen Usage Log"}
-            />
-            <ReportCard 
-              title="Inventory Asset Register"
-              description="Verified property audit ledger including maintenance status of all school assets."
-              icon={ClipboardCheck}
-              onGenerate={() => handleGenerateReport("Inventory Asset Register")}
-              isLoading={loadingReport === "Inventory Asset Register"}
-            />
-            <ReportCard 
-              title="Transport & Bus Routes"
-              description="Fleet deployment analytics and student-to-bus assignment records."
-              icon={Bus}
-              onGenerate={() => handleGenerateReport("Transport & Bus Routes")}
-              isLoading={loadingReport === "Transport & Bus Routes"}
-            />
-          </div>
+        <TabsContent value="operations" className="mt-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          {renderReportList(operationsReports)}
         </TabsContent>
-
-        {/* Administrative */}
-        <TabsContent value="admin" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <ReportCard 
-              title="Staff Attendance & Payroll"
-              description="Consolidated personnel node report including monthly clock-in and payroll data."
-              icon={Users}
-              onGenerate={() => handleGenerateReport("Staff Attendance & Payroll")}
-              isLoading={loadingReport === "Staff Attendance & Payroll"}
-            />
-            <ReportCard 
-              title="Student Attendance Trends"
-              description="Longitudinal audit of student presence rates and absenteeism warning nodes."
-              icon={TrendingUp}
-              onGenerate={() => handleGenerateReport("Student Attendance Trends")}
-              isLoading={loadingReport === "Student Attendance Trends"}
-            />
-          </div>
+        <TabsContent value="admin" className="mt-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          {renderReportList(adminReports)}
         </TabsContent>
       </Tabs>
     </div>
-  )
-}
-
-function ReportCard({ 
-  title, 
-  description, 
-  icon: Icon, 
-  onGenerate, 
-  isLoading,
-  badge
-}: { 
-  title: string; 
-  description: string; 
-  icon: any; 
-  onGenerate: () => void; 
-  isLoading: boolean;
-  badge?: string;
-}) {
-  return (
-    <Card className="border-none shadow-lg bg-card/60 backdrop-blur-md rounded-[2.5rem] overflow-hidden group hover:shadow-2xl transition-all border border-muted/50">
-      <CardHeader className="p-8 pb-4">
-        <div className="flex justify-between items-start mb-4">
-          <div className="p-4 rounded-3xl bg-primary/5 text-primary group-hover:scale-110 transition-transform shadow-inner">
-            <Icon className="h-6 w-6" />
-          </div>
-          {badge && (
-            <Badge className="bg-primary text-white border-none font-black text-[7px] uppercase px-3 py-1 rounded-full">{badge}</Badge>
-          )}
-        </div>
-        <CardTitle className="text-lg font-black uppercase tracking-tight text-foreground/80">{title}</CardTitle>
-        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-relaxed mt-2">
-          {description}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-8 pt-4">
-        <Button 
-          onClick={onGenerate}
-          disabled={isLoading}
-          className="w-full h-12 rounded-2xl colorful-gradient font-black text-[10px] uppercase tracking-widest shadow-xl group/btn"
-        >
-          {isLoading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Download className="mr-2 h-4 w-4 group-hover/btn:translate-y-1 transition-transform" />
-          )}
-          {isLoading ? "Generating Node..." : "Generate Report"}
-        </Button>
-      </CardContent>
-    </Card>
-  )
+  );
 }
