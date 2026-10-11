@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -6,29 +5,22 @@ import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { 
-  Banknote, 
-  Receipt, 
   Search,
   Plus,
   FileSpreadsheet,
   Loader2,
-  Filter,
-  SmartphoneNfc,
-  CheckCircle,
   Activity,
   Zap,
-  Wallet,
-  Clock,
-  ArrowUpRight,
   ShieldCheck,
-  AlertCircle,
   History,
-  FileText,
   AlertTriangle,
   Scale,
   QrCode,
   Smartphone,
-  Info
+  Info,
+  CheckCircle2,
+  Copy,
+  Receipt
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -48,13 +40,14 @@ import { useToast } from "@/hooks/use-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { exportToExcel } from "@/lib/export-utils"
-import { processPaymentTransaction, generateInstitutionalControlNumber, ControlNumberResponse } from "@/lib/finance-engine"
+import { processPaymentTransaction, generateInstitutionalControlNumber, ControlNumberResponse, formatTZS, generateControlNumber } from "@/lib/finance-engine"
 import { useInstitutionalReconciliation } from "@/hooks/use-finance"
 import { usePettyCash } from "@/hooks/use-petty-cash"
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, doc } from "firebase/firestore"
 import { Progress } from "@/components/ui/progress"
-import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+import type { Transaction } from "@/types/finance"
+import type { Student } from "@/types/student"
 
 const BUDGETS = {
   "Science Lab": 500000,
@@ -77,10 +70,10 @@ export default function FinancePage() {
   const [ledgerSearch, setLedgerSearch] = useState("")
 
   const studentsQuery = useMemoFirebase(() => query(collection(db, "schools", "school-001", "students"), orderBy("name", "asc")), [db])
-  const { data: students } = useCollection(studentsQuery)
+  const { data: students } = useCollection<Student>(studentsQuery)
 
   const filteredTransactions = useMemo(() => {
-    return transactions.filter(t => 
+    return (transactions as unknown as Transaction[]).filter(t => 
       t.controlNumber?.toLowerCase().includes(ledgerSearch.toLowerCase()) ||
       t.studentName?.toLowerCase().includes(ledgerSearch.toLowerCase()) ||
       t.transactionReference?.toLowerCase().includes(ledgerSearch.toLowerCase())
@@ -101,11 +94,11 @@ export default function FinancePage() {
         amount: parseFloat(formData.get("amount") as string),
         feeType: formData.get("feeType") as any,
         payerName: student?.name || "Guardian",
-        payerPhone: formData.get("phone") as string || student?.contact || "+255",
+        payerPhone: formData.get("phone") as string || student?.guardianPhone || "+255",
         expiresInDays: 7
       })
       setActiveBill(bill)
-      toast({ title: "Control Number Generated", description: "Payment instructions dispatched via WhatsApp." })
+      toast({ title: "Control Number Generated", description: "Official billing instructions dispatched." })
     } catch (err: any) {
       toast({ variant: "destructive", title: "Gateway Error", description: err.message })
     } finally {
@@ -122,24 +115,26 @@ export default function FinancePage() {
       await processPaymentTransaction(db, {
         studentId: formData.get("studentId") as string,
         amount: parseFloat(formData.get("amount") as string),
-        controlNumber: formData.get("controlNumber") as string || "CASH-" + Date.now(),
+        controlNumber: formData.get("controlNumber") as string || generateControlNumber(),
         feeType: formData.get("feeType") as any,
         paymentMethod: formData.get("method") as any,
-        recordedBy: user?.email || "Staff",
+        recordedBy: user?.email || "Finance Officer",
         academicYear: 2026,
-        deviceInfo: navigator.userAgent
+        deviceInfo: navigator.userAgent,
+        notes: formData.get("notes") as string
       })
       
-      toast({ title: "Transaction Verified", description: "Ledger updated and balance recalculated." })
+      toast({ title: "Payment Reconciled", description: "Institutional ledger updated successfully." })
     } catch (err: any) {
-      toast({ variant: "destructive", title: "Audit Integrity Error", description: err.message })
+      toast({ variant: "destructive", title: "Reconciliation Error", description: err.message })
     } finally {
       setIsProcessing(false)
     }
   }
 
-  const formatMoney = (val: number) => {
-    return new Intl.NumberFormat('en-TZ', { maximumFractionDigits: 0 }).format(val)
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ title: "Copied to Clipboard", description: "Control number ready for payment." });
   }
 
   return (
@@ -147,13 +142,13 @@ export default function FinancePage() {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
         <div className="space-y-4">
           <Badge variant="outline" className="w-fit border-primary/20 bg-primary/5 text-primary px-4 py-1 h-6 text-[9px] font-black tracking-widest uppercase rounded-full shadow-sm">
-            Forensic Institutional Ledger • 2026
+            Institutional Financial Registry • 2026
           </Badge>
-          <h1 className="text-2xl sm:text-3xl font-headline font-black text-primary tracking-tight">Financial Assurance</h1>
-          <p className="text-muted-foreground font-medium text-xs sm:text-sm max-w-xl leading-relaxed uppercase tracking-tighter">Immutable audit trail and real-time revenue reconciliation.</p>
+          <h1 className="text-2xl sm:text-3xl font-headline font-black text-primary tracking-tight">Revenue Assurance</h1>
+          <p className="text-muted-foreground font-medium text-xs sm:text-sm max-w-xl leading-relaxed uppercase tracking-tighter">Immutable audit trail and real-time fee reconciliation hub.</p>
         </div>
         
-        <div className="flex items-center gap-4 bg-accent p-6 rounded-3xl text-white shadow-xl min-w-[280px]">
+        <div className="flex items-center gap-4 bg-primary p-6 rounded-3xl text-white shadow-xl min-w-[280px]">
           <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center shadow-inner">
             <Activity className="h-6 w-6" />
           </div>
@@ -169,10 +164,10 @@ export default function FinancePage() {
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
-          { title: "Revenue (7D)", value: formatMoney(weeklyTotal), icon: Zap, color: "text-green-600" },
-          { title: "Disputed Nodes", value: disputed, icon: AlertTriangle, color: "text-destructive" },
-          { title: "Pending Sync", value: pending, icon: History, color: "text-primary" },
-          { title: "Outstanding", value: formatMoney(outstanding), icon: Scale, color: "text-orange-600" },
+          { title: "Revenue (7D)", value: formatTZS(weeklyTotal), icon: Zap, color: "text-green-600" },
+          { title: "Audit Disputions", value: disputed, icon: AlertTriangle, color: "text-destructive" },
+          { title: "Pending Hub Sync", value: pending, icon: History, color: "text-primary" },
+          { title: "Outstanding Fees", value: formatTZS(outstanding), icon: Scale, color: "text-orange-600" },
         ].map((stat) => (
           <Card key={stat.title} className="border-none shadow-xl rounded-[2rem] bg-white/60 backdrop-blur-md overflow-hidden group hover:-translate-y-1 transition-all">
             <CardContent className="p-5 sm:p-6">
@@ -191,23 +186,23 @@ export default function FinancePage() {
       <Tabs defaultValue="forensic-ledger" className="space-y-8">
         <TabsList className="bg-muted/40 p-1 rounded-2xl h-12 flex w-full sm:w-fit overflow-x-auto shadow-inner border border-muted/50 px-1">
           <TabsTrigger value="reconciliation" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Global Balances</TabsTrigger>
-          <TabsTrigger value="forensic-ledger" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Forensic Ledger</TabsTrigger>
-          <TabsTrigger value="petty-cash" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Petty Cash</TabsTrigger>
-          <TabsTrigger value="control-number" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Control No</TabsTrigger>
+          <TabsTrigger value="forensic-ledger" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Payment Ledger</TabsTrigger>
+          <TabsTrigger value="control-number" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Control Numbers</TabsTrigger>
+          <TabsTrigger value="record-payment" className="rounded-xl font-black px-8 text-[9px] uppercase tracking-widest">Record Payment</TabsTrigger>
         </TabsList>
 
         <TabsContent value="reconciliation" className="space-y-6">
           <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-card/60 backdrop-blur-md">
             <CardHeader className="bg-muted/30 p-6 sm:p-10 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
               <div>
-                <CardTitle className="text-xl font-black uppercase tracking-tight">Fee Integrity Matrix</CardTitle>
-                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-primary/60">Live audit of student balances</CardDescription>
+                <CardTitle className="text-xl font-black uppercase tracking-tight">Institutional Audit Matrix</CardTitle>
+                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-primary/60">Live verification of student fee status</CardDescription>
               </div>
               <Button 
-                onClick={() => exportToExcel(students || [], "Institutional_Reconciliation")}
+                onClick={() => exportToExcel(students || [], "Financial_Audit_Ledger")}
                 className="h-12 rounded-full colorful-gradient font-black text-[10px] uppercase px-8 shadow-xl"
               >
-                <FileSpreadsheet className="h-4 w-4 mr-2" /> Export Audit
+                <FileSpreadsheet className="h-4 w-4 mr-2" /> Export Audit Node
               </Button>
             </CardHeader>
             <CardContent className="p-0 overflow-x-auto">
@@ -223,18 +218,18 @@ export default function FinancePage() {
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow><TableCell colSpan={5} className="h-32 text-center"><Loader2 className="animate-spin inline mr-2" /> Syncing Hub...</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="h-32 text-center"><Loader2 className="animate-spin inline mr-2" /> Synchronizing Ledger...</TableCell></TableRow>
                   ) : students?.map((s) => (
                     <TableRow key={s.id} className="group border-b last:border-none hover:bg-primary/[0.02]">
                       <TableCell className="pl-10 py-6">
                         <p className="font-black text-sm text-foreground/80">{s.name}</p>
                         <p className="text-[9px] text-muted-foreground font-mono font-black uppercase">{s.id} • {s.class}</p>
                       </TableCell>
-                      <TableCell className="text-center font-bold text-xs">TZS {formatMoney((s.totalFeesExpected || 0) + (s.arrears || 0))}</TableCell>
-                      <TableCell className="text-center font-bold text-xs text-green-600">TZS {formatMoney(s.totalPaid || 0)}</TableCell>
+                      <TableCell className="text-center font-bold text-xs">{formatTZS((s.totalFeesExpected || 0) + (s.arrears || 0))}</TableCell>
+                      <TableCell className="text-center font-bold text-xs text-green-600">{formatTZS(s.totalPaid || 0)}</TableCell>
                       <TableCell className="text-center">
                         <span className={cn("font-black text-sm", (s.balance || 0) > 0 ? "text-destructive" : "text-green-600")}>
-                          TZS {formatMoney(s.balance || 0)}
+                          {formatTZS(s.balance || 0)}
                         </span>
                       </TableCell>
                       <TableCell className="text-right pr-10">
@@ -257,8 +252,8 @@ export default function FinancePage() {
           <div className="grid gap-6 lg:grid-cols-12">
             <Card className="lg:col-span-5 border-none shadow-xl rounded-[2.5rem] bg-white p-8">
               <CardHeader className="p-0 mb-8">
-                <CardTitle className="text-xl font-black uppercase">ClickPesa Billing Node</CardTitle>
-                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-primary/60">Generate verifiable control numbers</CardDescription>
+                <CardTitle className="text-xl font-black uppercase">Institutional Billing</CardTitle>
+                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-primary/60">Generate verifiable payment references</CardDescription>
               </CardHeader>
               <form onSubmit={handleGenerateBill} className="space-y-6">
                 <div className="space-y-2">
@@ -281,7 +276,7 @@ export default function FinancePage() {
                         <SelectItem value="Tuition">Tuition Fee</SelectItem>
                         <SelectItem value="Boarding">Boarding Hub</SelectItem>
                         <SelectItem value="Transport">Fleet Node</SelectItem>
-                        <SelectItem value="Exam Fee">National Exam</SelectItem>
+                        <SelectItem value="Exam Fee">Assessment Fee</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -291,12 +286,12 @@ export default function FinancePage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Payer WhatsApp Number</Label>
+                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Guardian Notification Number</Label>
                   <Input name="phone" placeholder="+255 7XX XXX XXX" required className="h-12 rounded-xl bg-muted/20 border-none font-bold px-5" />
                 </div>
                 <Button type="submit" disabled={isGeneratingBill} className="w-full h-16 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-2xl group">
                   {isGeneratingBill ? <Loader2 className="animate-spin mr-2" /> : <ShieldCheck className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />}
-                  Generate Control No
+                  Generate Control Number
                 </Button>
               </form>
             </Card>
@@ -310,10 +305,10 @@ export default function FinancePage() {
                   <div className="relative z-10 space-y-8">
                     <div className="flex justify-between items-start">
                       <div className="space-y-1">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60">Institutional Bill Node</p>
-                        <h3 className="text-3xl font-black tracking-tighter">TZS {activeBill.amount.toLocaleString()}</h3>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60">Official Bill Node</p>
+                        <h3 className="text-3xl font-black tracking-tighter">{formatTZS(activeBill.amount)}</h3>
                       </div>
-                      <Badge className="bg-white/20 text-white border-none px-4 py-1 rounded-full font-black text-[9px] uppercase">EXPIRES: {activeBill.expiresAt.toLocaleDateString()}</Badge>
+                      <Badge className="bg-white/20 text-white border-none px-4 py-1 rounded-full font-black text-[9px] uppercase">EXPIRY: {activeBill.expiresAt.toLocaleDateString('en-TZ')}</Badge>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
@@ -323,19 +318,22 @@ export default function FinancePage() {
                       </div>
                       <div className="space-y-6">
                         <div className="p-6 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/10">
-                          <p className="text-[10px] font-black uppercase text-white/60 mb-2">USSD Payment Code</p>
+                          <p className="text-[10px] font-black uppercase text-white/60 mb-2">USSD Payment Node</p>
                           <code className="text-2xl font-black tracking-widest">{activeBill.ussdCode}</code>
                         </div>
-                        <div className="p-6 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/10">
-                          <p className="text-[10px] font-black uppercase text-white/60 mb-2">Control Number</p>
-                          <code className="text-xl font-black tracking-widest">{activeBill.controlNumber}</code>
+                        <div className="p-6 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/10 group cursor-pointer" onClick={() => copyToClipboard(activeBill.controlNumber)}>
+                          <div className="flex justify-between items-center mb-2">
+                            <p className="text-[10px] font-black uppercase text-white/60">Control Number</p>
+                            <Copy className="h-3 w-3 opacity-40 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                          <code className="text-xl font-black tracking-widest font-mono">{activeBill.controlNumber}</code>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex gap-4">
                       <Button className="flex-1 rounded-2xl h-14 bg-white text-primary hover:bg-white/90 font-black text-[10px] uppercase shadow-xl">
-                        <Smartphone className="mr-2 h-4 w-4" /> Resend WhatsApp
+                        <Smartphone className="mr-2 h-4 w-4" /> Send Notification
                       </Button>
                       <Button variant="outline" className="flex-1 rounded-2xl h-14 border-white/20 text-white hover:bg-white/10 font-black text-[10px] uppercase">
                         Print Invoice
@@ -349,9 +347,9 @@ export default function FinancePage() {
                     <Info className="h-10 w-10" />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xl font-black text-primary uppercase">Ready for Billing</h3>
+                    <h3 className="text-xl font-black text-primary uppercase">Ready for Audit</h3>
                     <p className="text-xs text-muted-foreground font-medium max-w-xs leading-relaxed uppercase tracking-tighter">
-                      Select a student and specify the fee amount to generate a hardened ClickPesa control number.
+                      Select a student and specify the fee amount to generate an official institutional control number.
                     </p>
                   </div>
                 </div>
@@ -360,18 +358,92 @@ export default function FinancePage() {
           </div>
         </TabsContent>
 
+        <TabsContent value="record-payment" className="space-y-6">
+          <div className="max-w-2xl mx-auto">
+            <Card className="border-none shadow-xl rounded-[2.5rem] bg-white p-10">
+              <CardHeader className="p-0 mb-10 text-center">
+                <CardTitle className="text-2xl font-black uppercase text-primary">Record Institutional Payment</CardTitle>
+                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-2">Direct ledger entry for verified deposits</CardDescription>
+              </CardHeader>
+              <form onSubmit={handleProcessManualPayment} className="space-y-8">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Candidate Node</Label>
+                    <Select name="studentId" required>
+                      <SelectTrigger className="h-14 rounded-2xl bg-muted/20 border-none font-bold text-lg px-6"><SelectValue placeholder="Identify student..." /></SelectTrigger>
+                      <SelectContent className="rounded-2xl">
+                        {students?.map(s => <SelectItem key={s.id} value={s.id} className="font-bold">{s.name} ({s.id})</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Fee Type</Label>
+                      <Select name="feeType" defaultValue="Tuition">
+                        <SelectTrigger className="h-14 rounded-2xl bg-muted/20 border-none font-bold px-6"><SelectValue /></SelectTrigger>
+                        <SelectContent className="rounded-2xl">
+                          <SelectItem value="Tuition">Tuition Fee</SelectItem>
+                          <SelectItem value="Transport">Transport</SelectItem>
+                          <SelectItem value="Meals">Meals</SelectItem>
+                          <SelectItem value="Uniform">Uniform</SelectItem>
+                          <SelectItem value="Exam Fee">Assessment</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Amount (TZS)</Label>
+                      <Input name="amount" type="number" placeholder="50,000" required className="h-14 rounded-2xl bg-muted/20 border-none font-black text-xl px-6 shadow-inner" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Method</Label>
+                      <Select name="method" defaultValue="Mobile Money">
+                        <SelectTrigger className="h-14 rounded-2xl bg-muted/20 border-none font-bold px-6"><SelectValue /></SelectTrigger>
+                        <SelectContent className="rounded-2xl">
+                          <SelectItem value="M-Pesa">M-Pesa</SelectItem>
+                          <SelectItem value="Tigo Pesa">Tigo Pesa</SelectItem>
+                          <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                          <SelectItem value="Cash">Cash Deposit</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Control Number (Optional)</Label>
+                      <Input name="controlNumber" placeholder="CP-2026-X" className="h-14 rounded-2xl bg-muted/20 border-none font-mono font-bold px-6 uppercase" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Audit Notes</Label>
+                    <Input name="notes" placeholder="Optional transaction details..." className="h-14 rounded-2xl bg-muted/20 border-none font-medium px-6" />
+                  </div>
+                </div>
+
+                <Button type="submit" disabled={isProcessing} className="w-full h-16 rounded-[2rem] colorful-gradient font-black text-sm uppercase tracking-widest shadow-2xl group">
+                  {isProcessing ? <Loader2 className="animate-spin mr-2" /> : <ShieldCheck className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />}
+                  Finalize Payment Entry
+                </Button>
+              </form>
+            </Card>
+          </div>
+        </TabsContent>
+
         <TabsContent value="forensic-ledger" className="space-y-6">
           <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white/60 backdrop-blur-md">
             <CardHeader className="bg-muted/30 p-8 border-b">
               <div className="flex flex-col lg:flex-row justify-between gap-6">
                 <div>
-                  <CardTitle className="text-xl font-black uppercase">Transaction Ledger</CardTitle>
-                  <CardDescription className="text-[10px] font-bold uppercase text-primary/60">Immutable audit records for TRA compliance</CardDescription>
+                  <CardTitle className="text-xl font-black uppercase">Institutional Ledger</CardTitle>
+                  <CardDescription className="text-[10px] font-bold uppercase text-primary/60">Verified transaction stream for TRA and National Audit compliance</CardDescription>
                 </div>
                 <div className="relative w-full lg:w-96">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input 
-                    placeholder="Search Control No / Student..." 
+                    placeholder="Find Control No / Student..." 
                     className="pl-12 h-12 rounded-full border-none bg-white shadow-inner font-bold text-xs" 
                     value={ledgerSearch}
                     onChange={(e) => setLedgerSearch(e.target.value)}
@@ -384,79 +456,92 @@ export default function FinancePage() {
                 <TableHeader className="bg-muted/10">
                   <TableRow className="border-none h-14">
                     <TableHead className="pl-10 text-[9px] font-black uppercase">Identity Node</TableHead>
-                    <TableHead className="text-[9px] font-black uppercase">Student Node</TableHead>
+                    <TableHead className="text-[9px] font-black uppercase">Candidate Node</TableHead>
                     <TableHead className="text-[9px] font-black uppercase text-center">Amount</TableHead>
-                    <TableHead className="text-[9px] font-black uppercase text-center">Method</TableHead>
+                    <TableHead className="text-[9px] font-black uppercase text-center">Category</TableHead>
                     <TableHead className="text-[9px] font-black uppercase text-center">Status</TableHead>
                     <TableHead className="text-right pr-10 text-[9px] font-black uppercase">Audit</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTransactions.map((tx) => (
-                    <TableRow key={tx.id} className="group border-b last:border-none hover:bg-primary/[0.02]">
+                  {isLoading ? (
+                    <TableRow><TableCell colSpan={6} className="h-48 text-center text-[10px] font-black uppercase tracking-widest"><Loader2 className="animate-spin inline mr-2" /> Syncing Audit Nodes...</TableCell></TableRow>
+                  ) : filteredTransactions.length === 0 ? (
+                    <TableRow><TableCell colSpan={6} className="h-48 text-center text-muted-foreground uppercase text-[10px] font-black tracking-widest">No verified transactions identified.</TableCell></TableRow>
+                  ) : filteredTransactions.map((tx) => (
+                    <TableRow key={tx.id} className="group border-b last:border-none hover:bg-primary/[0.02] transition-colors">
                       <TableCell className="pl-10 py-6">
-                        <div className="flex flex-col">
-                          <code className="text-xs font-black text-primary">{tx.controlNumber}</code>
-                          <span className="text-[8px] font-mono text-muted-foreground uppercase">{tx.transactionReference || "NO_EXT_REF"}</span>
+                        <div className="flex items-center gap-3">
+                          <div className="flex flex-col group/copy cursor-pointer" onClick={() => copyToClipboard(tx.controlNumber)}>
+                            <code className="text-xs font-black text-primary font-mono tracking-wider">{tx.controlNumber}</code>
+                            <span className="text-[8px] font-mono text-muted-foreground uppercase flex items-center gap-1">
+                              {tx.id.substring(0, 12)}... <Copy className="h-2 w-2 opacity-0 group-hover/copy:opacity-100 transition-opacity" />
+                            </span>
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
                           <span className="text-xs font-black uppercase text-foreground/80">{tx.studentName}</span>
-                          <span className="text-[9px] text-muted-foreground font-black uppercase">{tx.class} • {tx.feeType}</span>
+                          <span className="text-[9px] text-muted-foreground font-black uppercase">{tx.class} • {tx.paymentMethod}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-center font-black text-xs">TZS {formatMoney(tx.amount)}</TableCell>
+                      <TableCell className="text-center font-black text-xs">{formatTZS(tx.amount)}</TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="outline" className="text-[8px] font-black uppercase rounded-full bg-white">{tx.paymentMethod}</Badge>
+                        <Badge variant="outline" className="text-[8px] font-black uppercase rounded-full bg-white border-muted px-3">{tx.feeType}</Badge>
                       </TableCell>
                       <TableCell className="text-center">
                         <Badge className={cn(
-                          "text-[8px] font-black uppercase px-3 py-0.5 rounded-full border-none shadow-sm",
-                          tx.status === 'Verified' ? 'bg-green-100 text-green-700' : 
-                          tx.status === 'Disputed' ? 'bg-destructive/10 text-destructive animate-pulse' : 'bg-orange-50 text-orange-600'
+                          "text-[8px] font-black uppercase px-4 py-1 rounded-full border-none shadow-sm",
+                          tx.status === 'Verified' ? 'bg-green-500 text-white' : 
+                          tx.status === 'Pending' ? 'bg-orange-500 text-white' : 'bg-blue-500 text-white'
                         )}>
                           {tx.status}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right pr-10">
-                        <div className="flex flex-col items-end gap-1">
-                          <span className="text-[8px] font-bold text-muted-foreground uppercase">By: {tx.recordedBy}</span>
+                        <div className="flex justify-end items-center gap-3">
+                          <div className="text-right hidden sm:block">
+                            <p className="text-[8px] font-black text-muted-foreground uppercase leading-none">By: {tx.recordedBy?.split('@')[0]}</p>
+                            <p className="text-[7px] font-bold text-muted-foreground/60 uppercase mt-1">
+                              {tx.createdAt instanceof Timestamp ? tx.createdAt.toDate().toLocaleDateString('en-TZ') : '---'}
+                            </p>
+                          </div>
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-6 text-[8px] font-black text-primary uppercase">Inspect</Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/10 text-primary">
+                                <Receipt className="h-4 w-4" />
+                              </Button>
                             </DialogTrigger>
                             <DialogContent className="rounded-[2.5rem] p-10 max-w-md border-none shadow-2xl">
-                              <DialogHeader className="text-center space-y-4">
-                                <div className="h-16 w-16 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mx-auto shadow-inner">
-                                  <ShieldCheck className="h-8 w-8" />
-                                </div>
-                                <DialogTitle className="text-xl font-black uppercase">Forensic Audit Node</DialogTitle>
-                                <DialogDescription className="text-[10px] font-bold uppercase tracking-widest">Immutable Transaction Record</DialogDescription>
-                              </DialogHeader>
-                              <div className="py-8 space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="p-4 bg-muted/20 rounded-2xl shadow-inner">
-                                    <p className="text-[8px] font-black text-muted-foreground uppercase mb-1">Integrity Hash</p>
-                                    <code className="text-[10px] font-mono text-primary font-black break-all">{tx.integrityHash || "N/A"}</code>
+                               <div className="text-center space-y-6">
+                                  <div className="h-16 w-16 rounded-[1.5rem] colorful-gradient flex items-center justify-center text-white mx-auto shadow-xl">
+                                    <ShieldCheck className="h-8 w-8" />
                                   </div>
-                                  <div className="p-4 bg-muted/20 rounded-2xl shadow-inner">
-                                    <p className="text-[8px] font-black text-muted-foreground uppercase mb-1">Source Node</p>
-                                    <p className="text-[10px] font-black uppercase truncate">{tx.deviceInfo || "Admin Portal"}</p>
+                                  <div className="space-y-1">
+                                    <DialogTitle className="text-xl font-black uppercase">Payment Receipt</DialogTitle>
+                                    <DialogDescription className="text-[10px] font-bold uppercase tracking-widest">Verified Institutional Node</DialogDescription>
                                   </div>
-                                </div>
-                                <div className="p-4 bg-muted/20 rounded-2xl shadow-inner space-y-3">
-                                  <p className="text-[8px] font-black text-muted-foreground uppercase">Lifecycle Trail</p>
-                                  <div className="flex justify-between items-center text-[10px] font-bold uppercase">
-                                    <span>Created</span>
-                                    <span className="text-muted-foreground">{tx.createdAt?.toDate().toLocaleString() || "N/A"}</span>
+                                  <div className="p-8 rounded-[2rem] bg-muted/20 border-2 border-dashed border-muted text-left space-y-4">
+                                     <div className="flex justify-between items-center text-[10px] font-black uppercase text-muted-foreground border-b border-muted pb-2">
+                                        <span>Reference</span>
+                                        <code className="text-primary">{tx.controlNumber}</code>
+                                     </div>
+                                     <div className="flex justify-between items-center text-[10px] font-black uppercase">
+                                        <span className="text-muted-foreground">Payer Node</span>
+                                        <span>{tx.studentName}</span>
+                                     </div>
+                                     <div className="flex justify-between items-center text-[10px] font-black uppercase">
+                                        <span className="text-muted-foreground">Category</span>
+                                        <span>{tx.feeType}</span>
+                                     </div>
+                                     <div className="flex justify-between items-center text-[10px] font-black uppercase pt-4 border-t border-muted">
+                                        <span className="text-muted-foreground text-lg">Total</span>
+                                        <span className="text-xl text-primary">{formatTZS(tx.amount)}</span>
+                                     </div>
                                   </div>
-                                  <div className="flex justify-between items-center text-[10px] font-bold uppercase">
-                                    <span>Verified</span>
-                                    <span className="text-green-600">{tx.reconciledAt?.toDate().toLocaleString() || "PENDING"}</span>
-                                  </div>
-                                </div>
-                              </div>
+                                  <Button className="w-full h-12 rounded-xl colorful-gradient font-black uppercase text-[10px] tracking-widest shadow-lg">Print Official Copy</Button>
+                               </div>
                             </DialogContent>
                           </Dialog>
                         </div>
@@ -467,128 +552,6 @@ export default function FinancePage() {
               </Table>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="petty-cash" className="space-y-8">
-          <div className="grid gap-6 lg:grid-cols-12">
-            <div className="lg:col-span-4 space-y-6">
-              <Card className="border-none shadow-xl rounded-[2.5rem] bg-white p-8">
-                <CardHeader className="p-0 mb-6">
-                  <CardTitle className="text-xl font-black uppercase">Log Department Expense</CardTitle>
-                  <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-primary/60">Atomic operational entry</CardDescription>
-                </CardHeader>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  const formData = new FormData(e.currentTarget);
-                  addExpense({
-                    department: formData.get("department"),
-                    category: formData.get("category"),
-                    description: formData.get("description"),
-                    amount: parseFloat(formData.get("amount") as string),
-                    recordedBy: user?.email || "Staff"
-                  });
-                  toast({ title: "Expense Node Saved" });
-                }} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Department</Label>
-                    <Select name="department" required>
-                      <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none font-bold">
-                        <SelectValue placeholder="Select Dept..." />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl">
-                        {Object.keys(BUDGETS).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Description</Label>
-                    <Input name="description" placeholder="e.g. Science Lab Chemicals" required className="h-12 rounded-xl bg-muted/20 border-none font-bold px-5" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Amount (TZS)</Label>
-                    <Input name="amount" type="number" placeholder="50,000" required className="h-12 rounded-xl bg-muted/20 border-none font-black text-lg px-5 shadow-inner" />
-                  </div>
-                  <Button type="submit" className="w-full h-14 rounded-2xl colorful-gradient font-black text-xs uppercase shadow-xl mt-2">
-                    Initialize Expense Node
-                  </Button>
-                </form>
-              </Card>
-
-              <Card className="border-none shadow-xl rounded-[2.5rem] bg-primary text-white p-8">
-                <h3 className="text-lg font-black uppercase mb-6 flex items-center gap-2">
-                  <Activity className="h-5 w-5" /> Budget Monitor
-                </h3>
-                <div className="space-y-6">
-                  {Object.entries(BUDGETS).map(([dept, budget]) => {
-                    const spent = stats.deptSpending[dept] || 0
-                    const perc = (spent / budget) * 100
-                    return (
-                      <div key={dept} className="space-y-2">
-                        <div className="flex justify-between items-center text-[9px] font-black uppercase">
-                          <span>{dept}</span>
-                          <span className={cn(perc > 80 ? "text-orange-400" : "text-white/60")}>{formatMoney(spent)} / {formatMoney(budget)}</span>
-                        </div>
-                        <Progress value={perc} className={cn("h-1.5", perc > 80 ? "bg-orange-900" : "bg-white/10")} />
-                      </div>
-                    )
-                  })}
-                </div>
-              </Card>
-            </div>
-
-            <Card className="lg:col-span-8 border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-card/60 backdrop-blur-md">
-              <CardHeader className="bg-muted/30 p-8 border-b flex flex-row justify-between items-center">
-                <CardTitle className="text-xl font-black uppercase">Departmental Ledger</CardTitle>
-                <Badge className="bg-primary/10 text-primary border-none px-4 py-1 rounded-full font-black text-[9px] uppercase tracking-widest">
-                  {expenses.length} Operational Nodes
-                </Badge>
-              </CardHeader>
-              <CardContent className="p-0 overflow-x-auto">
-                <Table className="min-w-[600px]">
-                  <TableHeader className="bg-muted/10">
-                    <TableRow className="border-none h-14">
-                      <TableHead className="pl-8 text-[9px] font-black uppercase tracking-widest">Expense Node</TableHead>
-                      <TableHead className="text-[9px] font-black uppercase tracking-widest text-center">Amount</TableHead>
-                      <TableHead className="text-[9px] font-black uppercase tracking-widest text-center">Status</TableHead>
-                      <TableHead className="text-right pr-8 text-[9px] font-black uppercase tracking-widest">Control</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pettyLoading ? (
-                      <TableRow><TableCell colSpan={4} className="h-32 text-center"><Loader2 className="animate-spin inline mr-2" /> Syncing Node...</TableCell></TableRow>
-                    ) : expenses.map((ex) => (
-                      <TableRow key={ex.id} className="group border-b last:border-none hover:bg-primary/[0.02]">
-                        <TableCell className="pl-8 py-5">
-                          <div className="flex flex-col">
-                            <span className="font-black text-sm text-foreground/80 uppercase">{ex.description}</span>
-                            <span className="text-[9px] text-muted-foreground font-black uppercase">{ex.department} • {ex.recordedBy}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center font-bold text-xs">TZS {formatMoney(ex.amount)}</TableCell>
-                        <TableCell className="text-center">
-                          <Badge className={cn(
-                            "font-black text-[8px] px-3 py-0.5 rounded-full uppercase",
-                            ex.status === 'Approved' ? 'bg-green-100 text-green-700' : 
-                            ex.status === 'Rejected' ? 'bg-destructive/10 text-destructive' : 'bg-orange-50 text-orange-600'
-                          )}>
-                            {ex.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right pr-8">
-                          {ex.status === 'Pending' && (
-                            <div className="flex justify-end gap-2">
-                              <Button variant="ghost" size="sm" className="h-8 rounded-full text-[8px] font-black text-green-600 uppercase" onClick={() => updateStatus(ex.id, 'Approved', user?.email!)}>Approve</Button>
-                              <Button variant="ghost" size="sm" className="h-8 rounded-full text-[8px] font-black text-destructive uppercase" onClick={() => updateStatus(ex.id, 'Rejected', user?.email!)}>Reject</Button>
-                            </div>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
         </TabsContent>
       </Tabs>
     </div>

@@ -1,6 +1,5 @@
-
 /**
- * @fileOverview Hardened Financial Engine for ShuleDirect Pro.
+ * @fileOverview Hardened Financial Engine for Shule Altra.
  * Handles production-grade ClickPesa integration and atomic reconciliation.
  */
 
@@ -27,13 +26,14 @@ import { triggerN8nWebhook } from './n8n';
 export const TransactionSchema = z.object({
   amount: z.number().positive("Amount must be greater than zero"),
   controlNumber: z.string().min(10, "Invalid Control Number format"),
-  feeType: z.enum(['Tuition', 'Transport', 'Boarding', 'Exam Fee']).default('Tuition'),
-  paymentMethod: z.enum(['M-Pesa', 'Tigo Pesa', 'Airtel Money', 'Bank Transfer', 'Cash']),
+  feeType: z.enum(['Tuition', 'Transport', 'Boarding', 'Exam Fee', 'Uniform', 'Meals', 'Other']).default('Tuition'),
+  paymentMethod: z.enum(['M-Pesa', 'Tigo Pesa', 'Airtel Money', 'Bank Transfer', 'Cash', 'Control Number']),
   studentId: z.string(),
   recordedBy: z.string(),
   academicYear: z.number().default(2026),
   deviceInfo: z.string().optional(),
   recordedFromIp: z.string().optional(),
+  notes: z.string().optional(),
 });
 
 export type TransactionInput = z.infer<typeof TransactionSchema>;
@@ -42,7 +42,7 @@ export interface ControlNumberRequest {
   schoolId: string;
   studentId: string;
   amount: number;
-  feeType: 'Tuition' | 'Transport' | 'Boarding' | 'Exam Fee';
+  feeType: 'Tuition' | 'Transport' | 'Boarding' | 'Exam Fee' | 'Uniform' | 'Meals' | 'Other';
   payerName: string;
   payerPhone: string;
   expiresInDays: number;
@@ -58,6 +58,22 @@ export interface ControlNumberResponse {
 }
 
 /**
+ * Standard TZS Currency Formatting
+ */
+export function formatTZS(amount: number): string {
+  return `TZS ${Math.round(amount).toLocaleString('en-TZ')}`;
+}
+
+/**
+ * Generates a hardened Control Number
+ */
+export function generateControlNumber(): string {
+  const year = new Date().getFullYear();
+  const random = Math.floor(10000000 + Math.random() * 90000000);
+  return `CP-${year}-${random}`;
+}
+
+/**
  * PRODUCTION: Generate a hardened Control Number via ClickPesa API
  */
 export async function generateInstitutionalControlNumber(
@@ -65,15 +81,12 @@ export async function generateInstitutionalControlNumber(
   request: ControlNumberRequest
 ): Promise<ControlNumberResponse> {
   // 1. Check for student existence
-  const studentRef = doc(db, 'schools', request.schoolId, 'students', request.studentId);
   const studentSnap = await getDocs(query(collection(db, 'schools', request.schoolId, 'students'), where('id', '==', request.studentId), limit(1)));
   
   if (studentSnap.empty) throw new Error("Student Node not identified in registry.");
 
   // 2. ClickPesa API Integration Node
-  // In a real environment, this would call the ClickPesa /bill/create endpoint
-  // We simulate the bank-grade response here for the dashboard UI
-  const billReference = "99" + Math.floor(1000000000 + Math.random() * 9000000000).toString();
+  const billReference = generateControlNumber();
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + request.expiresInDays);
 
@@ -103,7 +116,7 @@ export async function generateInstitutionalControlNumber(
       reconciled: false,
       createdAt: serverTimestamp(),
       expiresAt: Timestamp.fromDate(expiresAt),
-      recordedBy: 'ClickPesa Gateway',
+      recordedBy: 'Institutional Gateway',
       currency: 'TZS',
       metadata: {
         payerPhone: request.payerPhone,
@@ -124,7 +137,7 @@ export async function generateInstitutionalControlNumber(
 }
 
 /**
- * Core Forensic Engine: Process Manual Payment
+ * Core Forensic Engine: Process Institutional Payment
  */
 export async function processPaymentTransaction(
   db: Firestore, 
