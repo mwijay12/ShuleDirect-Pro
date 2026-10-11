@@ -10,24 +10,9 @@ import { Button } from "@/components/ui/button"
 import { 
   Search, 
   Loader2,
-  RefreshCw,
   Globe,
-  ScanText,
-  BrainCircuit,
-  Target,
   Database,
-  GraduationCap,
-  Save,
   ChevronRight,
-  Zap,
-  History,
-  AlertTriangle,
-  ClipboardList,
-  CheckCircle2,
-  AlertCircle,
-  X,
-  BookOpen,
-  ArrowRight
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -43,17 +28,16 @@ import { useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase
 import { collection, query, orderBy, doc } from "firebase/firestore"
 import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { useSyllabusTracking } from "@/hooks/use-syllabus"
-import { calculatePsleGrade, calculateCseeGrade, classifyCseeDivision } from "@/lib/necta-logic"
+import { calculateCseeGrade, classifyCseeDivision } from "@/lib/necta-logic"
 import { cn } from "@/lib/utils"
 
 export default function AcademicsPage() {
   const { toast } = useToast()
   const db = useFirestore()
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedSubject, setSelectedSubject] = useState<any>(null)
   const [gradingStudent, setGradingStudent] = useState<any>(null)
 
-  const { syllabus, isLoading: syllabusLoading, updateCoverage, readiness, initializeDefaultSyllabus } = useSyllabusTracking()
+  const { syllabus, isLoading: syllabusLoading } = useSyllabusTracking()
   
   const studentsQuery = useMemoFirebase(() => query(collection(db, "schools", "school-001", "students"), orderBy("name", "asc")), [db])
   const { data: students, isLoading: studentsLoading } = useCollection(studentsQuery)
@@ -76,19 +60,17 @@ export default function AcademicsPage() {
     const kisw = parseFloat(formData.get("kiswahili") as string)
     const eng = parseFloat(formData.get("english") as string)
     
-    // NECTA Points Logic Node
     const g1 = calculateCseeGrade(math)
     const g2 = calculateCseeGrade(kisw)
     const g3 = calculateCseeGrade(eng)
     
     const totalPoints = g1.points + g2.points + g3.points
-    // Note: classifyCseeDivision expects an array of SubjectGrade
     const subjects = [
       { subject: "Mathematics", score: math, grade: g1.grade, points: g1.points },
       { subject: "Kiswahili", score: kisw, grade: g2.grade, points: g2.points },
       { subject: "English", score: eng, grade: g3.grade, points: g3.points }
     ]
-    const divResult = classifyCseeDivision(subjects)
+    const divResult = classifyCseeDivision(subjects as any)
 
     updateDocumentNonBlocking(doc(db, "schools", "school-001", "students", gradingStudent.id), {
       performance: `${math}% (${g1.grade}), ${kisw}% (${g2.grade}), ${eng}% (${g3.grade})`,
@@ -185,7 +167,6 @@ export default function AcademicsPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Grading Dialog */}
       <Dialog open={!!gradingStudent} onOpenChange={(open) => !open && setGradingStudent(null)}>
         <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden max-w-md border-none shadow-2xl">
           <DialogHeader className="bg-primary/5 p-8 border-b text-center">
