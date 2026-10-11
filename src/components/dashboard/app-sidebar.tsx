@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -57,7 +56,7 @@ export function AppSidebar() {
   const { state, setOpenMobile, isMobile } = useSidebar()
   const isCollapsed = state === "collapsed"
   const [role, setRole] = useState<string>("ADMIN")
-  const [systemName, setSystemName] = useState("Shule Atra")
+  const [systemName, setSystemName] = useState("Shule Altra")
 
   useEffect(() => {
     const savedRole = localStorage.getItem("shule_role")

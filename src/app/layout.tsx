@@ -1,11 +1,10 @@
-
 import type {Metadata} from 'next';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'Shule Atra - Advanced Institutional Hub',
-  description: 'PDPA-compliant high-fidelity institutional ecosystem for the modern Tanzanian landscape. Powered by Shule Atra.',
+  title: 'Shule Altra - Advanced Institutional Hub',
+  description: 'PDPA-compliant high-fidelity institutional ecosystem for the modern Tanzanian landscape. Powered by Altra Node.',
 };
 
 export default function RootLayout({

@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -18,7 +17,7 @@ export default function LoginPage() {
   const auth = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [systemName] = useState("Shule Atra")
+  const [systemName] = useState("Shule Altra")
   const [loading, setLoading] = useState(false)
   const [demoLoading, setDemoLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -42,9 +41,9 @@ export default function LoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      localStorage.setItem("shule_role", "ADMIN") // Default for official admin login
+      localStorage.setItem("shule_role", "ADMIN")
     } catch (err: any) {
-      setError("Vitambulisho siyo sahihi. Hakiki Email na Password za Shule Atra.")
+      setError("Vitambulisho siyo sahihi. Hakiki Email na Password za Shule Altra.")
       setLoading(false)
     }
   }
@@ -55,7 +54,7 @@ export default function LoginPage() {
     try {
       await signInAnonymously(auth)
       localStorage.setItem("shule_role", demoRole)
-      localStorage.setItem("shule_system_name", "Shule Atra")
+      localStorage.setItem("shule_system_name", "Shule Altra")
     } catch (err) {
       setError("Demo access is currently unavailable.")
       setDemoLoading(false)
@@ -102,7 +101,7 @@ export default function LoginPage() {
                   <Input 
                     id="email"
                     type="email" 
-                    placeholder="e.g. admin@shuleatra.tech" 
+                    placeholder="e.g. admin@shulealtra.tech" 
                     className="pl-14 h-14 rounded-2xl border-none bg-muted/30 focus-visible:ring-4 focus-visible:ring-primary/10 focus-visible:bg-white text-sm font-bold shadow-inner"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -189,7 +188,7 @@ export default function LoginPage() {
               <div className="flex items-center gap-3 px-6 py-2 rounded-full bg-accent/10 text-accent text-[9px] font-black uppercase tracking-[0.3em]">
                 <Sparkles className="h-4 w-4" /> TEST MODE ACTIVE
               </div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Design: Shule Atra Node</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Design: Altra Node Technology</p>
             </div>
           </CardContent>
         </Card>

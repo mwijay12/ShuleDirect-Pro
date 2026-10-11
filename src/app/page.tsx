@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -30,7 +29,7 @@ import { InstitutionalLoader } from "@/components/ui/institutional-loader"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
 export default function LandingPage() {
-  const [systemName] = useState("Shule Atra")
+  const [systemName] = useState("Shule Altra")
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -50,8 +49,8 @@ export default function LandingPage() {
   ]
 
   const socialItems = [
-    { label: "Instagram", link: "https://instagram.com/shuleatra" },
-    { label: "LinkedIn", link: "https://linkedin.com/company/shuleatra" },
+    { label: "Instagram", link: "https://instagram.com/shulealtra" },
+    { label: "LinkedIn", link: "https://linkedin.com/company/shulealtra" },
     { label: "WhatsApp", link: "https://wa.me/255620641695" },
   ]
 
@@ -125,7 +124,7 @@ export default function LandingPage() {
         {/* Marquee Visual Layer */}
         <div className="py-6 space-y-2 border-y bg-muted/30">
           <MarqueeAnimation direction="left" baseVelocity={-0.2} className="text-primary/10 text-2xl sm:text-4xl font-black">
-            SHULE ATRA • PDPA COMPLIANT • CLICKPESA SYNC • 2026 SEASON • 
+            SHULE ALTRA • PDPA COMPLIANT • CLICKPESA SYNC • 2026 SEASON • 
           </MarqueeAnimation>
           <MarqueeAnimation direction="right" baseVelocity={-0.2} className="text-accent/10 text-2xl sm:text-4xl font-black">
             ADVANCED MANAGEMENT • PURE PERFORMANCE • TANZANIAN EXCELLENCE • 
@@ -142,7 +141,7 @@ export default function LandingPage() {
                   scrollStart="top bottom"
                   scrollEnd="bottom center"
                 >
-                  Built by Atra Node.
+                  Built by Altra Node.
                 </ScrollFloat>
               </div>
               <div className="flex-1">
@@ -162,7 +161,7 @@ export default function LandingPage() {
                 { icon: Shield, title: "PDPA Vault", desc: "Privacy compliance with the Data Protection Act 2022." },
                 { icon: Users, title: "Population", desc: "High-fidelity management for large student bodies." },
                 { icon: Globe, title: "Offline Node", desc: "Edge-synced architecture for low-connectivity zones." },
-                { icon: PieChart, title: "AI Analytics", desc: "Narrative reports powered by Shule Atra AI." },
+                { icon: PieChart, title: "AI Analytics", desc: "Narrative reports powered by Shule Altra AI." },
               ].map((feature, i) => (
                 <AnimatedContent key={i} delay={i * 0.1} distance={30}>
                   <div className="bg-white/5 p-6 rounded-[1.5rem] border border-white/10 hover:border-accent/40 hover:bg-white/10 transition-all group cursor-default h-full">
@@ -208,7 +207,7 @@ export default function LandingPage() {
                   <span className="font-headline font-black text-xl sm:text-2xl text-primary tracking-tighter uppercase">{systemName}</span>
                 </div>
                 <p className="text-sm sm:text-base text-muted-foreground font-medium max-w-md leading-relaxed">
-                  The authoritative institutional hub by Shule Atra Technology. Engineered for excellence.
+                  The authoritative institutional hub by Altra Node Technology. Engineered for excellence.
                 </p>
               </div>
 
@@ -238,7 +237,7 @@ export default function LandingPage() {
                       <Star className="h-3 w-3 fill-primary animate-pulse" /> Official Lead
                     </div>
                     <div className="space-y-2 relative z-10">
-                      <p className="text-lg font-black leading-tight text-foreground/80 group-hover:text-primary transition-colors">Atra Support</p>
+                      <p className="text-lg font-black leading-tight text-foreground/80 group-hover:text-primary transition-colors">Altra Support</p>
                       <p className="text-[8px] text-muted-foreground font-black uppercase tracking-[0.3em]">Engineering Division</p>
                     </div>
                   </div>
@@ -252,7 +251,7 @@ export default function LandingPage() {
               </p>
               <div className="flex gap-6 text-[9px] font-black text-primary uppercase tracking-[0.3em]">
                  <Link href="/dashboard/help" className="hover:underline">Support Node</Link>
-                 <span className="text-accent">V2.26.ATRA</span>
+                 <span className="text-accent">V2.26.ALTRA</span>
               </div>
             </div>
           </div>

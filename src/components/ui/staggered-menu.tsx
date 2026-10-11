@@ -61,7 +61,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   const iconRef = useRef<HTMLSpanElement>(null);
   const textInnerRef = useRef<HTMLSpanElement>(null);
   const [textLines, setTextLines] = useState(['Menu', 'Close']);
-  const [systemName, setSystemName] = useState("ShuleDirect");
+  const [systemName, setSystemName] = useState("Shule Altra");
 
   const openTlRef = useRef<gsap.core.Timeline | null>(null);
   const closeTweenRef = useRef<gsap.core.Tween | null>(null);
