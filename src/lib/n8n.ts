@@ -1,9 +1,5 @@
 
 'use client';
-/**
- * @fileOverview Secure Dispatch Node for Shule Altra.
- * Configuration is fetched from Firestore config rather than localStorage.
- */
 
 import { doc, getDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
@@ -24,9 +20,6 @@ export async function getSecureWebhookConfig(
     const configSnap = await getDoc(configRef);
 
     if (!configSnap.exists()) {
-      // Fallback to localStorage during transition
-      const legacyUrl = typeof window !== 'undefined' ? localStorage.getItem("shule_n8n_url") : null;
-      if (legacyUrl) return { webhookUrl: legacyUrl, secret: '', enabled: true };
       return null;
     }
 
@@ -49,8 +42,8 @@ export async function triggerN8nWebhook(
 ): Promise<boolean> {
   const config = await getSecureWebhookConfig(schoolId);
 
-  if (!config || !config.webhookUrl) {
-    console.warn('[N8N] Dispatch skipped — not configured');
+  if (!config || !config.webhookUrl || !config.enabled) {
+    console.warn('[N8N] Dispatch skipped — node inactive or not configured');
     return false;
   }
 

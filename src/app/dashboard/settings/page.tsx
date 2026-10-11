@@ -9,13 +9,6 @@ import {
   Upload,
   ShieldCheck,
   Loader2,
-  CheckCircle2,
-  Trash2,
-  Globe,
-  Settings as SettingsIcon,
-  Layout,
-  Palette,
-  Sparkles,
   Zap,
   Network
 } from "lucide-react"
@@ -31,6 +24,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase"
 import { doc } from "firebase/firestore"
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+import { useIntegrations } from "@/hooks/use-integrations"
 import { cn } from "@/lib/utils"
 
 const AVAILABLE_TIERS = [
@@ -41,13 +35,14 @@ const AVAILABLE_TIERS = [
 export default function SettingsPage() {
   const { toast } = useToast()
   const db = useFirestore()
+  const { config, updateConfig, loading: integrationsLoading } = useIntegrations()
   
   const identityRef = useMemoFirebase(() => doc(db, "schools", "school-001", "config", "identity"), [db])
   const { data: identity, isLoading } = useDoc(identityRef)
 
   const [formState, setFormState] = useState({
     name: "",
-    systemName: "ShuleDirect",
+    systemName: "Shule Altra",
     centerId: "",
     region: "Dar es Salaam",
     district: "Kinondoni",
@@ -57,14 +52,16 @@ export default function SettingsPage() {
     tiers: [] as string[],
     logo: "",
     demoMode: false,
-    n8nUrl: ""
   })
+
+  const [n8nUrl, setN8nUrl] = useState("")
+  const [n8nEnabled, setN8nEnabled] = useState(false)
 
   useEffect(() => {
     if (identity) {
       setFormState({
         name: identity.name || "",
-        systemName: identity.systemName || "ShuleDirect",
+        systemName: identity.systemName || "Shule Altra",
         centerId: identity.centerId || "",
         region: identity.region || "Dar es Salaam",
         district: identity.district || "Kinondoni",
@@ -74,18 +71,39 @@ export default function SettingsPage() {
         tiers: identity.tiers || ["Standard 7", "Form 2"],
         logo: identity.logo || "",
         demoMode: identity.demoMode || false,
-        n8nUrl: localStorage.getItem("shule_n8n_url") || ""
       })
     }
   }, [identity])
 
-  const handleSave = () => {
-    setDocumentNonBlocking(identityRef, formState, { merge: true })
-    localStorage.setItem("shule_n8n_url", formState.n8nUrl)
-    toast({ 
-      title: formState.demoMode ? "Demo Mode Activated" : "Official Mode Initialized", 
-      description: "Global institutional configurations updated permanently." 
-    })
+  useEffect(() => {
+    if (config) {
+      setN8nUrl(config.n8nWebhookUrl)
+      setN8nEnabled(config.n8nEnabled)
+    }
+  }, [config])
+
+  const handleSaveIdentity = () => {
+    try {
+      setDocumentNonBlocking(identityRef, formState, { merge: true })
+      toast({ 
+        title: "Identity Hub Synchronized", 
+        description: "Global institutional configurations updated permanently." 
+      })
+    } catch (e) {
+      toast({ variant: "destructive", title: "Update Failed", description: "Could not save identity changes." })
+    }
+  }
+
+  const handleSaveIntegrations = async () => {
+    try {
+      await updateConfig({
+        n8nWebhookUrl: n8nUrl,
+        n8nEnabled: n8nEnabled
+      });
+      toast({ title: "Automation Node Secure", description: "Integrations updated in the secure vault." })
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Vault Error", description: e.message })
+    }
   }
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,7 +126,7 @@ export default function SettingsPage() {
     })
   }
 
-  if (isLoading) {
+  if (isLoading || integrationsLoading) {
     return (
       <div className="p-20 text-center flex flex-col items-center gap-4">
         <Loader2 className="animate-spin h-10 w-10 text-primary" />
@@ -118,7 +136,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto pb-24 px-1">
+    <div className="space-y-6 max-w-6xl mx-auto pb-24 px-1 font-body">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-1">
           <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary px-3 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-full">
@@ -126,31 +144,6 @@ export default function SettingsPage() {
           </Badge>
           <h1 className="text-xl sm:text-2xl font-black text-primary uppercase tracking-tight">System Control Node</h1>
           <p className="text-muted-foreground font-black text-[9px] uppercase tracking-widest">Manage institutional identity and orchestration mode.</p>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Button onClick={handleSave} className="flex-1 sm:flex-none font-black rounded-full colorful-gradient h-11 px-8 shadow-xl text-[9px] uppercase tracking-widest group">
-            <Save className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" /> Sync Global Node
-          </Button>
-        </div>
-      </div>
-
-      <div className="p-6 rounded-[2.5rem] bg-accent/5 border border-accent/10 flex flex-col sm:flex-row items-center justify-between gap-6 mb-8">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-accent text-white flex items-center justify-center shadow-xl shadow-accent/20">
-            <Sparkles className="h-6 w-6" />
-          </div>
-          <div>
-            <h3 className="font-black text-sm uppercase text-accent tracking-widest">Institutional Mode: {formState.demoMode ? "DEMO" : "OFFICIAL"}</h3>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase leading-tight">Switch between brand-new empty state or high-fidelity sample data.</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 bg-white px-6 py-3 rounded-full shadow-inner border border-accent/5">
-          <Label htmlFor="demo-toggle" className="text-[9px] font-black uppercase tracking-[0.2em] text-accent">Activate Demo Mode</Label>
-          <Switch 
-            id="demo-toggle" 
-            checked={formState.demoMode} 
-            onCheckedChange={(val) => setFormState({...formState, demoMode: val})} 
-          />
         </div>
       </div>
 
@@ -165,8 +158,13 @@ export default function SettingsPage() {
         <TabsContent value="identity" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
           <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white/60 backdrop-blur-md">
             <CardHeader className="bg-primary/5 border-b p-8">
-              <CardTitle className="text-base font-black uppercase tracking-widest">Legal Profile</CardTitle>
-              <CardDescription className="text-[10px] font-bold uppercase">Institutional metadata for national assessments</CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-base font-black uppercase tracking-widest">Legal Profile</CardTitle>
+                  <CardDescription className="text-[10px] font-bold uppercase">Institutional metadata for national assessments</CardDescription>
+                </div>
+                <Button onClick={handleSaveIdentity} className="rounded-full colorful-gradient h-10 px-6 text-[9px] uppercase font-black shadow-lg">Sync Identity</Button>
+              </div>
             </CardHeader>
             <CardContent className="p-8 space-y-8">
               <div className="grid gap-6 md:grid-cols-2">
@@ -214,8 +212,13 @@ export default function SettingsPage() {
         <TabsContent value="academic" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
           <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white/60">
             <CardHeader className="bg-muted/20 border-b p-8">
-              <CardTitle className="text-lg font-black uppercase tracking-widest">Tier Architecture</CardTitle>
-              <CardDescription className="text-[10px] font-bold uppercase">Activate academic levels for the 2026 season</CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-lg font-black uppercase tracking-widest">Tier Architecture</CardTitle>
+                  <CardDescription className="text-[10px] font-bold uppercase">Activate academic levels for the 2026 season</CardDescription>
+                </div>
+                <Button onClick={handleSaveIdentity} className="rounded-full colorful-gradient h-10 px-6 text-[9px] uppercase font-black shadow-lg">Save Tiers</Button>
+              </div>
             </CardHeader>
             <CardContent className="p-8">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -241,23 +244,38 @@ export default function SettingsPage() {
         <TabsContent value="automation" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
           <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white/60">
             <CardHeader className="bg-accent/5 border-b p-8">
-              <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-3">
-                <Network className="h-5 w-5 text-accent" /> n8n Orchestration Node
-              </CardTitle>
-              <CardDescription className="text-[10px] font-bold uppercase">Configure webhooks for Evolution API & WhatsApp automation</CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-lg font-black uppercase tracking-widest flex items-center gap-3">
+                    <Network className="h-5 w-5 text-accent" /> Automation Node
+                  </CardTitle>
+                  <CardDescription className="text-[10px] font-bold uppercase">Secure vault for Evolution API & WhatsApp automation</CardDescription>
+                </div>
+                <Button onClick={handleSaveIntegrations} className="rounded-full colorful-gradient h-10 px-6 text-[9px] uppercase font-black shadow-lg">Sync Vault</Button>
+              </div>
             </CardHeader>
             <CardContent className="p-8 space-y-6">
-              <div className="space-y-2">
-                <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">n8n Webhook Base URL</Label>
-                <Input 
-                  value={formState.n8nUrl} 
-                  onChange={(e) => setFormState({...formState, n8nUrl: e.target.value})} 
-                  placeholder="https://n8n.your-domain.com/webhook/..."
-                  className="rounded-xl h-12 bg-muted/20 border-none font-mono text-xs shadow-inner px-5" 
-                />
-                <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-widest mt-2 px-1">
-                  Institutional alerts (Attendance, Finance, Transport) are dispatched to this node.
-                </p>
+              <div className="flex items-center justify-between p-6 bg-muted/20 rounded-[2rem] border border-muted/50 mb-4 shadow-inner">
+                <div className="space-y-0.5">
+                  <p className="text-[10px] font-black uppercase text-primary">Master Orchestration</p>
+                  <p className="text-xs font-bold text-muted-foreground">Enable or disable all outbound institutional alerts.</p>
+                </div>
+                <Switch checked={n8nEnabled} onCheckedChange={setN8nEnabled} />
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">n8n Webhook Node URL</Label>
+                  <Input 
+                    value={n8nUrl} 
+                    onChange={(e) => setN8nUrl(e.target.value)} 
+                    placeholder="https://n8n.your-domain.com/webhook/..."
+                    className="rounded-xl h-12 bg-muted/20 border-none font-mono text-xs shadow-inner px-5" 
+                  />
+                  <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-widest mt-2 px-1">
+                    Institutional dispatches (Attendance, Finance, Transport) are encrypted and routed to this node.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -266,8 +284,13 @@ export default function SettingsPage() {
         <TabsContent value="branding" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
           <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white/60">
             <CardHeader className="bg-accent/5 border-b p-8">
-              <CardTitle className="text-lg font-black uppercase tracking-widest">Visual Sovereignty</CardTitle>
-              <CardDescription className="text-[10px] font-bold uppercase">Institutional seal & dashboard identity</CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-lg font-black uppercase tracking-widest">Visual Sovereignty</CardTitle>
+                  <CardDescription className="text-[10px] font-bold uppercase">Institutional seal & dashboard identity</CardDescription>
+                </div>
+                <Button onClick={handleSaveIdentity} className="rounded-full colorful-gradient h-10 px-6 text-[9px] uppercase font-black shadow-lg">Sync Visuals</Button>
+              </div>
             </CardHeader>
             <CardContent className="p-8 space-y-10">
               <div className="flex flex-col md:flex-row items-center gap-10">

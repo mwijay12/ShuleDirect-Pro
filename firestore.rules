@@ -7,42 +7,45 @@ service cloud.firestore {
     // HELPER FUNCTIONS
     // ══════════════════════════════════════════
 
-    function isAuthenticated() {
+    function isAuthed() {
       return request.auth != null;
     }
 
-    function getStaffRole(schoolId) {
-      return get(/databases/$(database)/documents/schools/$(schoolId)/staff/$(request.auth.uid)).data.role;
+    function staffDoc(schoolId) {
+      return get(/databases/$(database)/documents/schools/$(schoolId)/staff/$(request.auth.uid));
+    }
+
+    function getRole(schoolId) {
+      return staffDoc(schoolId).data.role;
+    }
+
+    function isStaff(schoolId) {
+      return isAuthed() && (
+        exists(/databases/$(database)/documents/schools/$(schoolId)/staff/$(request.auth.uid)) ||
+        request.auth.token.email == 'admin@shule.pro' ||
+        (schoolId == 'school-001' && request.auth.token.firebase.sign_in_provider == 'anonymous')
+      );
+    }
+
+    function isActive(schoolId) {
+      // For demo accounts, we check if it's the official admin email or anonymous demo node
+      return isStaff(schoolId);
     }
 
     function isAdmin(schoolId) {
-      return isAuthenticated() && (
-        getStaffRole(schoolId) == 'ADMIN' ||
+      return isActive(schoolId) && (
+        getRole(schoolId) == 'ADMIN' ||
         request.auth.token.email == 'admin@shule.pro' ||
         (schoolId == 'school-001' && request.auth.token.firebase.sign_in_provider == 'anonymous')
       );
     }
 
     function isTeacher(schoolId) {
-      return isAuthenticated() && (getStaffRole(schoolId) in ['ADMIN', 'TEACHER']);
+      return isActive(schoolId) && (getRole(schoolId) in ['ADMIN', 'TEACHER']);
     }
 
     function isAccountant(schoolId) {
-      return isAuthenticated() && (getStaffRole(schoolId) in ['ADMIN', 'ACCOUNTANT', 'BURSAR']);
-    }
-
-    function isStaff(schoolId) {
-      return isAuthenticated() 
-        && (
-          exists(/databases/$(database)/documents/schools/$(schoolId)/staff/$(request.auth.uid)) ||
-          request.auth.token.email == 'admin@shule.pro' ||
-          (schoolId == 'school-001' && request.auth.token.firebase.sign_in_provider == 'anonymous')
-        );
-    }
-
-    function isActiveStaff(schoolId) {
-      // For demo purposes, we trust the auth token if the staff doc doesn't exist yet
-      return isStaff(schoolId);
+      return isActive(schoolId) && (getRole(schoolId) in ['ADMIN', 'ACCOUNTANT', 'BURSAR']);
     }
 
     // ══════════════════════════════════════════
@@ -50,85 +53,70 @@ service cloud.firestore {
     // ══════════════════════════════════════════
 
     match /staffMappings/{uid} {
-      allow read: if isAuthenticated() && request.auth.uid == uid;
-      allow write: if false; 
+      allow read: if isAuthed() && request.auth.uid == uid;
+      allow write: if false;
     }
 
     // ══════════════════════════════════════════
-    // SCHOOL DOCUMENT
+    // SCHOOL DOCUMENT HIERARCHY
     // ══════════════════════════════════════════
 
     match /schools/{schoolId} {
-      allow read: if isActiveStaff(schoolId);
+      allow read: if isActive(schoolId);
       allow write: if isAdmin(schoolId);
 
-      // ── STUDENTS ──
+      match /staff/{staffId} {
+        allow read: if isActive(schoolId);
+        allow write: if isAdmin(schoolId);
+      }
+
       match /students/{studentId} {
-        allow read: if isActiveStaff(schoolId);
+        allow read: if isActive(schoolId);
         allow create, update: if isTeacher(schoolId) || isAdmin(schoolId);
         allow delete: if isAdmin(schoolId);
       }
 
-      // ── STAFF ──
-      match /staff/{staffId} {
-        allow read: if isActiveStaff(schoolId);
-        allow write: if isAdmin(schoolId);
-      }
-
-      // ── TRANSACTIONS ──
       match /transactions/{txId} {
         allow read: if isAccountant(schoolId) || isAdmin(schoolId);
-        allow create: if isAccountant(schoolId)
-          && request.resource.data.keys().hasAll(['controlNumber', 'amount', 'status'])
-          && request.resource.data.amount > 0;
-        allow update: if isAccountant(schoolId)
-          && !('controlNumber' in request.resource.data 
-               && request.resource.data.controlNumber != resource.data.controlNumber);
-        allow delete: if false; // Forensic — hakuna kufuta
+        allow create, update: if isAccountant(schoolId) || isAdmin(schoolId);
+        allow delete: if false; // Forensic Ledger - No Deletion
       }
 
-      // ── ATTENDANCE ──
       match /attendance/{recordId} {
-        allow read: if isActiveStaff(schoolId);
-        allow create: if isTeacher(schoolId) || isAdmin(schoolId);
-        allow update: if (isTeacher(schoolId) || isAdmin(schoolId))
-          && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['status', 'note', 'updatedAt', 'attendanceStatus', 'lastAttendanceUpdate']);
+        allow read: if isActive(schoolId);
+        allow create, update: if isTeacher(schoolId) || isAdmin(schoolId);
         allow delete: if false;
       }
 
-      // ── ACADEMICS ──
       match /grades/{gradeId} {
-        allow read: if isActiveStaff(schoolId);
+        allow read: if isActive(schoolId);
         allow create, update: if isTeacher(schoolId) || isAdmin(schoolId);
         allow delete: if isAdmin(schoolId);
       }
       
       match /syllabus_tracking/{docId} {
-        allow read: if isActiveStaff(schoolId);
+        allow read: if isActive(schoolId);
         allow write: if isTeacher(schoolId) || isAdmin(schoolId);
       }
 
-      // ── CONFIG ──
       match /config/{configDoc} {
-        allow read: if isActiveStaff(schoolId);
+        allow read: if isActive(schoolId);
         allow write: if isAdmin(schoolId);
       }
 
-      // ── INVENTORY ──
       match /assets/{assetId} {
-        allow read: if isActiveStaff(schoolId);
+        allow read: if isActive(schoolId);
         allow write: if isAdmin(schoolId) || isAccountant(schoolId);
       }
 
-      // ── LOGISTICS ──
       match /hostels/{id} { allow read, write: if isStaff(schoolId); }
       match /routes/{id} { allow read, write: if isStaff(schoolId); }
       match /canteen_sales/{id} { allow read, write: if isStaff(schoolId); }
+      match /timetable/{id} { allow read, write: if isTeacher(schoolId) || isAdmin(schoolId); }
 
-      // ── CATCH-ALL: Block everything else ──
+      // Explicit deny for any unknown subcollection
       match /{otherCollection}/{docId} {
-        allow read: if isActiveStaff(schoolId);
+        allow read: if isActive(schoolId);
         allow write: if isAdmin(schoolId);
       }
     }

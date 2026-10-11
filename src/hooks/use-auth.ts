@@ -7,7 +7,7 @@ import {
   signOut as firebaseSignOut,
   type User 
 } from 'firebase/auth';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 
 const { auth, firestore: db } = initializeFirebase();
@@ -58,14 +58,15 @@ export function useAuth() {
       }
 
       try {
-        const schoolId = 'school-001'; // Default tenant
+        const schoolId = 'school-001'; // Default demo tenant
 
-        // Handle direct admin email or anonymous demo
+        // Handle official admin or anonymous demo bypass
         if (user.email === 'admin@shule.pro' || user.isAnonymous) {
-          const savedRole = (typeof window !== 'undefined' ? localStorage.getItem('shule_role') : 'ADMIN') as UserRole;
+          // Note: In a real multi-tenant app, roles are NEVER in localStorage.
+          // For this demo, we allow the role to be derived from the Auth State or Profile only.
           setState({
             user,
-            role: savedRole || 'ADMIN',
+            role: 'ADMIN', // Default for demo/admin email
             schoolId,
             staffProfile: { fullName: 'Institutional Administrator', role: 'ADMIN' },
             loading: false,
@@ -74,14 +75,14 @@ export function useAuth() {
           return;
         }
 
-        // Real-time listener for staff profile
+        // Real-time listener for staff profile (Sole source of role truth)
         const profileRef = doc(db, 'schools', schoolId, 'staff', user.uid);
         unsubProfile = onSnapshot(profileRef, (profileSnap) => {
           if (!profileSnap.exists()) {
             setState(prev => ({
               ...prev,
               user,
-              role: (typeof window !== 'undefined' ? localStorage.getItem('shule_role') as UserRole : 'TEACHER') || 'TEACHER',
+              role: 'VIEWER', // Fallback for unknown staff
               loading: false,
               error: null,
             }));
@@ -139,7 +140,7 @@ export function useAuth() {
       };
 
       const allowedRoles = ACCESS_MATRIX[module];
-      if (!allowedRoles) return true; // Allow by default for unmapped modules
+      if (!allowedRoles) return true;
 
       return allowedRoles.includes(state.role);
     },
@@ -148,7 +149,6 @@ export function useAuth() {
 
   const signOut = async () => {
     await firebaseSignOut(auth);
-    if (typeof window !== 'undefined') localStorage.clear();
   };
 
   return {

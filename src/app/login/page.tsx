@@ -1,20 +1,21 @@
+
 "use client"
 
 import * as React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ShieldCheck, Lock, Mail, Key, ArrowRight, Sparkles, Loader2, AlertCircle, Building2, UserCircle, ChevronDown } from "lucide-react"
+import { ShieldCheck, Lock, Mail, Key, ArrowRight, Sparkles, Loader2, AlertCircle, Building2, UserCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useAuth } from "@/firebase"
+import { useAuth as useFirebaseId } from "@/firebase"
 import { signInWithEmailAndPassword, signInAnonymously, onAuthStateChanged } from "firebase/auth"
 
 export default function LoginPage() {
-  const auth = useAuth()
+  const auth = useFirebaseId()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [systemName] = useState("Shule Altra")
@@ -27,7 +28,6 @@ export default function LoginPage() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        localStorage.setItem("shule_user", user.email || "Guest Node")
         router.replace("/dashboard")
       }
     })
@@ -41,9 +41,8 @@ export default function LoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      localStorage.setItem("shule_role", "ADMIN")
     } catch (err: any) {
-      setError("Vitambulisho siyo sahihi. Hakiki Email na Password za Shule Altra.")
+      setError("Vitambulisho siyo sahihi. Hakiki Email na Password.")
       setLoading(false)
     }
   }
@@ -53,8 +52,6 @@ export default function LoginPage() {
     setError(null)
     try {
       await signInAnonymously(auth)
-      localStorage.setItem("shule_role", demoRole)
-      localStorage.setItem("shule_system_name", "Shule Altra")
     } catch (err) {
       setError("Demo access is currently unavailable.")
       setDemoLoading(false)
@@ -149,44 +146,28 @@ export default function LoginPage() {
                 </Button>
 
                 <div className="pt-6 border-t border-dashed">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-muted-foreground ml-2 tracking-widest">Select Demo Persona</Label>
-                      <Select value={demoRole} onValueChange={setDemoRole}>
-                        <SelectTrigger className="h-12 rounded-xl bg-primary/5 border-none font-black text-[10px] uppercase tracking-widest">
-                          <SelectValue placeholder="Identify testing role..." />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-2xl">
-                          <SelectItem value="ADMIN" className="font-black text-[10px] uppercase">Super Admin Hub</SelectItem>
-                          <SelectItem value="TEACHER" className="font-black text-[10px] uppercase">Teaching Faculty</SelectItem>
-                          <SelectItem value="BURSAR" className="font-black text-[10px] uppercase">Financial Bursar</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      onClick={handleDemoLogin}
-                      disabled={loading || demoLoading}
-                      className="w-full h-14 rounded-2xl font-black border-primary/20 text-primary bg-white shadow-lg text-sm group hover:bg-primary/5 transition-all uppercase tracking-[0.2em]"
-                    >
-                      {demoLoading ? (
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                      ) : (
-                        <>
-                          <UserCircle className="mr-3 h-5 w-5" /> Test as {demoRole}
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={handleDemoLogin}
+                    disabled={loading || demoLoading}
+                    className="w-full h-14 rounded-2xl font-black border-primary/20 text-primary bg-white shadow-lg text-sm group hover:bg-primary/5 transition-all uppercase tracking-[0.2em]"
+                  >
+                    {demoLoading ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <>
+                        <UserCircle className="mr-3 h-5 w-5" /> Quick Demo Access
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             </form>
 
             <div className="pt-8 border-t border-dashed flex flex-col items-center gap-4 text-center">
               <div className="flex items-center gap-3 px-6 py-2 rounded-full bg-accent/10 text-accent text-[9px] font-black uppercase tracking-[0.3em]">
-                <Sparkles className="h-4 w-4" /> TEST MODE ACTIVE
+                <Sparkles className="h-4 w-4" /> SECURE SESSION READY
               </div>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Design: Altra Node Technology</p>
             </div>
