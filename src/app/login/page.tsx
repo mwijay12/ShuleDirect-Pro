@@ -17,20 +17,19 @@ export default function LoginPage() {
   const auth = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [schoolName, setSchoolName] = useState("ShuleDirect Pro")
+  const [systemName, setSystemName] = useState("Altraware Technology")
   const [loading, setLoading] = useState(false)
   const [demoLoading, setDemoLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
-    const saved = localStorage.getItem("shule_name")
-    if (saved) setSchoolName(saved)
+    const saved = localStorage.getItem("shule_system_name")
+    if (saved) setSystemName(saved)
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        localStorage.setItem("shule_user", user.email || "Anonymous Node")
-        // Default to admin role if we don't have custom claims yet
+        localStorage.setItem("shule_user", user.email || "Altraware Node")
         if (!localStorage.getItem("shule_role")) {
           localStorage.setItem("shule_role", "ADMIN")
         }
@@ -49,13 +48,7 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password)
     } catch (err: any) {
       console.error("Login Node Failure:", err)
-      if (err.code === 'auth/invalid-credential') {
-        setError("Vitambulisho siyo sahihi. Hakiki Email na Password.")
-      } else if (err.code === 'auth/user-not-found') {
-        setError("Akaunti hii haijajisajili kwenye mfumo.")
-      } else {
-        setError("Hitilafu ya kiufundi imetokea. Jaribu tena baadae.")
-      }
+      setError("Vitambulisho siyo sahihi. Hakiki Email na Password za Altraware.")
       setLoading(false)
     }
   }
@@ -88,8 +81,8 @@ export default function LoginPage() {
             <ShieldCheck className="h-10 w-10" />
           </div>
           <div className="space-y-2 px-4">
-            <h1 className="text-2xl sm:text-4xl font-headline font-black text-primary tracking-tighter uppercase truncate">{schoolName}</h1>
-            <p className="text-muted-foreground font-black text-[9px] uppercase tracking-[0.4em]">Staff Verification Gateway 2026</p>
+            <h1 className="text-2xl sm:text-4xl font-headline font-black text-primary tracking-tighter uppercase truncate">{systemName}</h1>
+            <p className="text-muted-foreground font-black text-[9px] uppercase tracking-[0.4em]">Altraware Verification Gateway 2026</p>
           </div>
         </div>
 
@@ -99,20 +92,20 @@ export default function LoginPage() {
               <Building2 className="h-64 w-64 -right-10 -top-10 absolute rotate-12" />
             </div>
             <CardTitle className="text-xl sm:text-2xl flex items-center justify-center gap-3 text-primary font-black uppercase tracking-tight">
-              <Lock className="h-5 w-5" /> Secure Access Hub
+              <Lock className="h-5 w-5" /> Secure Hub Access
             </CardTitle>
-            <CardDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-2">Authorized Staff Credentials Required</CardDescription>
+            <CardDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-2">Authorized Staff Node Required</CardDescription>
           </CardHeader>
           <CardContent className="p-8 sm:p-12 space-y-8">
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-3">
-                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Institutional Email</Label>
+                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Altraware Email</Label>
                 <div className="relative group">
                   <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input 
                     id="email"
                     type="email" 
-                    placeholder="e.g. admin@shule.pro" 
+                    placeholder="e.g. admin@altraware.com" 
                     className="pl-14 h-14 rounded-2xl border-none bg-muted/30 focus-visible:ring-4 focus-visible:ring-primary/10 focus-visible:bg-white text-sm font-bold shadow-inner"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -154,7 +147,7 @@ export default function LoginPage() {
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     <>
-                      Initialize Session <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-2 transition-transform" />
+                      Initialize Hub <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-2 transition-transform" />
                     </>
                   )}
                 </Button>
@@ -179,9 +172,9 @@ export default function LoginPage() {
 
             <div className="pt-8 border-t border-dashed flex flex-col items-center gap-4 text-center">
               <div className="flex items-center gap-3 px-6 py-2 rounded-full bg-accent/10 text-accent text-[9px] font-black uppercase tracking-[0.3em]">
-                <Sparkles className="h-4 w-4" /> 2026 AUDIT COMPLIANT
+                <Sparkles className="h-4 w-4" /> PDPA 2022 COMPLIANT
               </div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Architect: Davie Mwijage</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Architect: Altraware Technology</p>
             </div>
           </CardContent>
         </Card>

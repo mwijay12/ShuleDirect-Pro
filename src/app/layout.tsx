@@ -4,8 +4,8 @@ import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'ShuleDirect Pro - Modern School Management',
-  description: 'NECTA-compliant comprehensive school management system for Tanzanian schools.',
+  title: 'Altraware Technology - Advanced Institutional Hub',
+  description: 'PDPA-compliant high-fidelity institutional ecosystem for the modern Tanzanian landscape. Powered by Altraware.',
 };
 
 export default function RootLayout({
