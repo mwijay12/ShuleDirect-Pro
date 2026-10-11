@@ -4,34 +4,39 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * Institutional Security Helpers
+     * Altraware Institutional Security Helpers
      */
     function isSignedIn() {
       return request.auth != null;
     }
 
     /**
-     * Membership helper: checks for the schoolId claim in the token.
-     * Fallback: Allows access to 'school-001' for verified institutional emails.
+     * Membership helper: checks for school ownership or institutional domain.
+     * Recognized Domains: @shule.pro, @altraware.tech, @altraware.com
      */
     function isMember(schoolId) {
       return isSignedIn() && (
         request.auth.token.schoolId == schoolId || 
         (schoolId == 'school-001' && (
           request.auth.token.email == 'admin@shule.pro' ||
-          request.auth.token.email.endsWith('@shule.pro')
+          request.auth.token.email.endsWith('@shule.pro') ||
+          request.auth.token.email.endsWith('@altraware.tech') ||
+          request.auth.token.email.endsWith('@altraware.com')
         ))
       );
     }
 
     /**
-     * Role helper: checks for the role claim in the token.
-     * Fallback: Identifies the primary admin email as an ADMIN.
+     * Role helper: checks for the role claim or identifies master admin.
      */
     function hasRole(role) {
       return isSignedIn() && (
         request.auth.token.role == role ||
-        (role == 'ADMIN' && request.auth.token.email == 'admin@shule.pro')
+        (role == 'ADMIN' && (
+          request.auth.token.email == 'admin@shule.pro' ||
+          request.auth.token.email.endsWith('@altraware.tech') ||
+          request.auth.token.email.endsWith('@altraware.com')
+        ))
       );
     }
 
@@ -59,7 +64,6 @@ service cloud.firestore {
       // 2. Allow admin users to write (create/update) all data.
       match /students/{studentId} {
         allow create, update: if isMember(schoolId) && isAdmin();
-        // Never allow delete of student identities.
         allow delete: if false;
       }
 
@@ -81,7 +85,6 @@ service cloud.firestore {
 
       match /transactions/{transactionId} {
         allow create, update: if isMember(schoolId) && (isAdmin() || isAccountant());
-        // Never allow delete of forensic financial records.
         allow delete: if false;
       }
 
@@ -111,7 +114,6 @@ service cloud.firestore {
       }
 
       match /config/{configId} {
-        // Explicitly allow read for config documents for authorized members
         allow read: if isMember(schoolId);
         allow write: if isMember(schoolId) && isAdmin();
       }

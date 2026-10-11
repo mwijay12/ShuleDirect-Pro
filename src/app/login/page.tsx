@@ -30,6 +30,7 @@ export default function LoginPage() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         localStorage.setItem("shule_user", user.email || "Altraware Node")
+        // Ensure role is set for demo purposes
         if (!localStorage.getItem("shule_role")) {
           localStorage.setItem("shule_role", "ADMIN")
         }
@@ -47,7 +48,7 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password)
     } catch (err: any) {
-      console.error("Login Node Failure:", err)
+      // Catch error silently in console to prevent Next.js error overlay in dev
       setError("Vitambulisho siyo sahihi. Hakiki Email na Password za Altraware.")
       setLoading(false)
     }
@@ -105,7 +106,7 @@ export default function LoginPage() {
                   <Input 
                     id="email"
                     type="email" 
-                    placeholder="e.g. admin@altraware.com" 
+                    placeholder="e.g. admin@altraware.tech" 
                     className="pl-14 h-14 rounded-2xl border-none bg-muted/30 focus-visible:ring-4 focus-visible:ring-primary/10 focus-visible:bg-white text-sm font-bold shadow-inner"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
