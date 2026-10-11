@@ -1,8 +1,14 @@
 
+/**
+ * @fileOverview Configuration Types for Shule Altra.
+ */
+
+import { Timestamp } from 'firebase/firestore';
+
 export interface IntegrationConfig {
   n8nWebhookUrl: string;
   n8nEnabled: boolean;
-  updatedAt: any;
+  updatedAt: Timestamp | null;
 }
 
 export const DEFAULT_INTEGRATION_CONFIG: IntegrationConfig = {

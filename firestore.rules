@@ -28,7 +28,7 @@ service cloud.firestore {
     }
 
     function isActive(schoolId) {
-      // For demo accounts, we check if it's the official admin email or anonymous demo node
+      // Basic check for staff existence or admin status
       return isStaff(schoolId);
     }
 
@@ -41,11 +41,11 @@ service cloud.firestore {
     }
 
     function isTeacher(schoolId) {
-      return isActive(schoolId) && (getRole(schoolId) in ['ADMIN', 'TEACHER']);
+      return isActive(schoolId) && (getRole(schoolId) in ['ADMIN', 'TEACHER'] || isAdmin(schoolId));
     }
 
     function isAccountant(schoolId) {
-      return isActive(schoolId) && (getRole(schoolId) in ['ADMIN', 'ACCOUNTANT', 'BURSAR']);
+      return isActive(schoolId) && (getRole(schoolId) in ['ADMIN', 'ACCOUNTANT', 'BURSAR'] || isAdmin(schoolId));
     }
 
     // ══════════════════════════════════════════
@@ -109,9 +109,9 @@ service cloud.firestore {
         allow write: if isAdmin(schoolId) || isAccountant(schoolId);
       }
 
-      match /hostels/{id} { allow read, write: if isStaff(schoolId); }
-      match /routes/{id} { allow read, write: if isStaff(schoolId); }
-      match /canteen_sales/{id} { allow read, write: if isStaff(schoolId); }
+      match /hostels/{id} { allow read, write: if isActive(schoolId) || isAdmin(schoolId); }
+      match /routes/{id} { allow read, write: if isActive(schoolId) || isAdmin(schoolId); }
+      match /canteen_sales/{id} { allow read, write: if isActive(schoolId) || isAdmin(schoolId); }
       match /timetable/{id} { allow read, write: if isTeacher(schoolId) || isAdmin(schoolId); }
 
       // Explicit deny for any unknown subcollection

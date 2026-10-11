@@ -54,6 +54,7 @@ export default function SettingsPage() {
     demoMode: false,
   })
 
+  // Local state for n8n to handle input typing
   const [n8nUrl, setN8nUrl] = useState("")
   const [n8nEnabled, setN8nEnabled] = useState(false)
 
@@ -75,6 +76,7 @@ export default function SettingsPage() {
     }
   }, [identity])
 
+  // Sync with Firestore-backed config
   useEffect(() => {
     if (config) {
       setN8nUrl(config.n8nWebhookUrl)

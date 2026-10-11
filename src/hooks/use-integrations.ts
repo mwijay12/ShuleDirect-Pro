@@ -3,9 +3,13 @@
 
 import { useState, useEffect } from 'react';
 import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { useFirestore, useAuth } from '@/firebase';
+import { useFirestore } from '@/firebase';
+import { useAuth } from '@/hooks/use-auth';
 import { IntegrationConfig, DEFAULT_INTEGRATION_CONFIG } from '@/types/config';
 
+/**
+ * Hook to manage institutional integrations (n8n, Evolution API, etc.)
+ */
 export function useIntegrations() {
   const db = useFirestore();
   const { schoolId, role } = useAuth();
@@ -21,11 +25,14 @@ export function useIntegrations() {
     const unsubscribe = onSnapshot(configRef, (snapshot) => {
       if (snapshot.exists()) {
         setConfig(snapshot.data() as IntegrationConfig);
+      } else {
+        // Doc might not exist yet, keep default
+        setConfig(DEFAULT_INTEGRATION_CONFIG);
       }
       setLoading(false);
     }, (err) => {
       console.error('[INTEGRATIONS] Fetch error:', err);
-      setError('Failed to load integration settings.');
+      setError('Failed to load integration settings. Ensure you have ADMIN rights.');
       setLoading(false);
     });
 
@@ -33,8 +40,9 @@ export function useIntegrations() {
   }, [db, schoolId]);
 
   const updateConfig = async (updates: Partial<IntegrationConfig>) => {
-    if (!schoolId || role !== 'ADMIN') {
-      throw new Error('Unauthorized: Admin access required.');
+    if (!schoolId) throw new Error('Institutional node not identified.');
+    if (role !== 'ADMIN') {
+      throw new Error('Unauthorized: ONLY the Hub Administrator can modify these settings.');
     }
 
     const configRef = doc(db, 'schools', schoolId, 'config', 'integrations');
@@ -45,7 +53,7 @@ export function useIntegrations() {
       });
     } catch (err) {
       console.error('[INTEGRATIONS] Update error:', err);
-      throw new Error('Failed to save configuration node.');
+      throw new Error('Failed to synchronize configuration node.');
     }
   };
 

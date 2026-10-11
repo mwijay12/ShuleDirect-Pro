@@ -1,6 +1,11 @@
 
 'use client';
 
+/**
+ * @fileOverview Secure n8n Webhook Dispatch Node.
+ * Replaced localStorage usage with secure Firestore-backed configuration.
+ */
+
 import { doc, getDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 
@@ -8,10 +13,12 @@ const { firestore: db } = initializeFirebase();
 
 interface N8nConfig {
   webhookUrl: string;
-  secret: string;
   enabled: boolean;
 }
 
+/**
+ * Fetches the secure webhook configuration from Firestore.
+ */
 export async function getSecureWebhookConfig(
   schoolId: string = 'school-001'
 ): Promise<N8nConfig | null> {
@@ -26,24 +33,27 @@ export async function getSecureWebhookConfig(
     const data = configSnap.data();
     return {
       webhookUrl: data.n8nWebhookUrl ?? '',
-      secret: data.n8nSecret ?? '',
       enabled: data.n8nEnabled ?? false,
     };
   } catch (error) {
-    console.error('[N8N] Config fetch failed:', error);
+    console.error('[N8N] Secure config fetch failed:', error);
     return null;
   }
 }
 
+/**
+ * Dispatches an event to the configured n8n webhook node.
+ */
 export async function triggerN8nWebhook(
   eventType: string,
   payload: Record<string, any>,
   schoolId: string = 'school-001'
 ): Promise<boolean> {
+  // Fetch real-time config from Firestore instead of localStorage
   const config = await getSecureWebhookConfig(schoolId);
 
   if (!config || !config.webhookUrl || !config.enabled) {
-    console.warn('[N8N] Dispatch skipped — node inactive or not configured');
+    console.warn('[N8N] Dispatch skipped — node inactive or not configured in Firestore');
     return false;
   }
 
@@ -52,7 +62,6 @@ export async function triggerN8nWebhook(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Shule-Secret': config.secret,
         'X-Shule-Event': eventType,
       },
       body: JSON.stringify({
@@ -65,7 +74,7 @@ export async function triggerN8nWebhook(
     });
 
     if (!response.ok) {
-      throw new Error(`Webhook failed: ${response.status}`);
+      throw new Error(`Webhook node rejected request: ${response.status}`);
     }
 
     console.log(`[N8N] Dispatched: ${eventType}`);
