@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview National Grading Matrix Engine for Shule Altra.
  * Refined to align with official NECTA CSEE/ACSEE/PSLE/FTNA standards.
@@ -36,6 +35,9 @@ export function calculateCseeGrade(score: number): GradeResult {
   return { grade: 'F', points: 5, remark: 'Fail' };
 }
 
+// Alias for consistency with other parts of the app
+export const getCSEEGrade = calculateCseeGrade;
+
 // ── ACSEE (Form VI) Grading Scale ──
 export function calculateAcseeGrade(score: number): GradeResult {
   if (score >= 80) return { grade: 'A', points: 1, remark: 'Excellent' };
@@ -55,6 +57,9 @@ export function calculatePsleGrade(score: number): GradeResult {
   if (score >= 11) return { grade: 'D', points: 4, remark: 'Below Average' };
   return { grade: 'E', points: 5, remark: 'Fail' };
 }
+
+// Alias for consistency
+export const getPSLEGrade = calculatePsleGrade;
 
 // ── FTNA (Form II) Pass/Fail Node ──
 export function calculateFtnaResult(subjects: SubjectGrade[]) {
@@ -85,4 +90,85 @@ export function classifyCseeDivision(subjects: SubjectGrade[]): DivisionResult {
   else if (points >= 26 && points <= 33) div = 'IV';
 
   return { division: div, totalPoints: points, bestSubjects: best7, classification: `Division ${div}` };
+}
+
+// Alias for consistency
+export const calculateCSEEDivision = classifyCseeDivision;
+
+/**
+ * Calculates rankings for a list of students based on their grades.
+ */
+export function calculateClassRankings(
+  students: Array<{
+    id: string;
+    name: string;
+    subjects: SubjectGrade[];
+  }>
+) {
+  const rankings = students.map(student => {
+    const totalScore = student.subjects.reduce((sum, s) => sum + s.score, 0);
+    const averageScore = student.subjects.length > 0 ? Math.round((totalScore / student.subjects.length) * 10) / 10 : 0;
+    const totalPoints = student.subjects.reduce((sum, s) => sum + s.points, 0);
+    
+    let division = '0';
+    try {
+        const divRes = classifyCseeDivision(student.subjects);
+        division = divRes.division;
+    } catch (e) {
+        division = 'N/A';
+    }
+
+    return {
+      studentId: student.id,
+      studentName: student.name,
+      totalPoints,
+      averageScore,
+      division,
+      rank: 0,
+    };
+  });
+
+  // Sort by average score descending
+  rankings.sort((a, b) => b.averageScore - a.averageScore);
+  
+  // Assign ranks handling ties
+  let currentRank = 1;
+  for (let i = 0; i < rankings.length; i++) {
+    if (i > 0 && rankings[i].averageScore === rankings[i - 1].averageScore) {
+      rankings[i].rank = rankings[i - 1].rank;
+    } else {
+      rankings[i].rank = currentRank;
+    }
+    currentRank = i + 1;
+  }
+
+  return rankings;
+}
+
+/**
+ * Analyzes subject performance for a group of grades.
+ */
+export function analyzeSubjectPerformance(grades: SubjectGrade[]) {
+  const totalStudents = grades.length;
+  if (totalStudents === 0) return { totalStudents: 0, averageScore: 0, passRate: 0, gradeDistribution: { A: 0, B: 0, C: 0, D: 0, F: 0 } };
+
+  const totalScore = grades.reduce((sum, g) => sum + g.score, 0);
+  const averageScore = Math.round((totalScore / totalStudents) * 10) / 10;
+  
+  const passed = grades.filter(g => g.points <= 4).length; // D or better is a pass
+  const passRate = Math.round((passed / totalStudents) * 100);
+
+  const gradeDistribution = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+  grades.forEach(g => {
+    if (g.grade in gradeDistribution) {
+        gradeDistribution[g.grade as keyof typeof gradeDistribution]++;
+    }
+  });
+
+  return {
+    totalStudents,
+    averageScore,
+    passRate,
+    gradeDistribution,
+  };
 }
